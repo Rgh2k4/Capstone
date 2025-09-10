@@ -385,9 +385,6 @@
     overflow-wrap: normal;
     word-break: normal;
   }
-  .text-black {
-    color: var(--color-black);
-  }
   .text-neutral-950 {
     color: var(--color-neutral-950);
   }
