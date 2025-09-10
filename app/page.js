@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
-import Login from './login.jsx';
-import MainMenu from './main_menu.jsx';
+import Login from './frontend/login.jsx';
+import MainMenu from './frontend/main_menu.jsx';
 
 export default function Home() {
 
