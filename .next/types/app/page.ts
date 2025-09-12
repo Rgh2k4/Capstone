@@ -1,4 +1,4 @@
-// File: C:\Users\marks\Desktop\Desktop Files\Programming\React\Capstone\app\page.js
+// File: D:\Fall 2025\Capstone\app\page.js
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
