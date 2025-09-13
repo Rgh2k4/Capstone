@@ -24,3 +24,19 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+button {
+  @apply m-4 bg-blue-500 hover:bg-blue-400 text-white py-3 px-6 rounded-lg text-lg font-semibold transition-all drop-shadow-md drop-shadow-gray-700;
+}
+.admin-nav {
+  @apply m-4 bg-blue-400 hover:bg-blue-300 p-6;
+}
+.modal-close {
+  @apply m-4 opacity-75 bg-white hover:bg-gray-200 text-black py-4 px-6 rounded-lg text-lg font-bold;
+}
+.input {
+  @apply w-100 h-12 pl-4 mb-12 rounded mb-3 border-black border-1 text-neutral-950;
+}
+.login {
+  @apply bg-gray-400 hover:bg-gray-300 text-black w-full border-2 p-4 border-hidden rounded mb-3 text-3xl font-bold transition-all;
+}
