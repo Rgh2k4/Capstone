@@ -1,31 +1,6 @@
-/*
+import Reviews from './components/admin/review_list'
 
-Start of component{
-
-    view button function (pending content) {
-        opens window of the full details of the content
-        has two buttons: "approve" and "reject"
-
-        "approve" marks content as visible.
-    }
-
-    return(
-
-        view box
-
-        box of pending user content with a button to view it and activates function
-
-        box of items
-
-    )
-}
-
-*/
-
-
-import React from 'react'
-
-function Dashboard() {
+function AdminMenu() {
   return (
     <div className='flex flex-row'>
         <section className=' flex flex-col h-screen w-1/3 bg-gray-500 p-6'>
@@ -38,7 +13,7 @@ function Dashboard() {
         <section className=' flex flex-col justify-center h-screen w-screen p-12'>
           <h1>Dashboard</h1>
           <div>
-
+            <Reviews/>
           </div>
 
         </section>
@@ -46,4 +21,4 @@ function Dashboard() {
   )
 }
 
-export default Dashboard
+export default AdminMenu
