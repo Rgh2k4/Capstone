@@ -1,0 +1,18 @@
+{
+    "reviews": [
+        {
+        "username": "billy5565",
+        "password": "password34",
+        "comment": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis,  ultricies nec, pellentesque eu, pretium quis, sem.",
+        "images": ["image_1.jpeg", "image_2.jpeg"],
+        "date": "3/4/2025"
+        },
+        {
+        "username": "jasjasj",
+        "password": "password34",
+        "comment": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis,  ultricies nec, pellentesque eu, pretium quis, sem.",
+        "images": [],
+        "date": "3/4/2025"
+        }
+    ]
+}
