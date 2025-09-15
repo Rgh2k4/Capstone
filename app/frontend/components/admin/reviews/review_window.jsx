@@ -1,9 +1,17 @@
-function ReviewWindow({user}) {
+function ReviewWindow({user, onClose}) {
   let photos = user.images;
   let hasImage = false
 
   function checkImages (photos) {
     if (!photos[0] == "" || null) hasImage = true;
+  }
+
+  function handleDelete() {
+    onClose();
+  }
+
+  function handleApprove() {
+    onClose();
   }
 
   checkImages(photos);
@@ -29,8 +37,8 @@ function ReviewWindow({user}) {
         </div>
         )}
         <div>
-            <button>Delete</button>
-            <button className='red-button'>Approve</button>
+            <button onClick={handleDelete} className='red-button'>Delete</button>
+            <button onClick={handleApprove}>Approve</button>
         </div>
     </div>
     

@@ -9,11 +9,6 @@ function ReviewList( {setShowModal, sendUser}) {
     setShowModal(true);
   }
 
-  function handleClose() {
-    setUser(null);
-    setShowModal(true);
-  }
-
 
   return (
     <section className=' bg-gray-100 drop-shadow-md drop-shadow-gray-400'>
