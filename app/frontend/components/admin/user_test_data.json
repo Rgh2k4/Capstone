@@ -1,18 +1,76 @@
 {
-    "reviews": [
-        {
-        "username": "billy5565",
-        "password": "password34",
-        "comment": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis,  ultricies nec, pellentesque eu, pretium quis, sem.",
-        "images": ["image_1.jpeg", "image_2.jpeg"],
-        "date": "3/4/2025"
-        },
-        {
-        "username": "jasjasj",
-        "password": "password34",
-        "comment": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis,  ultricies nec, pellentesque eu, pretium quis, sem.",
-        "images": [],
-        "date": "3/4/2025"
-        }
-    ]
+  "reviews": [
+    {
+      "username": "billy5565",
+      "password": "password34",
+      "comment": "This place was amazing, but the trails were a bit muddy after the rain. Still worth it!",
+      "images": ["trail_view.jpeg", "sunset_peak.jpeg"],
+      "date": "3/4/2025"
+    },
+    {
+      "username": "jasjasj",
+      "password": "password34",
+      "comment": "Saw a moose near the river bend! Please be careful, it was huge and blocking the trail.",
+      "images": [],
+      "date": "3/5/2025"
+    },
+    {
+      "username": "wildwanderer",
+      "password": "hunter2",
+      "comment": "Campsites were clean and quiet. Ranger was super friendly. Would recommend bringing bug spray.",
+      "images": ["campfire.jpeg"],
+      "date": "3/7/2025"
+    },
+    {
+      "username": "naturelover99",
+      "password": "password123",
+      "comment": "The waterfalls are breathtaking in spring. A bit crowded on weekends though.",
+      "images": ["waterfall1.jpeg", "waterfall2.jpeg"],
+      "date": "3/8/2025"
+    },
+    {
+      "username": "pixelhiker",
+      "password": "letmein",
+      "comment": "Great spot for stargazing. No light pollution at all. Worth the long hike.",
+      "images": [],
+      "date": "3/10/2025"
+    }
+  ],
+  "reports": [
+    {
+      "username": "jackychanny555",
+      "password": "password34",
+      "comment": "User posted unrelated spam links in the comment section.",
+      "images": ["spam_screenshot1.jpeg"],
+      "date": "3/4/2025"
+    },
+    {
+      "username": "jojoman12",
+      "password": "password34",
+      "comment": "Comment contained offensive language directed at other users.",
+      "images": [],
+      "date": "3/5/2025"
+    },
+    {
+      "username": "hikegirl",
+      "password": "sunshine22",
+      "comment": "Posted inappropriate photos not related to the park.",
+      "images": ["flagged_photo1.jpeg", "flagged_photo2.jpeg"],
+      "date": "3/6/2025"
+    },
+    {
+      "username": "mountainman",
+      "password": "password321",
+      "comment": "Repeatedly spamming reviews with the same content.",
+      "images": [],
+      "date": "3/7/2025"
+    },
+    {
+      "username": "trailblazer",
+      "password": "letmein123",
+      "comment": "Fake review detected – claimed a fire closed the park when it was open.",
+      "images": ["fake_alert.jpeg"],
+      "date": "3/9/2025"
+    }
+  ]
 }
