@@ -72,5 +72,95 @@
       "images": ["fake_alert.jpeg"],
       "date": "3/9/2025"
     }
+  ],
+  "accounts": [
+    {
+      "id": 1,
+      "role": "admin",
+      "username": "adminUser1",
+      "password": "password34",
+      "email": "admin12@fakemake.com",
+      "dateCreated": "3/4/2025"
+    },
+    {
+      "id": 2,
+      "role": "user",
+      "username": "billy5565",
+      "password": "password34",
+      "email": "billy5565@fakemake.com",
+      "dateCreated": "3/4/2025"
+    },
+    {
+      "id": 3,
+      "role": "user",
+      "username": "jasjasj",
+      "password": "password34",
+      "email": "jasjasj@fakemake.com",
+      "dateCreated": "3/5/2025"
+    },
+    {
+      "id": 4,
+      "role": "user",
+      "username": "wildwanderer",
+      "password": "hunter2",
+      "email": "wildwanderer@fakemake.com",
+      "dateCreated": "3/7/2025"
+    },
+    {
+      "id": 5,
+      "role": "user",
+      "username": "naturelover99",
+      "password": "password123",
+      "email": "naturelover99@fakemake.com",
+      "dateCreated": "3/8/2025"
+    },
+    {
+      "id": 6,
+      "role": "user",
+      "username": "pixelhiker",
+      "password": "letmein",
+      "email": "pixelhiker@fakemake.com",
+      "dateCreated": "3/10/2025"
+    },
+    {
+      "id": 7,
+      "role": "user",
+      "username": "jackychanny555",
+      "password": "password34",
+      "email": "jackychanny555@fakemake.com",
+      "dateCreated": "3/4/2025"
+    },
+    {
+      "id": 8,
+      "role": "user",
+      "username": "jojoman12",
+      "password": "password34",
+      "email": "jojoman12@fakemake.com",
+      "dateCreated": "3/5/2025"
+    },
+    {
+      "id": 9,
+      "role": "user",
+      "username": "hikegirl",
+      "password": "sunshine22",
+      "email": "hikegirl@fakemake.com",
+      "dateCreated": "3/6/2025"
+    },
+    {
+      "id": 10,
+      "role": "user",
+      "username": "mountainman",
+      "password": "password321",
+      "email": "mountainman@fakemake.com",
+      "dateCreated": "3/7/2025"
+    },
+    {
+      "id": 11,
+      "role": "user",
+      "username": "trailblazer",
+      "password": "letmein123",
+      "email": "trailblazer@fakemake.com",
+      "dateCreated": "3/9/2025"
+    }
   ]
 }
