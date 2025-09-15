@@ -37,6 +37,9 @@ button {
 .modal-close {
   @apply m-4 opacity-75 bg-white hover:bg-gray-200 text-black py-4 px-6 rounded-lg text-lg font-bold;
 }
+.plus-button {
+  @apply m-4 opacity-75 bg-white hover:bg-gray-200 text-black py-4 px-6 rounded-lg text-lg font-bold;
+}
 .input {
   @apply w-100 h-12 pl-4 mb-12 rounded mb-3 border-black border-1 text-neutral-950;
 }
