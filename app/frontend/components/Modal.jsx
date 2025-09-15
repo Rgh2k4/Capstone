@@ -23,7 +23,7 @@ const Modal = ({isVisible, onClose, children}) => {
   }
   
   return (
-    <div className=' fixed inset-0 backdrop-opacity-35 backdrop-brightness-0 flex justify-center items-center' id='wrapper' onClick={() => handleClose()}>
+    <div className=' fixed inset-0 backdrop-opacity-35 backdrop-brightness-0 flex justify-center items-center' id='wrapper' onClick={() => handleClose(event)}>
       <div className=' max-w-1/2 max-h-screen overflow-y-scroll'>
         <div className=' bg-white p-2 rounded'>
           <div className="absolute left-2/3">
