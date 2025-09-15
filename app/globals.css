@@ -28,6 +28,9 @@ body {
 button {
   @apply m-4 bg-blue-500 hover:bg-blue-400 text-white py-3 px-6 rounded-lg text-lg font-semibold transition-all drop-shadow-md drop-shadow-gray-700;
 }
+.red-button {
+  @apply bg-red-500 hover:bg-red-400;
+}
 .admin-nav {
   @apply m-4 bg-blue-400 hover:bg-blue-300 p-6;
 }
