@@ -2,13 +2,8 @@
 
 export default function ParkDetails({ closeButton }) {
     return (
-        <main className="flex flex-col bg-orange-100 w-1/4 mx-250">
+        <main className="flex flex-col bg-orange-100">
             <header className="flex flex-col border-2 h-60 relative">
-                <div className="self-end absolute z-20  text-center content-center bg-gray-300">
-                    <button onClick={closeButton} className="text-2xl size-8">
-                        X
-                    </button>
-                </div>
                 <h1 className="text-center pt-25 z-10">Picture</h1>
             </header>
             <section className="mt-20 mb-20 place-self-center">

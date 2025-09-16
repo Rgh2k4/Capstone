@@ -1,9 +1,9 @@
 "use client";
 import { useState } from 'react';
 import ParkDetails from './park_details';
+import Modal from './components/Modal';
 
 export default function MainMenu() {
-
     const [overlay, setOverlay] = useState(false);
 
     function handleOpenOverlay() {
@@ -28,7 +28,9 @@ export default function MainMenu() {
             </section>
             {overlay ? 
             <div className='absolute inset-0 overflow-y-auto y-100'>
-                <ParkDetails closeButton={handleCloseOverlay}/>
+                <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
+                    <ParkDetails closeButton={handleCloseOverlay}/>
+                </Modal>
             </div> : null
             }      
         </main>
