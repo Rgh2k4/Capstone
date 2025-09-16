@@ -1,11 +1,11 @@
 "use client";
 
-export default function ParkDetails({ closeButton }) {
+export default function ParkDetails({ closeButtonOverlay, openButtonUpload }) {
     return (
         <main className="flex flex-col bg-orange-100 w-1/4 mx-250">
             <header className="flex flex-col relative">
                 <div className="self-end absolute z-20">
-                    <button onClick={closeButton} className="text-2xl">
+                    <button onClick={closeButtonOverlay} className="text-2xl">
                         X
                     </button>
                 </div>
@@ -31,7 +31,7 @@ export default function ParkDetails({ closeButton }) {
             </section>
             <section className="flex flex-col items-center">
                 <h1 className="font-bold text-xl mb-15">
-                    Wildlife
+                    Wildlife   
                 </h1>
                 <div className="flex gap-5">
                     <p className="border-2 w-40 h-40 text-center pt-15">Image 1</p>
@@ -40,7 +40,7 @@ export default function ParkDetails({ closeButton }) {
                 </div>
             </section>
             <section className="mt-30 place-self-center">
-                <button className="bg-sky-300 rounded-xl font-bold w-50 h-13 text-lg shadow-xl">Write a review</button>
+                <button onClick={openButtonUpload} className="w-50 h-13 shadow-xl">Write a review</button>
             </section>
             <section className="flex flex-col mt-30 items-center">
                 <h1 className="font-bold text-2xl mb-10">
@@ -51,7 +51,7 @@ export default function ParkDetails({ closeButton }) {
                 </div>
             </section>
             <footer className="mt-30 mb-20 place-self-center">
-                <button className="bg-gray-100 rounded-xl font-semibold w-40 h-13 text-lg shadow-lg">Back to top</button>
+                <button className="w-40 h-13 shadow-lg">Back to top</button>
             </footer>
         </main>
     );

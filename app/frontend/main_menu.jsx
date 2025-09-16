@@ -1,10 +1,12 @@
 "use client";
 import { useState } from 'react';
 import ParkDetails from './park_details';
+import Upload from './upload.jsx';
 
 export default function MainMenu() {
 
     const [overlay, setOverlay] = useState(false);
+    const [upload, setUpload] = useState(false);
 
     function handleOpenOverlay() {
         setOverlay(true);
@@ -12,6 +14,15 @@ export default function MainMenu() {
 
     function handleCloseOverlay() {
         setOverlay(false);
+    }
+
+    function handleOpenUpload() {
+        setOverlay(false);
+        setUpload(true);
+    }
+
+    function handleCloseUpload() {
+        setUpload(false);
     }
 
 
@@ -27,10 +38,17 @@ export default function MainMenu() {
                 <button onClick={handleOpenOverlay} className="w-screen h-300">map</button>
             </section>
             {overlay ? 
-            <div className='absolute inset-0 overflow-y-auto y-100'>
-                <ParkDetails closeButton={handleCloseOverlay}/>
+            <div className='absolute inset-0 overflow-y-auto y-10'>
+                <ParkDetails 
+                closeButtonOverlay={handleCloseOverlay}                
+                openButtonUpload={handleOpenUpload} />
             </div> : null
-            }      
+            }
+            {upload ?
+            <div className='absolute y-20'>
+                <Upload closeButtonUpload={handleCloseUpload} />
+            </div> : null
+            }   
         </main>
     );
 
