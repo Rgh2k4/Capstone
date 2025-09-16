@@ -1,30 +1,14 @@
 "use client";
-import { useState } from 'react';
-import ParkDetails from './park_details';
+
+
+import { useState } from "react";
+import ParkDetails from "./park_details";
 import Upload from './upload.jsx';
+import Modal from "./components/Modal";
+
 
 export default function MainMenu() {
-
-    const [overlay, setOverlay] = useState(false);
-    const [upload, setUpload] = useState(false);
-
-    function handleOpenOverlay() {
-        setOverlay(true);
-    }
-
-    function handleCloseOverlay() {
-        setOverlay(false);
-    }
-
-    function handleOpenUpload() {
-        setOverlay(false);
-        setUpload(true);
-    }
-
-    function handleCloseUpload() {
-        setUpload(false);
-    }
-
+  const [overlay, setOverlay] = useState(false);
 
     return (
         <main className="flex flex-col h-screen w-screen relative">
@@ -33,22 +17,16 @@ export default function MainMenu() {
                     National Parks Information System
                 </h1>
                 <input type="text" value="Search" readOnly className="ml-25 w-4xl h-15 pl-5 rounded-full text-neutral-950 bg-white"></input>
+                <div className="">
+                    <img className="w-25 h-25 bg-gray-400 rounded-full ml-18" alt="profile picture" />
+                </div>
             </header>  
             <section>
                 <button onClick={handleOpenOverlay} className="w-screen h-300">map</button>
             </section>
-            {overlay ? 
-            <div className='absolute inset-0 overflow-y-auto y-10'>
-                <ParkDetails 
-                closeButtonOverlay={handleCloseOverlay}                
-                openButtonUpload={handleOpenUpload} />
-            </div> : null
-            }
-            {upload ?
-            <div className='absolute y-20'>
-                <Upload closeButtonUpload={handleCloseUpload} />
-            </div> : null
-            }   
+            <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
+                <ParkDetails />
+            </Modal>
         </main>
     );
 
