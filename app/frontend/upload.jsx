@@ -1,8 +1,7 @@
 export default function Upload({ closeButtonUpload }) {
     return (
-        <main className="flex flex-col bg-orange-100 w-240 h-200 mx-210 mt-50 border-2">
+        <main className="flex flex-col bg-orange-100 w-240 h-200">
             <section className="flex flex-col relative">
-                <button onClick={closeButtonUpload} className="self-end absolute z-20">X</button>
                 <h1 className="font-extrabold text-4xl text-center mt-15">Upload</h1>  
             </section>
             <section className="flex justify-center mx-10 mt-10 h-3/4 bg-gray-300 rounded-2xl">

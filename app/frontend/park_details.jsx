@@ -2,7 +2,7 @@
 
 import Reviews from "./components/park_window/review_section";
 
-export default function ParkDetails({ onClose }) {
+export default function ParkDetails({ openButtonUpload }) {
   let wildlifePhotos = ["image_1.jpeg", "image_2.jpeg"];
   let hasImage = false;
 
@@ -58,7 +58,7 @@ export default function ParkDetails({ onClose }) {
         </div>
       </section>
       <section className="mt-30 place-self-center">
-        <button>Write a review</button>
+        <button onClick={openButtonUpload}>Write a review</button>
       </section>
       <section className="flex flex-col mt-30 items-center">
         <h1 className="font-bold text-2xl mb-10">Reviews</h1>
