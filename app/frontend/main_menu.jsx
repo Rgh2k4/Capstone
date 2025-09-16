@@ -22,15 +22,15 @@ export default function MainMenu() {
                     National Parks Information System
                 </h1>
                 <input type="text" value="Search" readOnly className="ml-25 w-4xl h-15 pl-5 rounded-full text-neutral-950 bg-white"></input>
-            </header>
-            {overlay ? 
-            <div className='absolute inset-0 overflow-y-auto'>
-                <ParkDetails closeButton={handleCloseOverlay}/>
-            </div> : null
-            }      
+            </header>  
             <section>
                 <button onClick={handleOpenOverlay} className="w-screen h-300">map</button>
             </section>
+            {overlay ? 
+            <div className='absolute inset-0 overflow-y-auto y-100'>
+                <ParkDetails closeButton={handleCloseOverlay}/>
+            </div> : null
+            }      
         </main>
     );
 
