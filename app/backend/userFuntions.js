@@ -5,7 +5,7 @@ import {getStorage, ref, uploadBytes} from "firebase/storage"
 // This code allows new users to sign up
 // It was made with help from https://firebase.google.com/docs/auth/web/start
 const auth = getAuth();
-function signUp(email, password) {
+export function signUp(email, password) {
   createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Signed in
@@ -21,7 +21,7 @@ function signUp(email, password) {
 
 // This code allows existing users to log in
 // It was made with help from https://firebase.google.com/docs/auth/web/start
-function logIn(email, password) {
+export function logIn(email, password) {
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Signed in

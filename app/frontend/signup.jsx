@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { SignUp } from '../backend/userFuntions.js'
 
 export default function SignupPage() {
   const [form, setForm] = useState({
-    username: "",
     email: "",
     password: "",
     confirm: "",
@@ -22,7 +22,8 @@ export default function SignupPage() {
       alert("Passwords do not match.");
       return;
     }
-    alert(`Signed up as ${form.username}`); //placeholder for real signup
+    //alert(`Signed up as ${form.email}`); //placeholder for real signup
+    SignUp(form.email, form.password);
   };
 
   return (
@@ -32,15 +33,6 @@ export default function SignupPage() {
       <section className="mt-10 w-full max-w-5xl rounded-2xl bg-white p-8 shadow-lg">
         <form onSubmit={onSubmit} className="grid gap-6 md:grid-cols-3">
           <div className="md:col-span-2 space-y-6">
-            <input
-              name="username"
-              type="text"
-              placeholder="Enter Username..."
-              value={form.username}
-              onChange={onChange}
-              className="w-full rounded-lg border px-4 py-3"
-              required
-            />
             <input
               name="email"
               type="email"
