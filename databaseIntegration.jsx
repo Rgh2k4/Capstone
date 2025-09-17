@@ -21,6 +21,22 @@ const firebaseConfig = {
   measurementId: "G-KW1YHK2ZL8"
 };
 
+// This code allows existing users to log in
+// It was made with help from https://firebase.google.com/docs/auth/web/start
+function logIn(email, password) {
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Signed in
+      const user = userCredential.user;
+      console.log('User logged in:', user);
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.error('Error logging in:', errorCode, errorMessage);
+    });
+}
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
