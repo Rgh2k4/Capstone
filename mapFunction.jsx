@@ -23,11 +23,14 @@ function parkMap({onPOIClick}) {
           defaultZoom={10}>
             {POIS.map(poi => (
               <AdvancedMarker
-              key={poi.id}
-              position={poi.location}
-              onClick={() => setSelectedPOI(poi)}
-                if (onPOIClick) onPOIClick(poi));
-            />
+                key={poi.id}
+                position={poi.location}
+                onClick={() => {
+                  setSelectedPOI(poi);
+                  if (onPOIClick) onPOIClick(poi);
+                }}
+                />
+            
           ))}
         </Map>
       </APIProvider>
