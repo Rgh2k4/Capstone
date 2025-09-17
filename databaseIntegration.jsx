@@ -21,9 +21,25 @@ const firebaseConfig = {
   measurementId: "G-KW1YHK2ZL8"
 };
 
+// This code allows new users to sign up
+// It was made with help from https://firebase.google.com/docs/auth/web/start
+export function signUp(email, password) {
+  createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Signed in
+      const user = userCredential.user;
+      console.log('User signed up:', user);
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.error('Error signing up:', errorCode, errorMessage);
+    });
+}
+
 // This code allows existing users to log in
 // It was made with help from https://firebase.google.com/docs/auth/web/start
-function logIn(email, password) {
+export function logIn(email, password) {
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Signed in
