@@ -1,4 +1,4 @@
-import {auth} from "./databaseIntegration";
+import {auth} from "./app/backend/databaseIntegration";
 import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut} from "firebase/auth"
 import {getStorage, ref, uploadBytes} from "firebase/storage"
 
