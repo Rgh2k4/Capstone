@@ -9,7 +9,7 @@ const POIS = [
   //This will evetually pull all POI's lat and long from the park api's
 ];
 
-function parkMap({onPOIClick}) {
+function parkMap() {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [selectedPOI, setSelectedPOI] = useState(null);
@@ -27,7 +27,6 @@ function parkMap({onPOIClick}) {
                 position={poi.location}
                 onClick={() => {
                   setSelectedPOI(poi);
-                  if (onPOIClick) onPOIClick(poi);
                 }}
                 />
             
