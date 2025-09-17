@@ -19,6 +19,22 @@ export default function Login({ handleLogin }) {
                     <input type="submit" value="Log in" className="login"></input>
                 </form>
             </section>
+             <section className="mt-6 flex flex-col items-center gap-4">
+        <a
+          href="/signup"
+          className="mx-auto block w-[360px] rounded-lg bg-gray-300 px-6 py-4 text-2xl font-semibold text-black shadow hover:bg-gray-200"
+        >
+          Sign up
+        </a>
+
+        <button
+          type="button"
+          onClick={handleLogin}
+          className="mx-auto block w-[360px] rounded-lg bg-white px-6 py-4 text-2xl font-semibold text-black shadow hover:bg-gray-50"
+        >
+          Continue as guest
+        </button>
+      </section>
         </main>
     );
 }
