@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SignUp } from '../backend/userFuntions.js'
+import { signUp } from '../backend/databaseIntegration.jsx'
 
 export default function SignupPage() {
   const [form, setForm] = useState({
@@ -23,7 +23,7 @@ export default function SignupPage() {
       return;
     }
     //alert(`Signed up as ${form.email}`); //placeholder for real signup
-    SignUp(form.email, form.password);
+    signUp(form.email, form.password);
   };
 
   return (
