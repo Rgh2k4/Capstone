@@ -1,11 +1,10 @@
 "use client";
 
-
 import { useState } from "react";
 import ParkDetails from "./park_details";
 import Upload from './upload.jsx';
 import Modal from "./components/Modal";
-
+import ProfileMenu from "./components/profile_menu";
 
 export default function MainMenu() {
   const [overlay, setOverlay] = useState(false);
@@ -27,9 +26,7 @@ export default function MainMenu() {
                     National Parks Information System
                 </h1>
                 <input type="text" value="Search" readOnly className="ml-25 w-4xl h-15 pl-5 rounded-full text-neutral-950 bg-white"></input>
-                <div className="">
-                    <img className="w-25 h-25 bg-gray-400 rounded-full ml-250" alt="profile picture" />
-                </div>
+                <ProfileMenu />
             </header>  
             <section>
                 <button onClick={handleOpenOverlay} className="w-screen h-300">map</button>
