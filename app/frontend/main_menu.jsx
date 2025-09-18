@@ -5,6 +5,7 @@ import ParkDetails from "./park_details";
 import Upload from './upload.jsx';
 import Modal from "./components/Modal";
 import ProfileMenu from "./components/profile_menu";
+import parkMap from "./mapFunction";
 
 export default function MainMenu() {
   const [overlay, setOverlay] = useState(false);
@@ -29,15 +30,15 @@ export default function MainMenu() {
                 <ProfileMenu />
             </header>  
             <section>
-              <button onClick={handleOpenOverlay} className="w-screen h-300">map</button>
+              <parkMap />
             </section>
 
-          <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
+          {/*<Modal isVisible={overlay} onClose={() => setOverlay(false)}>
                 <ParkDetails openButtonUpload={handleOpenUpload} />
             </Modal>
             <Modal isVisible={upload} onClose={() => setUpload(false)}>
                 <Upload />
-            </Modal>
+            </Modal>*/}
         </main>
     );
 
