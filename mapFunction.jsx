@@ -1,18 +1,53 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
-
-const POIS = [
-  { id: 'placeholder location', location: {lat: 52.90477, lng: -118.08845}},
-  { id: 'second placeholer', name: '2nd placeholder', description:'this pull is different', location: {lat: 52, lng: -119}}
-  //This will evetually pull all POI's lat and long from the park api's
-];
 
 function parkMap() {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
+  const [pois, setPois] = useState([]);
   const [selectedPOI, setSelectedPOI] = useState(null);
+
+  //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
+  //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
+  useEffect(() => {
+    async function loadData() {
+      const urls = [
+        //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
+        "https://opendata.arcgis.com/datasets/dff0acc0f20c4666a253860f6444bb43_0.geojson",
+        "https://opendata.arcgis.com/datasets/1769ca13cd044206ba59aa1b0bc84356_0.geojson",
+        "https://opendata.arcgis.com/datasets/28b55decfac848c782819b1706e58aa1_0.geojson",
+        "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
+        "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
+      ];
+
+      try {
+        const responses = await Promise.all(urls.map(url => fetch(url)));
+        const datasets = await Promise.all(responses.map(r => r.json()));
+
+        const allPois = datasets.flatMap((data, datasetIndex) =>
+          data.features.map((f, idx) => ({
+            //${} inserts the value of a variable/expression into the
+            id: f.id || `${datasetIndex}-${idx}`,
+            name: f.properties?.NAME || f.properties?.name || "Unnamed POI",
+            description: f.properties?.DESC || f.properties?.description || "No description",
+            location: {
+              lat: f.geometry.coordinates[1],
+              lng: f.geometry.coordinates[0]
+            },
+            reviews: []
+          }))
+        );
+
+        setPois(allPois);
+      } catch (err) {
+        console.error("Error loading datasets:", err);
+      }
+    }
+
+    loadData();
+  }, []);
 
   return (
     <div>
@@ -21,7 +56,7 @@ function parkMap() {
           <Map
           defaultCenter={{lat: 52.88660, lng: -118.10222}}
           defaultZoom={10}>
-            {POIS.map(poi => (
+            {pois.map(poi => (
               <AdvancedMarker
               key={poi.id}
               position={poi.location}
@@ -61,5 +96,6 @@ function parkMap() {
     </div>
   );
 }
+
 
 export default parkMap;
