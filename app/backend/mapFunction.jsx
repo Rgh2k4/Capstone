@@ -1,6 +1,6 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
-import React from 'react';
+import React, { useState } from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 
 const POIS = [
