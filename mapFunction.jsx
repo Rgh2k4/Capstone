@@ -3,7 +3,7 @@
 import React, {useState, useEffect} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 
-function parkMap() {
+function ParkMap() {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -98,4 +98,4 @@ function parkMap() {
 }
 
 
-export default parkMap;
+export default ParkMap;
