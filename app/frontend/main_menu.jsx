@@ -30,7 +30,7 @@ export default function MainMenu() {
                 <ProfileMenu />
             </header>  
             <section>
-              <parkMap />
+              <ParkMap />
             </section>
 
           {/*<Modal isVisible={overlay} onClose={() => setOverlay(false)}>
