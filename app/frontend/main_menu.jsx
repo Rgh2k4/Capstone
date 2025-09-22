@@ -5,7 +5,7 @@ import ParkDetails from "./park_details";
 import Upload from './upload.jsx';
 import Modal from "./components/Modal";
 import ProfileMenu from "./components/profile_menu";
-import parkMap from "./mapFunction";
+import parkMap from "../backend/mapFunction";
 
 export default function MainMenu() {
   const [overlay, setOverlay] = useState(false);
