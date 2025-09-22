@@ -1,5 +1,11 @@
 "use client";
+<<<<<<< HEAD
 export default function Login({ handleLogin, handleSignUp }) {
+=======
+import { useState } from "react";
+
+export default function Login({ handleLogin, handleSignUp}) {
+>>>>>>> 5e0cc467b9771eaa3317762a92c32f54f639274b
 
     function authenticated() {
         handleLogin();
@@ -20,10 +26,8 @@ export default function Login({ handleLogin, handleSignUp }) {
                 </form>
             </section>
              <section className="mt-6 flex flex-col items-center gap-4">
-        <button
-          onClick={handleSignUp}
-          className="mx-auto block w-[360px] rounded-lg bg-gray-300 px-6 py-4 text-2xl font-semibold text-black shadow hover:bg-gray-200"
-        >
+
+        <button onClick={handleSignUp} className="mx-auto block w-[360px] rounded-lg bg-gray-300 px-6 py-4 text-2xl font-semibold text-black shadow hover:bg-gray-200">
           Sign up
         </button>
 

@@ -1,10 +1,15 @@
 "use client";
-
+/*
+  I reference w3school for the method that I used
+  also referencing ChatGPT for generating the onChange function
+  https://www.w3schools.com/react/react_forms.asp
+  https://chat.openai.com/share/1f3f3e5e-1dcb-4f0a-8f7b-1c8e4e3b8f6e  
+*/
 import { useState } from "react";
+import { signUp } from '../backend/databaseIntegration.jsx'
 
 export default function SignupPage( {handleNewAccount} ) {
   const [form, setForm] = useState({
-    username: "",
     email: "",
     password: "",
     confirm: "",
@@ -22,8 +27,7 @@ export default function SignupPage( {handleNewAccount} ) {
       alert("Passwords do not match.");
       return;
     }
-    alert(`Signed up as ${form.username}`); //placeholder for real signup
-    handleNewAccount();
+    signUp(form.email, form.password);
   };
 
   return (
@@ -33,15 +37,6 @@ export default function SignupPage( {handleNewAccount} ) {
       <section className="mt-10 w-full max-w-5xl rounded-2xl bg-white p-8 shadow-lg">
         <form onSubmit={onSubmit} className="grid gap-6 md:grid-cols-3">
           <div className="md:col-span-2 space-y-6">
-            <input
-              name="username"
-              type="text"
-              placeholder="Enter Username..."
-              value={form.username}
-              onChange={onChange}
-              className="w-full rounded-lg border px-4 py-3"
-              required
-            />
             <input
               name="email"
               type="email"

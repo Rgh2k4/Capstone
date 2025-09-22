@@ -6,20 +6,15 @@ import SignupPage from './frontend/signup.jsx';
 
 export default function Home() {
 
-  const [pageScreen, setPageScreen] = useState(<Login handleLogin={handleLogin} handleSignUp={handleSignUp} />);
+  const [pageScreen, setPageScreen] = useState(<Login handleLogin={handleLogin} handleSignUp={handleSignUp}/>);
 
   function handleLogin() {
     setPageScreen(<MainMenu />);
   }
 
   function handleSignUp() {
-    setPageScreen(<SignupPage handleNewAccount={handleCompleteSignUp} />);
+    setPageScreen(<SignupPage />);
   }
-
-  function handleCompleteSignUp() {
-    setPageScreen(<MainMenu />);
-  }
-
 
   return (
     <div>
