@@ -1,5 +1,5 @@
 "use client";
-export default function Login({ handleLogin }) {
+export default function Login({ handleLogin, handleSignUp }) {
 
     function authenticated() {
         handleLogin();
@@ -20,12 +20,12 @@ export default function Login({ handleLogin }) {
                 </form>
             </section>
              <section className="mt-6 flex flex-col items-center gap-4">
-        <a
-          href="/signup"
+        <button
+          onClick={handleSignUp}
           className="mx-auto block w-[360px] rounded-lg bg-gray-300 px-6 py-4 text-2xl font-semibold text-black shadow hover:bg-gray-200"
         >
           Sign up
-        </a>
+        </button>
 
         <button
           type="button"

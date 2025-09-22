@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function SignupPage() {
+export default function SignupPage( {handleNewAccount} ) {
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -23,6 +23,7 @@ export default function SignupPage() {
       return;
     }
     alert(`Signed up as ${form.username}`); //placeholder for real signup
+    handleNewAccount();
   };
 
   return (
@@ -89,7 +90,6 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              className="ml-auto w-[320px] rounded-lg bg-gray-300 px-6 py-4 text-2xl font-semibold text-black shadow hover:bg-gray-200"
             >
               Sign up
             </button>
