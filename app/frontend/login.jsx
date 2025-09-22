@@ -1,11 +1,7 @@
 "use client";
-<<<<<<< HEAD
-export default function Login({ handleLogin, handleSignUp }) {
-=======
 import { useState } from "react";
 
 export default function Login({ handleLogin, handleSignUp}) {
->>>>>>> 5e0cc467b9771eaa3317762a92c32f54f639274b
 
     function authenticated() {
         handleLogin();
