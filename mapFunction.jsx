@@ -28,7 +28,7 @@ function ParkMap() {
 
         const allPois = datasets.flatMap((data, datasetIndex) =>
           data.features.map((f, idx) => ({
-            //${} inserts the value of a variable/expression into the
+            //${} inserts the value of a variable/expression into the string
             id: f.id || `${datasetIndex}-${idx}`,
             name: f.properties?.NAME || f.properties?.name || "Unnamed POI",
             description: f.properties?.DESC || f.properties?.description || "No description",
@@ -55,7 +55,9 @@ function ParkMap() {
         <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
           <Map
           defaultCenter={{lat: 52.88660, lng: -118.10222}}
-          defaultZoom={10}>
+          defaultZoom={10}
+          mapId='456dc2bedf64a06c67cc63ea'>
+
             {pois.map(poi => (
               <AdvancedMarker
               key={poi.id}
@@ -79,7 +81,7 @@ function ParkMap() {
             <h2>{selectedPOI.name}</h2>
             <p>{selectedPOI.description}</p>
             <h3>Reviews</h3>
-            {selectedPOI.reviews.length > 0 ? (
+            {selectedPOI.reviews?.length > 0 ? (
               <ul>
                 {selectedPOI.reviews.map((review, index) => (
                   <li key={index}>{review}</li>
