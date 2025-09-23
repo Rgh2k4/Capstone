@@ -1,10 +1,28 @@
 "use client";
 import { useState } from "react";
+import { logIn } from '../backend/databaseIntegration.jsx'
 
-export default function Login({ handleLogin, handleSignUp}) {
+export default function Login({ handleLogin, handleSignUp }) {
 
-    function authenticated() {
-        handleLogin();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    function Email(e) {
+      setEmail(e.target.value);
+    }
+
+    function Password(e) {
+      setPassword(e.target.value);
+    }
+
+    function authentication(e) {
+      e.preventDefault();
+      logIn(email, password)
+        .then(authenticated => {
+          if (authenticated) {
+            handleLogin();
+          }       
+        });
     }
 
     return (
@@ -15,9 +33,9 @@ export default function Login({ handleLogin, handleSignUp}) {
                 </h1>
             </section>
             <section className="border-2 border-hidden w-124 h-90 bg-white rounded-md">
-                <form onSubmit={authenticated} className="flex flex-col items-center m-12">
-                    <input type="text" placeholder="Enter Username..." className="w-100 h-12 pl-4 mb-12 rounded mb-3 border-black border-1 text-neutral-950"></input>
-                    <input type="password" placeholder="Enter Password..." className="w-100 h-12 pl-4 mb-12 rounded mb-3 border-black border-1 text-neutral-950"></input>
+                <form onSubmit={authentication} className="flex flex-col items-center m-12">
+                    <input type="text" placeholder="Enter Username..." value={email} onChange={Email} className="w-100 h-12 pl-4 mb-12 rounded mb-3 border-black border-1 text-neutral-950"></input>
+                    <input type="password" placeholder="Enter Password..." value={password} onChange={Password} className="w-100 h-12 pl-4 mb-12 rounded mb-3 border-black border-1 text-neutral-950"></input>
                     <input type="submit" value="Log in" className="login"></input>
                 </form>
             </section>
