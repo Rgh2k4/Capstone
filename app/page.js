@@ -9,11 +9,20 @@ export default function Home() {
   const [pageScreen, setPageScreen] = useState(<Login handleLogin={handleLogin} handleSignUp={handleSignUp}/>);
 
   function handleLogin() {
-    setPageScreen(<MainMenu />);
+    setPageScreen(<MainMenu onRouteToLogin={handleRouteToLogin} />);
   }
 
   function handleSignUp() {
-    setPageScreen(<SignupPage />);
+    setPageScreen(<SignupPage signUp={handleNewAccount} />);
+  }
+
+  function handleNewAccount() {
+    setPageScreen(<MainMenu onRouteToLogin={handleRouteToLogin} />);
+  }
+
+  
+  function handleRouteToLogin(params) {
+    setPageScreen(<Login handleLogin={handleLogin} handleSignUp={handleSignUp}/>);
   }
 
   return (
