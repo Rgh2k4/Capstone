@@ -3,7 +3,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import {getStorage} from "firebase/storage"
-import {getAuth, createUserWithEmailAndPassword} from "firebase/auth";
+import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth";
 
 
 // Your web app's Firebase configuration
@@ -18,6 +18,8 @@ const firebaseConfig = {
   appId: "1:230065401291:web:1c8c06b155824ba4cf5a4e",
   measurementId: "G-KW1YHK2ZL8"
 };
+
+
 
 // This code allows new users to sign up
 // It was made with help from https://firebase.google.com/docs/auth/web/start
@@ -38,16 +40,19 @@ export function signUp(email, password) {
 // This code allows existing users to log in
 // It was made with help from https://firebase.google.com/docs/auth/web/start
 export function logIn(email, password) {
-  signInWithEmailAndPassword(auth, email, password)
+  return signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Signed in
       const user = userCredential.user;
       console.log('User logged in:', user);
+      return true;
     })
     .catch((error) => {
+      alert("User does not exist or password is incorrect");
       const errorCode = error.code;
       const errorMessage = error.message;
       console.error('Error logging in:', errorCode, errorMessage);
+      return false;
     });
 }
 
