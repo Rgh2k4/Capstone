@@ -32,8 +32,8 @@ function ParkMap() {
           .map((f, idx) => ({
             //${} inserts the value of a variable/expression into the string
             id: f.id || `${datasetIndex}-${idx}`,
-            name: f.properties?.NAME || f.properties?.name || "Unnamed POI",
-            description: f.properties?.DESC || f.properties?.description || "No description",
+            name: f.properties?.Name_e || f.properties?.Nom_f || "Unnamed POI",
+            description: f.properties?.Description || f.properties?.description || "No description",
             location: {
               lat: parseFloat(f.geometry.coordinates[1]),
               lng: parseFloat(f.geometry.coordinates[0])
@@ -53,7 +53,7 @@ function ParkMap() {
 
   return (
     <div>
-      <div style={{width:'100%', height:'500px'}}>
+      <div style={{width:'100%', height:'700px'}}>
         <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
           <Map
           defaultCenter={{lat: 52.88660, lng: -118.10222}}
