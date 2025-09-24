@@ -5,7 +5,10 @@ import ParkDetails from "./park_details";
 import Upload from './upload.jsx';
 import Modal from "./components/Modal";
 import ProfileMenu from "./components/profile_menu";
-import ParkMap from "../backend/mapFunction";
+import dynamic from "next/dynamic";
+const ParkMap = dynamic(() =>  import("../backend/mapFunction"), {
+  ssr:false
+});
 
 export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
   const [overlay, setOverlay] = useState(false);
