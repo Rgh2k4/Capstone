@@ -1,16 +1,21 @@
 import { useState } from "react";
 
-function Edit({ account, onClose }) {
+function Edit({ account, onClose, onDeleteAccount }) {
   const [username, setUsername] = useState(account.username);
   const [password, setPassword] = useState(account.password);
   const [email, setEmail] = useState(account.email);
 
   function handleDelete() {
-    alert("Account Deleted!");
     onClose();
+    alert("Account Deleted!");
+    onDeleteAccount(account.id);
   }
 
   function handleEdit() {
+    if (!username.trim() || !password.trim() || !email.trim()) {
+      alert("All fields are required!");
+      return;
+    }
     alert("Account Edited!");
     onClose();
   }
@@ -26,21 +31,21 @@ function Edit({ account, onClose }) {
       <div className="flex flex-col space-y-6">
         <input
           value={username}
-          onChange={setUsername}
+          onChange={e => setUsername(e.target.value)}
           type="text"
           placeholder="Enter Username..."
           className="input"
         />
         <input
           value={password}
-          onChange={setPassword}
+          onChange={e => setPassword(e.target.value)}
           type="text"
           placeholder="Enter Password..."
           className="input"
         />
         <input
           value={email}
-          onChange={setEmail}
+          onChange={e => setEmail(e.target.value)}
           type="text"
           placeholder="Enter Email..."
           className="input"

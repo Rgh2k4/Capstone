@@ -1,6 +1,6 @@
 import ReviewSubmissions from "./review_submissions";
 
-function ReviewList({ setShowModal, sendUser }) {
+function ReviewList({ setShowModal, sendUser, reviews }) {
   const handleReview = (user) => {
     console.log("Data Recieved:");
     console.log(user);
@@ -14,7 +14,7 @@ function ReviewList({ setShowModal, sendUser }) {
         <p>Reviews</p>
       </div>
       <div className="rounded-b-lg p-4 overflow-y-auto">
-        <ReviewSubmissions handleReview={handleReview} />
+        <ReviewSubmissions handleReview={handleReview} reviews={reviews}/>
       </div>
     </section>
   );

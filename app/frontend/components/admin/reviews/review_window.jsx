@@ -1,4 +1,4 @@
-function ReviewWindow({ user, onClose }) {
+function ReviewWindow({ user, onClose, onDeleteReview }) {
   let photos = user.images;
   let hasImage = false;
 
@@ -8,6 +8,8 @@ function ReviewWindow({ user, onClose }) {
 
   function handleDelete() {
     onClose();
+    onDeleteReview(user.id);
+    alert("Review Deleted!");
   }
 
   function handleApprove() {

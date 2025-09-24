@@ -1,7 +1,6 @@
 import users from "../user_test_data.json";
 
-function ReviewSubmissions({ handleReview }) {
-  let reviews = users.reviews;
+function ReviewSubmissions({ handleReview, reviews }) {
 
   function handleData({ rev }) {
     console.log("Data:");
