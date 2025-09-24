@@ -1,7 +1,5 @@
-import data from "../user_test_data.json";
-
-export default function AdminList({ handleEdit }) {
-  let accounts = data.accounts.filter((acc) => acc.role !== "admin");
+export default function AdminList({ handleEdit, data }) {
+  let accounts = data.filter((acc) => acc.role !== "admin");
 
   function handleData({ admin }) {
     console.log("Data:");

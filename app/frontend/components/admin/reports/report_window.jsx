@@ -1,4 +1,4 @@
-function ReportWindow({ user, onClose }) {
+function ReportWindow({ user, onClose, onDeleteReport}) {
   let photos = user.images;
   let hasImage = false;
 
@@ -8,6 +8,8 @@ function ReportWindow({ user, onClose }) {
 
   function handleDelete() {
     onClose();
+    onDeleteReport(user.id);
+    alert("Report Deleted!");
   }
 
   function handleApprove() {

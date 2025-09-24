@@ -1,7 +1,5 @@
-import users from "../user_test_data.json";
 
-function ReportSubmissions({ handleReport }) {
-  let reports = users.reports;
+function ReportSubmissions({ handleReport, reports }) {
 
   function handleData({ rep }) {
     console.log("Data:");

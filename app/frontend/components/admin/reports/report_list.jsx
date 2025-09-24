@@ -1,6 +1,7 @@
 import ReportSubmissions from "./report_submissions";
 
-function ReportList({ setShowModal, sendUser }) {
+function ReportList({ setShowModal, sendUser, reports }) {
+
   const handleReport = (user) => {
     console.log("Data Recieved:");
     console.log(user);
@@ -14,7 +15,7 @@ function ReportList({ setShowModal, sendUser }) {
         <p>Reports</p>
       </div>
       <div className="rounded-b-lg p-4 overflow-y-auto">
-        <ReportSubmissions handleReport={handleReport} />
+        <ReportSubmissions handleReport={handleReport} reports={reports}/>
       </div>
     </section>
   );
