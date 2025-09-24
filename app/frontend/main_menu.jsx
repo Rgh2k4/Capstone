@@ -33,7 +33,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
 
                 </div>
             </header>  
-            <section>
+            <section className="h-[500px] w-full">
               <ParkMap />
             </section>
 
