@@ -27,14 +27,16 @@ function ParkMap() {
         const datasets = await Promise.all(responses.map(r => r.json()));
 
         const allPois = datasets.flatMap((data, datasetIndex) =>
-          data.features.map((f, idx) => ({
+          data.features
+          .filter(f => f.geometry?.coordinates?.length === 2)
+          .map((f, idx) => ({
             //${} inserts the value of a variable/expression into the string
             id: f.id || `${datasetIndex}-${idx}`,
             name: f.properties?.NAME || f.properties?.name || "Unnamed POI",
             description: f.properties?.DESC || f.properties?.description || "No description",
             location: {
-              lat: f.geometry.coordinates[1],
-              lng: f.geometry.coordinates[0]
+              lat: parseFloat(f.geometry.coordinates[1]),
+              lng: parseFloat(f.geometry.coordinates[0])
             },
             reviews: []
           }))
@@ -58,7 +60,9 @@ function ParkMap() {
           defaultZoom={10}
           mapId='456dc2bedf64a06c67cc63ea'>
 
-            {pois.map(poi => (
+            {pois
+              .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
+              .map(poi => (
               <AdvancedMarker
               key={poi.id}
               position={poi.location}
