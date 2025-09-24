@@ -1,12 +1,12 @@
 import React from 'react'
 
-function SettingsMenu( {onRouteToLogin} ) {
+function SettingsMenu( {onRouteToLogin, onChangeCredential} ) {
 
     function handleChangeEmail() {
-        
+        onChangeCredential('email');
     }
     function handleChangePassword() {
-        
+        onChangeCredential('password');
     }
     function handleContact() {
         
@@ -17,9 +17,9 @@ function SettingsMenu( {onRouteToLogin} ) {
 
 
   return (
-    <div className=' flex flex-col space-y-6 w-full'>
-        <div>
-            <h1>Settings</h1>
+    <div className=' flex flex-col justify-center items-center space-y-6 p-32'>
+        <div className=' mb-12'>
+            <h1 className=' text-5xl font-bold'>Settings</h1>
         </div>
         <div>
             <button onClick={handleChangeEmail}>Change Email</button>
