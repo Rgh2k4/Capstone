@@ -7,7 +7,7 @@ import Modal from "./components/Modal";
 import ProfileMenu from "./components/profile_menu";
 import ParkMap from "../backend/mapFunction";
 
-export default function MainMenu( { onRouteToLogin } ) {
+export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
   const [overlay, setOverlay] = useState(false);
   const [upload, setUpload] = useState(false);
 
@@ -27,7 +27,8 @@ export default function MainMenu( { onRouteToLogin } ) {
                     National Parks Information System
                 </h1>
                 <input type="text" value="Search..." readOnly className="w-3xl pl-6 h-15 rounded-full text-neutral-950 bg-white border-2 border-gray-400"></input>
-                <div className="mr-24">
+                <div className=" flex flex-row mr-24">
+                  <button onClick={onRouteToDashboard}>Dashboard</button>
                   <ProfileMenu onRouteToLogin={onRouteToLogin} />
 
                 </div>
