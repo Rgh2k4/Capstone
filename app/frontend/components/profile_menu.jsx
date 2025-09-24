@@ -4,13 +4,30 @@ import { useState } from "react";
 import ProfileWindow from "./profile/profile_window";
 import SettingsMenu from "./profile/settings_menu";
 import Modal from "./Modal";
+import ChangeCredential from "./profile/change_password";
 
 export default function ProfileMenu( { onRouteToLogin } ) {
 
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
+  const [showModal3, setShowModal3] = useState(false);
+  const [credentialType, setCredentialType] = useState('');
   
+  function handleChangeCredential(type) {
+    setCredentialType(type);
+    //onsole.log(type);
+    
+    setShowModal2(false);
+    //console.log(showModal2);
+    
+    setShowModal3(true);
+  }
 
+  
+  function handleSubmitCredential(value) {    
+    setShowModal3(false);
+  }
+  
   return (
     <details className="relative">
       <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
@@ -31,7 +48,10 @@ export default function ProfileMenu( { onRouteToLogin } ) {
         <ProfileWindow />
       </Modal>
       <Modal isVisible={showModal2} onClose={() => setShowModal2(false)}>
-        <SettingsMenu onRouteToLogin={onRouteToLogin}/>
+        <SettingsMenu onRouteToLogin={onRouteToLogin} onChangeCredential={handleChangeCredential}/>
+      </Modal>
+      <Modal isVisible={showModal3} onClose={() => setShowModal3(false)}>
+        <ChangeCredential type={credentialType} onSubmit={handleSubmitCredential}/>
       </Modal>
     </details>
   );
