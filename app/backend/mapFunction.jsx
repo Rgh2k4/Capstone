@@ -53,7 +53,7 @@ function ParkMap() {
 
   return (
     <div>
-      <div style={{width:'100%', height:'100%'}}>
+      <div style={{width:'100%', height:'500px'}}>
         <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
           <Map
           defaultCenter={{lat: 52.88660, lng: -118.10222}}
