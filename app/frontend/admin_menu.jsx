@@ -8,6 +8,7 @@ import AccountList from "./components/admin/accounts/account_list";
 import Add from "./components/admin/accounts/add_window";
 import Edit from "./components/admin/accounts/edit_window";
 import users from "./components/admin/user_test_data.json";
+import { Button } from "@mantine/core";
 
 function AdminMenu() {
   const [showModal, setShowModal] = useState(false);
@@ -45,77 +46,124 @@ function AdminMenu() {
   
 
   return (
-    <div className="flex flex-row" >
-      <div className=" flex flex-col h-screen w-1/3 bg-gray-500 p-6">
-        <h1 className="text-4xl break-normal font-bold text-white text-shadow-lg text-shadow-black text-center">
-          National Parks Information System
-        </h1>
-        <nav className=" flex flex-col mt-4 p-6 space-y-6">
+  <div className="flex h-screen w-screen">
+    <aside className="w-1/8 bg-white shadow-md shadow-gray-600 text-black flex flex-col p-6">
+      <h1 className="text-2xl font-bold mb-8 text-center">
+        National Parks Info System
+      </h1>
+      <nav className="flex flex-col space-y-3">
+        {["Dashboard", "Reviews", "Reports", "Accounts"].map((page) => (
           <button
-            onClick={() => setPageName("Dashboard")}
-            className="admin-nav"
+            key={page}
+            onClick={() => setPageName(page)}
+            className={`px-4 py-2 rounded-lg text-left font-medium transition-colors
+              ${pageName === page
+                ? "bg-blue-500 text-white"
+                : "hover:bg-gray-700 hover:text-blue-400"}
+            `}
           >
-            Dashboard
+            {page}
           </button>
-          <button onClick={() => setPageName("Reviews")} className="admin-nav">
-            Reviews
-          </button>
-          <button onClick={() => setPageName("Reports")} className="admin-nav">
-            Reports
-          </button>
-          <button onClick={() => setPageName("Accounts")} className="admin-nav">
-            Accounts
-          </button>
-        </nav>
-      </div>
-      <section className=" flex flex-col justify-center h-screen w-screen p-12 space-y-24 ">
-        <h1 className="text-4xl break-normal font-bold text-white text-shadow-lg text-shadow-black text-center mb-12">
-          {pageName} {/* Placeholder for a header */}
-        </h1>
-        <div>
-          {pageName !== "Dashboard" ? null : (
-            <div className="flex flex-row space-x-4">
-              <ReviewList setShowModal={setShowModal} sendUser={setUser} reviews={db.reviews} />
-              <ReportList setShowModal={setShowModal2} sendUser={setUser} reports={db.reports} />
+        ))}
+      </nav>
+    </aside>
+    <main className="flex-1 p-10 overflow-y-auto">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">{pageName}</h1>
+      {pageName === "Dashboard" && (
+        <div className="grid grid-cols-2 gap-6">
+          <div className="bg-white shadow-md rounded-xl p-6">
+            <div className=" flex flex-row justify-between">
+              <h2 className="text-xl font-semibold mb-4">Recent Reviews</h2>
+              <Button on onClick={() => setPageName("Reviews")}>View More</Button>
             </div>
-          )}
-          {pageName !== "Reviews" ? null : (
-            <div className="max-w-full max-h-screen">
-              <ReviewList setShowModal={setShowModal} sendUser={setUser} reviews={db.reviews} />
+            <ReviewList
+              setShowModal={setShowModal}
+              sendUser={setUser}
+              reviews={db.reviews}
+            />
+          </div>
+          <div className="bg-white shadow-md rounded-xl p-6">
+            <div className=" flex flex-row justify-between">
+              <h2 className="text-xl font-semibold mb-4">Recent Reports</h2>
+              <Button on onClick={() => setPageName("Reports")}>View More</Button>
             </div>
-          )}
-          {pageName !== "Reports" ? null : (
-            <div className="max-w-full max-h-screen">
-              <ReportList setShowModal={setShowModal2} sendUser={setUser} reports={db.reports} />
-            </div>
-          )}
-          {pageName !== "Accounts" ? null : (
-            <div className="max-w-full max-h-screen">
-              <AccountList
-                setShowModalEdit={setShowModalEdit}
-                setShowModalAdd={setShowModalAdd}
-                setRole={setRole}
-                sendUser={setUser}
-                accounts={db.accounts}
-              />
-            </div>
-          )}
+            <ReportList
+              setShowModal={setShowModal2}
+              sendUser={setUser}
+              reports={db.reports}
+            />
+          </div>
         </div>
-      </section>
-      <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
-        <ReviewWindow onClose={() => setShowModal(false)} user={user} onDeleteReview={handleDeleteReview} />
-      </Modal>
-      <Modal isVisible={showModal2} onClose={() => setShowModal2(false)}>
-        <ReportWindow onClose={() => setShowModal2(false)} user={user} onDeleteReport={handleDeleteReport} />
-      </Modal>
-      <Modal isVisible={showModalEdit} onClose={() => setShowModalEdit(false)}>
-        <Edit onClose={() => setShowModalEdit(false)} account={user} onDeleteAccount={handleDeleteAccount} />
-      </Modal>
-      <Modal isVisible={showModalAdd} onClose={() => setShowModalAdd(false)}>
-        <Add onClose={() => setShowModalAdd(false)} role={role} onAddAccount={handleAddAccount} setRole={setRole}/>
-      </Modal>
-    </div>
-  );
+      )}
+
+      {pageName === "Reviews" && (
+        <div className="bg-white shadow-md rounded-xl p-6">
+          <ReviewList
+            setShowModal={setShowModal}
+            sendUser={setUser}
+            reviews={db.reviews}
+          />
+        </div>
+      )}
+
+      {pageName === "Reports" && (
+        <div className="bg-white shadow-md rounded-xl p-6">
+          <ReportList
+            setShowModal={setShowModal2}
+            sendUser={setUser}
+            reports={db.reports}
+          />
+        </div>
+      )}
+
+      {pageName === "Accounts" && (
+        <div className="bg-white shadow-md rounded-xl p-6">
+          <AccountList
+            setShowModalEdit={setShowModalEdit}
+            setShowModalAdd={setShowModalAdd}
+            setRole={setRole}
+            sendUser={setUser}
+            accounts={db.accounts}
+          />
+        </div>
+      )}
+    </main>
+
+    <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
+      <ReviewWindow
+        onClose={() => setShowModal(false)}
+        user={user}
+        onDeleteReview={handleDeleteReview}
+      />
+    </Modal>
+
+    <Modal isVisible={showModal2} onClose={() => setShowModal2(false)}>
+      <ReportWindow
+        onClose={() => setShowModal2(false)}
+        user={user}
+        onDeleteReport={handleDeleteReport}
+      />
+    </Modal>
+
+    <Modal isVisible={showModalEdit} onClose={() => setShowModalEdit(false)}>
+      <Edit
+        onClose={() => setShowModalEdit(false)}
+        account={user}
+        onDeleteAccount={handleDeleteAccount}
+      />
+    </Modal>
+
+    <Modal isVisible={showModalAdd} onClose={() => setShowModalAdd(false)}>
+      <Add
+        onClose={() => setShowModalAdd(false)}
+        role={role}
+        onAddAccount={handleAddAccount}
+        setRole={setRole}
+      />
+    </Modal>
+  </div>
+);
+
 }
 
 export default AdminMenu;

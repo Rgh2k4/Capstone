@@ -3,7 +3,7 @@
 import React, {useState, useEffect} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 
-function ParkMap() {
+function ParkMap({viewParkDetails}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -53,7 +53,7 @@ function ParkMap() {
 
   return (
     <div>
-      <div style={{width:'100%', height:'700px'}}>
+      <div style={{width:'100%', height:'720px'}}>
         <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
           <Map
           defaultCenter={{lat: 52.88660, lng: -118.10222}}
@@ -66,39 +66,12 @@ function ParkMap() {
               <AdvancedMarker
               key={poi.id}
               position={poi.location}
-              onClick={() => setSelectedPOI(poi)}
+              onClick={() => viewParkDetails(poi)}
             />
           ))}
         </Map>
       </APIProvider>
     </div>
-    {/*Sidepanel info*/}
-    <div
-    style={{
-      width: '300px',
-      background: '#f0f0f0',
-      padding: '16px',
-      overflowY: 'auto',
-    }}>
-      {selectedPOI ? (
-          <>
-            <h2>{selectedPOI.name}</h2>
-            <p>{selectedPOI.description}</p>
-            <h3>Reviews</h3>
-            {selectedPOI.reviews?.length > 0 ? (
-              <ul>
-                {selectedPOI.reviews.map((review, index) => (
-                  <li key={index}>{review}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No reviews yet</p>
-            )}
-          </>
-        ) : (
-          <p>Click a marker to see details</p>
-        )}
-      </div>
     </div>
   );
 }

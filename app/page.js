@@ -4,12 +4,21 @@ import Login from './frontend/login.jsx';
 import MainMenu from './frontend/main_menu.jsx';
 import SignupPage from './frontend/signup.jsx';
 import AdminMenu from './frontend/admin_menu.jsx';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-export default function Home() {
+
+export default function Home({ initialzeUser }) {
 
   const [pageScreen, setPageScreen] = useState(<Login handleLogin={handleLogin} handleSignUp={handleSignUp}/>);
+  
+  async function initialzeUser(auth) {
+    const user = auth.currentUser;
+  }
+
+
 
   function handleLogin() {
+    
     setPageScreen(<MainMenu onRouteToLogin={handleRouteToLogin} onRouteToDashboard={handleRouteToDashboard}/>);
   }
 
@@ -31,7 +40,7 @@ export default function Home() {
   }
 
   return (
-    <div>
+    <div className='h-screen'>
       {pageScreen}
     </div>
   );

@@ -1,26 +1,30 @@
 "use client";
-
+import { Button } from '@mantine/core';
 import { useState } from "react";
-import ParkDetails from "./park_details";
-import Upload from './upload.jsx';
-import Modal from "./components/Modal";
+import ParkDetails from "./components/park_window/park_details";
 import ProfileMenu from "./components/profile_menu";
 import dynamic from "next/dynamic";
+import UploadWindow from './components/park_window/upload_window.jsx';
+import Modal from './components/Modal';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 const ParkMap = dynamic(() =>  import("../backend/mapFunction"), {
   ssr:false
 });
 
 export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
+  
   const [overlay, setOverlay] = useState(false);
-  const [upload, setUpload] = useState(false);
+  const [uploadOpened, setUploadOpened] = useState(false);
+  const [selectedPark, setSetselectedPark] = useState()
 
-  function handleOpenOverlay() {
+  function viewParkDetails({park}) {
+    setSetselectedPark({park})
     setOverlay(true);
   }
 
   function handleOpenUpload() {
     setOverlay(false);
-    setUpload(true);
+    setUploadOpened(true);
   }
 
     return (
@@ -30,22 +34,29 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
                     National Parks Information System
                 </h1>
                 <input type="text" value="Search..." readOnly className="w-3xl pl-6 h-15 rounded-full text-neutral-950 bg-white border-2 border-gray-400"></input>
-                <div className=" flex flex-row mr-24">
-                  <button onClick={onRouteToDashboard}>Dashboard</button>
-                  <ProfileMenu onRouteToLogin={onRouteToLogin} />
+                <div className=" flex flex-row mr-24 space-x-8">
+                  {user ? (
+                    <>
+                      <Button size='lg' onClick={onRouteToDashboard}>Dashboard</Button>
+                      <ProfileMenu onRouteToLogin={onRouteToLogin} user={user}/>
+                    </>
+                    ) : (
+                      <Button size='lg' onClick={onRouteToLogin}>Log in</Button>
+                    )
+                  }
 
                 </div>
             </header>  
-            <section className="h-[500px] w-full">
-              <ParkMap />
+            <section className="h-screen w-full">
+              
+              <ParkMap viewParkDetails={viewParkDetails} />
+              <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
+                <ParkDetails park={selectedPark} openButtonUpload={handleOpenUpload}/>
+              </Modal>
+              <Modal isVisible={uploadOpened} onClose={() => setOverlay(false)} >
+                <UploadWindow onClose={() => setUploadOpened(false)} />
+              </Modal>
             </section>
-
-          {/*<Modal isVisible={overlay} onClose={() => setOverlay(false)}>
-                <ParkDetails openButtonUpload={handleOpenUpload} />
-            </Modal>
-            <Modal isVisible={upload} onClose={() => setUpload(false)}>
-                <Upload />
-            </Modal>*/}
         </main>
     );
 
