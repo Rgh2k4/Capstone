@@ -15,8 +15,12 @@ Steps to use:
 
 */
 
+import { Transition } from "@mantine/core";
+
 const Modal = ({ isVisible, onClose, children }) => {
   if (!isVisible) return null;
+
+  let content = children;
 
   const handleClose = (e) => {
     // If clicked outside of the window.
@@ -29,17 +33,32 @@ const Modal = ({ isVisible, onClose, children }) => {
       id="wrapper"
       onClick={() => handleClose(event)}
     >
-      <div className=" max-w-1/2 max-h-screen overflow-y-scroll">
-        <div className=" bg-white p-2 rounded">
-          <div className="absolute left-2/3">
-            <button className="modal-close" onClick={() => onClose()}>
-              X
-            </button>
-          </div>
-          <div>{children}</div>
-        </div>
+      <div className=" flex justify-center w-full p-12">
+        <Transition
+          mounted={isVisible}
+          transition="slide-up"
+          duration={400}
+          timingFunction="ease"
+        >
+          {(styles) => (
+            <div
+              style={styles}
+              className="max-w-1/2 max-h-screen overflow-y-scroll"
+            >
+              <div className="bg-white p-2 rounded relative">
+                <div className="absolute left-4/5">
+                  <button className="modal-close" onClick={onClose}>
+                    X
+                  </button>
+                </div>
+                {content}
+              </div>
+            </div>
+          )}
+        </Transition>
       </div>
-    </div>
+
+      </div>
   );
 };
 
