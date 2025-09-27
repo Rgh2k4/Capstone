@@ -31,7 +31,7 @@ export default function SignupPage( {handleNewAccount} ) {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-sky-100 to-sky-500 flex flex-col items-center">
+    <main className="min-h-screen bg-gradient-to-b from-sky-300  to-sky-700  flex flex-col items-center">
       <h1 className="mt-10 text-6xl md:text-8xl font-extrabold text-white drop-shadow-lg">Sign up</h1>
 
       <section className="mt-10 w-full max-w-5xl rounded-2xl bg-white p-8 shadow-lg">
