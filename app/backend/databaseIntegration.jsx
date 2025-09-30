@@ -29,6 +29,7 @@ export function signUp(email, password) {
       // Signed in
       const user = userCredential.user;
       console.log('User signed up:', user);
+      return true;
     })
     .catch((error) => {
       const errorCode = error.code;
