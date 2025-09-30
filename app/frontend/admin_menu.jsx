@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReviewList from "./components/admin/reviews/review_list";
 import Modal from "./components/Modal";
 import ReviewWindow from "./components/admin/reviews/review_window";
@@ -9,17 +9,24 @@ import Add from "./components/admin/accounts/add_window";
 import Edit from "./components/admin/accounts/edit_window";
 import users from "./components/admin/user_test_data.json";
 import { Button } from "@mantine/core";
+import { auth } from "../backend/databaseIntegration.jsx";
+import ProfileMenu from "./components/profile/profile_menu";
 
-function AdminMenu() {
+function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
   const [showModalEdit, setShowModalEdit] = useState(false);
   const [showModalAdd, setShowModalAdd] = useState(false);
   const [role, setRole] = useState("");
-  const [user, setUser] = useState();
+  const [account, setAccount] = useState();
   const [pageName, setPageName] = useState("Dashboard"); // Dyanmically change the page based on the button clicked.
   const [db, setDb] = useState(users);
   const [idCounter, setIdCounter] = useState(db.accounts.length + 1);
+
+  const user = auth.currentUser;
+
+  const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
+  const isAdmin = user && adminEmails.includes(user.email);
 
 
   function handleDeleteAccount(id) {
@@ -44,6 +51,15 @@ function AdminMenu() {
     accounts: [...db.accounts, account]}));
   }
   
+  useEffect(() => {
+    if (!user) {
+      onRouteToLogin();
+      return;
+    }
+    if (!isAdmin) {
+      onRouteToMainMenu();
+    }
+  }, [user, isAdmin, onRouteToLogin, onRouteToMainMenu]);
 
   return (
   <div className="flex h-screen w-screen">
@@ -53,86 +69,97 @@ function AdminMenu() {
       </h1>
       <nav className="flex flex-col space-y-3">
         {["Dashboard", "Reviews", "Reports", "Accounts"].map((page) => (
+        <>
           <button
-            key={page}
-            onClick={() => setPageName(page)}
-            className={`px-4 py-2 rounded-lg text-left font-medium transition-colors
-              ${pageName === page
-                ? "bg-blue-500 text-white"
-                : "hover:bg-gray-700 hover:text-blue-400"}
-            `}
-          >
+          key={page}
+          onClick={() => setPageName(page)}
+          className={`px-4 py-2 rounded-lg text-left font-medium transition-colors
+            ${pageName === page
+              ? "bg-blue-500 text-white"
+              : "hover:bg-gray-700 hover:text-blue-400"}
+              `}
+              >
             {page}
           </button>
+        </>
         ))}
       </nav>
     </aside>
-    <main className="flex-1 p-10 overflow-y-auto">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">{pageName}</h1>
-      {pageName === "Dashboard" && (
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-white shadow-md rounded-xl p-6">
-            <div className=" flex flex-row justify-between">
-              <h2 className="text-xl font-semibold mb-4">Recent Reviews</h2>
-              <Button on onClick={() => setPageName("Reviews")}>View More</Button>
+
+    {isAdmin && (
+      <main className="flex-1 p-10 overflow-y-auto">
+        <div className="grid grid-cols-2 mb-20">
+          <h1 className="text-4xl font-bold text-gray-800">{pageName}</h1>
+          <div className=" flex flex-row justify-end space-x-8">
+            {user && <Button size='lg' onClick={onRouteToMainMenu}>Main Menu</Button>}
+            <ProfileMenu onRouteToLogin={onRouteToLogin}/>
+          </div>
+        </div>
+        {pageName === "Dashboard" && (
+          <div className="grid grid-cols-2 gap-6">
+            <div className="bg-white shadow-md rounded-xl p-6">
+              <div className=" flex flex-row justify-between">
+                <h2 className="text-xl font-semibold mb-4">Recent Reviews</h2>
+                <Button on onClick={() => setPageName("Reviews")}>View More</Button>
+              </div>
+              <ReviewList
+                setShowModal={setShowModal}
+                sendUser={setAccount}
+                reviews={db.reviews}
+              />
             </div>
+            <div className="bg-white shadow-md rounded-xl p-6">
+              <div className=" flex flex-row justify-between">
+                <h2 className="text-xl font-semibold mb-4">Recent Reports</h2>
+                <Button on onClick={() => setPageName("Reports")}>View More</Button>
+              </div>
+              <ReportList
+                setShowModal={setShowModal2}
+                sendUser={setAccount}
+                reports={db.reports}
+              />
+            </div>
+          </div>
+        )}
+
+        {pageName === "Reviews" && (
+          <div className="bg-white shadow-md rounded-xl p-6">
             <ReviewList
               setShowModal={setShowModal}
-              sendUser={setUser}
+              sendUser={setAccount}
               reviews={db.reviews}
             />
           </div>
+        )}
+
+        {pageName === "Reports" && (
           <div className="bg-white shadow-md rounded-xl p-6">
-            <div className=" flex flex-row justify-between">
-              <h2 className="text-xl font-semibold mb-4">Recent Reports</h2>
-              <Button on onClick={() => setPageName("Reports")}>View More</Button>
-            </div>
             <ReportList
               setShowModal={setShowModal2}
-              sendUser={setUser}
+              sendUser={setAccount}
               reports={db.reports}
             />
           </div>
-        </div>
-      )}
+        )}
 
-      {pageName === "Reviews" && (
-        <div className="bg-white shadow-md rounded-xl p-6">
-          <ReviewList
-            setShowModal={setShowModal}
-            sendUser={setUser}
-            reviews={db.reviews}
-          />
-        </div>
-      )}
-
-      {pageName === "Reports" && (
-        <div className="bg-white shadow-md rounded-xl p-6">
-          <ReportList
-            setShowModal={setShowModal2}
-            sendUser={setUser}
-            reports={db.reports}
-          />
-        </div>
-      )}
-
-      {pageName === "Accounts" && (
-        <div className="bg-white shadow-md rounded-xl p-6">
-          <AccountList
-            setShowModalEdit={setShowModalEdit}
-            setShowModalAdd={setShowModalAdd}
-            setRole={setRole}
-            sendUser={setUser}
-            accounts={db.accounts}
-          />
-        </div>
-      )}
-    </main>
+        {pageName === "Accounts" && (
+          <div className="bg-white shadow-md rounded-xl p-6">
+            <AccountList
+              setShowModalEdit={setShowModalEdit}
+              setShowModalAdd={setShowModalAdd}
+              setRole={setRole}
+              sendUser={setAccount}
+              accounts={db.accounts}
+            />
+          </div>
+        )}
+      </main>
+    )}
 
     <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
       <ReviewWindow
         onClose={() => setShowModal(false)}
-        user={user}
+        user={account}
         onDeleteReview={handleDeleteReview}
       />
     </Modal>
@@ -140,7 +167,7 @@ function AdminMenu() {
     <Modal isVisible={showModal2} onClose={() => setShowModal2(false)}>
       <ReportWindow
         onClose={() => setShowModal2(false)}
-        user={user}
+        user={account}
         onDeleteReport={handleDeleteReport}
       />
     </Modal>
@@ -148,7 +175,7 @@ function AdminMenu() {
     <Modal isVisible={showModalEdit} onClose={() => setShowModalEdit(false)}>
       <Edit
         onClose={() => setShowModalEdit(false)}
-        account={user}
+        account={account}
         onDeleteAccount={handleDeleteAccount}
       />
     </Modal>
@@ -162,8 +189,7 @@ function AdminMenu() {
       />
     </Modal>
   </div>
-);
-
+  );
 }
 
 export default AdminMenu;
