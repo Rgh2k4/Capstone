@@ -11,7 +11,7 @@ function ParkMap({viewParkDetails}) {
 
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
   //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
-  useEffect(() => {
+  /*useEffect(() => {
     async function loadData() {
       const urls = [
         //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
@@ -20,6 +20,13 @@ function ParkMap({viewParkDetails}) {
         "https://opendata.arcgis.com/datasets/28b55decfac848c782819b1706e58aa1_0.geojson",
         "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
         "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
+      ];
+      */
+  useEffect(() => {
+    async function loadData() {
+      const urls = [
+        //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
+        "https://opendata.arcgis.com/datasets/dff0acc0f20c4666a253860f6444bb43_0.geojson"
       ];
 
       try {
@@ -53,7 +60,7 @@ function ParkMap({viewParkDetails}) {
 
   return (
     <div>
-      <div style={{width:'100%', height:'720px'}}>
+      <div className="h-screen w-screen overflow-y-hidden overflow-x-hidden">
         <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
           <Map
           defaultCenter={{lat: 52.88660, lng: -118.10222}}
