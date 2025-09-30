@@ -11,6 +11,7 @@ export default function Login({ handleLogin, handleSignUp }) {
   const [visible, { toggle }] = useDisclosure(false);
   const [submited, setSubmitted] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const icon = <IconInfoCircle />;
 
   function authentication(e) {
@@ -21,9 +22,9 @@ export default function Login({ handleLogin, handleSignUp }) {
         handleLogin();
       }
       else {
+      setErrorMessage("User does not exist or password is incorrect.");
       setSubmitted(false);
       setShowError(true);
-      setSubmitted(false);
       }
     });
   }
@@ -40,7 +41,7 @@ export default function Login({ handleLogin, handleSignUp }) {
           onSubmit={authentication}
           className="flex flex-col items-center m-12 space-y-8"
         >
-          <Input.Wrapper className="w-full" label="Enter Email">
+          <Input.Wrapper className="w-full" size="md" label="Enter Email">
             <Input
               disabled={submited}
               size="md"
@@ -93,17 +94,17 @@ export default function Login({ handleLogin, handleSignUp }) {
         </form>
       </section>
       <div className=" flex justify-end items-center mt-10">
-          {showError && (<Alert
-            variant="filled"
-            color="red"
-            withCloseButton
-            title="Login failed"
-            icon={icon}
-            onClick={() => setShowError(false)}
-          >
-            User does not exist or password is incorrect.
-          </Alert>)}
-        </div>
+        {showError && (<Alert
+          variant="filled"
+          color="red"
+          withCloseButton
+          title="Login failed"
+          icon={icon}
+          onClick={() => setShowError(false)}
+        >
+          {errorMessage}
+        </Alert>)}
+      </div>
     </main>
   );
 }
