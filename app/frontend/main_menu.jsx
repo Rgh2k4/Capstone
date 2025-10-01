@@ -80,8 +80,6 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
                 </div>
             </header>  
             <section className="h-screen w-full">
-              
-              <ParkMap viewParkDetails={viewParkDetails} />
               <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
                 <ParkDetails park={selectedPark} openButtonUpload={handleOpenUpload}/>
               </Modal>
@@ -106,8 +104,8 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
               </div>
               
               <section className="h-[700px] w-full">
-                <ParkMap filters={selectedFilters} setUniqueTypes={setUniqueTypes}/>
-                </section>
+                <ParkMap filters={selectedFilters} setUniqueTypes={setUniqueTypes} viewParkDetails={viewParkDetails} />
+              </section>
         </main>
     );  
   }
