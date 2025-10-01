@@ -20,20 +20,22 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
   const [overlay, setOverlay] = useState(false);
   const [uploadOpened, setUploadOpened] = useState(false);
   const [selectedPark, setSetselectedPark] = useState()
+  const user = auth.currentUser;
+  const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
+  const isAdmin = user && adminEmails.includes(user.email);
+  
+  const [upload, setUpload] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState([]);
+  const [uniqueTypes, setUniqueTypes] = useState({
+    Accommodation_Type: [],
+    Principal_type: [],
+    Facility_Type_Installation: [],
+    TrailDistance:[],
+  });
   
   function viewParkDetails({park}) {
     setSetselectedPark({park})
-    const [upload, setUpload] = useState(false);
-    const [selectedFilters, setSelectedFilters] = useState([]);
-    const [uniqueTypes, setUniqueTypes] = useState({
-      Accommodation_Type: [],
-      Principal_type: [],
-      Facility_Type_Installation: [],
-      TrailDistance:[],
-    });
-    const user = auth.currentUser;
-    const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
-    const isAdmin = user && adminEmails.includes(user.email);
+  }
 
   function handleOpenOverlay() {
     setOverlay(true);
@@ -108,5 +110,4 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
               </section>
         </main>
     );  
-  }
 }
