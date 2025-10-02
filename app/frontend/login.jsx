@@ -19,8 +19,8 @@ export default function Login({ handleLogin, handleSignUp }) {
       e.preventDefault();
       logIn(email, password)
         .then(authenticated => {
-          if (authenticated) {
-            handleLogin();
+          if (authenticated[0]) {
+            handleLogin(authenticated[1]); //pass the user info as an argument
           }       
         });
     }

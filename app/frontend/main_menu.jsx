@@ -10,7 +10,7 @@ const ParkMap = dynamic(() =>  import("../backend/mapFunction"), {
   ssr:false
 });
 
-export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
+export default function MainMenu( { onRouteToLogin, onRouteToDashboard, user } ) {
   const [overlay, setOverlay] = useState(false);
   const [upload, setUpload] = useState(false);
 

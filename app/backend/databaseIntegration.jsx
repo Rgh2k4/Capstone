@@ -3,6 +3,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import {getStorage} from "firebase/storage"
+import { getFirestore } from "firebase/firestore";
 import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth";
 
 
@@ -45,7 +46,7 @@ export function logIn(email, password) {
       // Signed in
       const user = userCredential.user;
       console.log('User logged in:', user);
-      return true;
+      return [true, user];
     })
     .catch((error) => {
       alert("User does not exist or password is incorrect");
@@ -62,3 +63,4 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+export const database = getFirestore(app);

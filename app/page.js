@@ -9,8 +9,8 @@ export default function Home() {
 
   const [pageScreen, setPageScreen] = useState(<Login handleLogin={handleLogin} handleSignUp={handleSignUp}/>);
 
-  function handleLogin() {
-    setPageScreen(<MainMenu onRouteToLogin={handleRouteToLogin} onRouteToDashboard={handleRouteToDashboard}/>);
+  function handleLogin(user) {
+    setPageScreen(<MainMenu onRouteToLogin={handleRouteToLogin} onRouteToDashboard={handleRouteToDashboard} user={user}/>);
   }
 
   function handleSignUp() {
