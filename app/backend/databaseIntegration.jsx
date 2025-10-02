@@ -47,7 +47,7 @@ export function logIn(email, password) {
       // Signed in
       const user = userCredential.user;
       console.log('User logged in:', user);
-      return [true, user];
+      return true;
     })
     .catch((error) => {
       //alert("User does not exist or password is incorrect");
