@@ -1,58 +1,110 @@
 "use client";
 import { useState } from "react";
-import { logIn } from '../backend/databaseIntegration.jsx'
+import { logIn } from "../backend/databaseIntegration.jsx";
+import { Alert, Button, Input, PasswordInput } from "@mantine/core";
+import { IconAt, IconInfoCircle } from "@tabler/icons-react";
+import { useDisclosure } from "@mantine/hooks";
 
 export default function Login({ handleLogin, handleSignUp }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [visible, { toggle }] = useDisclosure(false);
+  const [submited, setSubmitted] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const icon = <IconInfoCircle />;
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+  function authentication(e) {
+    setSubmitted(true);
+    e.preventDefault();
+    logIn(email, password).then((authenticated) => {
+      if (authenticated) {
+        handleLogin(); 
+      }
+      else {
+      setErrorMessage("User does not exist or password is incorrect.");
+      setSubmitted(false);
+      setShowError(true);
+      }
+    });
+  }
 
-    function Email(e) {
-      setEmail(e.target.value);
-    }
-
-    function Password(e) {
-      setPassword(e.target.value);
-    }
-
-    function authentication(e) {
-      e.preventDefault();
-      logIn(email, password)
-        .then(authenticated => {
-          if (authenticated[0]) {
-            handleLogin(authenticated[1]); //pass the user info as an argument
-          }       
-        });
-    }
-
-    return (
-        <main className="flex flex-col items-center bg-sky-300 h-screen w-screen">
-            <section className="w-256 m-16 flex-initial">
-                <h1 className="text-8xl break-normal font-bold text-white text-shadow-lg text-shadow-black text-center">
-                    National Parks Information System
-                </h1>
-            </section>
-            <section className="border-2 border-hidden w-124 h-90 bg-white rounded-md">
-                <form onSubmit={authentication} className="flex flex-col items-center m-12">
-                    <input type="text" placeholder="Enter Email..." value={email} onChange={Email} className="w-100 h-12 pl-4 mb-12 rounded mb-3 border-black border-1 text-neutral-950"></input>
-                    <input type="password" placeholder="Enter Password..." value={password} onChange={Password} className="w-100 h-12 pl-4 mb-12 rounded mb-3 border-black border-1 text-neutral-950"></input>
-                    <input type="submit" value="Log in" className="login"></input>
-                </form>
-            </section>
-             <section className="mt-6 flex flex-col items-center gap-4">
-
-        <button onClick={handleSignUp} className="mx-auto block w-[360px] rounded-lg bg-gray-300 px-6 py-4 text-2xl font-semibold text-black shadow hover:bg-gray-200">
-          Sign up
-        </button>
-
-        <button
-          type="button"
-          onClick={handleLogin}
-          className="mx-auto block w-[360px] rounded-lg bg-white px-6 py-4 text-2xl font-semibold text-black shadow hover:bg-gray-50"
-        >
-          Continue as guest
-        </button>
+  return (
+    <main className="flex flex-col items-center bg-gradient-to-b from-sky-300  to-sky-700 h-screen w-screen">
+      <section className="w-256 m-16 flex-initial">
+        <h1 className="text-8xl break-normal font-bold text-gray-200 text-shadow-lg text-shadow-black text-center">
+          National Parks Information System
+        </h1>
       </section>
-        </main>
-    );
+      <section className="border-2 border-hidden w-124 h-1/2 bg-white rounded-md drop-shadow-2xl drop-shadow-blue-400">
+        <form
+          onSubmit={authentication}
+          className="flex flex-col items-center m-12 space-y-8"
+        >
+          <Input.Wrapper className="w-full" size="md" label="Enter Email">
+            <Input
+              disabled={submited}
+              size="md"
+              placeholder="Your email adress"
+              value={email}
+              onChange={(event) => setEmail(event.currentTarget.value)}
+              leftSection={<IconAt size={16} />}
+            />
+          </Input.Wrapper>
+          <Input.Wrapper className="w-full" size="md" label="Enter Password">
+            <PasswordInput
+              disabled={submited}
+              placeholder="Your password"
+              value={password}
+              onChange={(event) => setPassword(event.currentTarget.value)}
+              visible={visible}
+              onVisibilityChange={toggle}
+            />
+          </Input.Wrapper>
+          <div className=" flex flex-col justify-center items-center space-y-8">
+            <div className=" flex flex-row justify-center space-x-8">
+              <Button
+                className="w-full"
+                size="lg"
+                type="submit"
+                loading={submited}
+                variant="filled"
+              >
+                Log in
+              </Button>
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={handleSignUp}
+                loading={submited}
+                variant="filled"
+              >
+                Sign up
+              </Button>
+            </div>
+            <Button
+              size="lg"
+              onClick={handleLogin}
+              variant="filled"
+              loading={submited}
+            >
+              Continue as guest
+            </Button>
+          </div>
+        </form>
+      </section>
+      <div className=" flex justify-end items-center mt-10">
+        {showError && (<Alert
+          variant="filled"
+          color="red"
+          withCloseButton
+          title="Login failed"
+          icon={icon}
+          onClick={() => setShowError(false)}
+        >
+          {errorMessage}
+        </Alert>)}
+      </div>
+    </main>
+  );
 }

@@ -30,6 +30,7 @@ export function signUp(email, password) {
       // Signed in
       const user = userCredential.user;
       console.log('User signed up:', user);
+      return true;
     })
     .catch((error) => {
       const errorCode = error.code;
@@ -49,13 +50,14 @@ export function logIn(email, password) {
       return [true, user];
     })
     .catch((error) => {
-      alert("User does not exist or password is incorrect");
+      //alert("User does not exist or password is incorrect");
       const errorCode = error.code;
       const errorMessage = error.message;
       console.error('Error logging in:', errorCode, errorMessage);
       return false;
     });
 }
+
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

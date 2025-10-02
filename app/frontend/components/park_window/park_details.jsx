@@ -1,0 +1,115 @@
+"use client";
+
+import Reviews from "./review_section";
+
+export default function ParkDetails({ park, openButtonUpload }) {
+  let wildlifePhotos = ["image_1.jpeg", "image_2.jpeg"];
+  let hasImage = false;
+
+  function checkImages(photos) {
+    if (!photos[0] == "" || null) hasImage = true;
+  }
+
+  function handleData({ user }) {
+    alert(`${user.username} has been reported.`);
+  }
+
+  checkImages(wildlifePhotos);
+
+  return (
+    <main className="flex flex-col">
+      <header className="flex flex-col">
+        <img src="https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg" alt="" className="h-75"/>
+      </header>
+      <section className="my-20 place-self-center">
+        <h1 className="font-bold text-2xl">Ratings</h1>
+      </section>
+      <section className="flex flex-col items-center text-justify mb-20">
+        <h1 className="font-extrabold text-2xl mb-10">
+          {park.name}
+        </h1>
+        <p className="w-3/4">
+          {park.description}
+        </p>
+      </section>
+      <section className="flex flex-col items-center">
+        <h1 className="font-bold text-xl mb-15">Wildlife</h1>
+        <div className="flex gap-5">
+          {hasImage && (
+            <div>
+              <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-4 space-x-8 overflow-x-auto max-h-[500px]">
+                {wildlifePhotos.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={img}
+                    className="w-50 h-50 bg-gray-400 rounded"
+                  />
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </section>
+      <section className="mt-30 place-self-center">
+        <button onClick={openButtonUpload}>Write a review</button>
+      </section>
+      <section className="flex flex-col mt-30 items-center">
+        <h1 className="font-bold text-2xl mb-10">Reviews</h1>
+        <div className="rounded-md p-6 w-3/4">
+          {park.reviews?.length > 0 ? (
+              <ul>
+                {park.reviews.map((user, index) => (
+                  <div key={index} className="">
+                    <div className="flex flex-row gap-0 mx-4 my-18 space-x-6">
+                      <div className="">
+                        <img
+                          className="w-25 h-25 bg-gray-400 rounded-full"
+                          alt="profile picture"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div className=" flex flex-row space-x-2 items-center">
+                          <p className=" font-semibold text-1xl">{user.username}</p>
+                          <p className=" text-1xl italic">- {user.date}</p>
+                        </div>
+                        {user.images && user.images.length > 0 && (
+                          <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-2 space-x-8 overflow-x-auto">
+                            {user.images.map((img, index) => (
+                              <>
+                                <img
+                                  key={index}
+                                  src={img}
+                                  alt={img}
+                                  className="w-30 h-30 bg-gray-400 rounded"
+                                />
+                              </>
+                            ))}
+                          </ul>
+                        )}
+                        <div className="grid grid-cols-3">
+                          <p className=" col-span-2">{user.comment}</p>
+                          <p
+                            className="hover:underline italic flex justify-end items-end"
+                            onClick={() => handleData({ user })}
+                          >
+                            Report User
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </ul>
+            ) : (
+              <p>No reviews yet</p>
+            )}
+        </div>
+      </section>
+      <footer className="mt-30 mb-20 place-self-center">
+        <button>Back to top</button>
+      </footer>
+    </main>
+  );
+}
+
