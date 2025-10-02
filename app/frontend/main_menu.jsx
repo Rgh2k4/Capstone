@@ -15,8 +15,8 @@ const ParkMap = dynamic(() =>  import("../backend/mapFunction"), {
 });
 import {getUniqueTypes} from "../backend/mapFunction";
 
-export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
-  
+export default function MainMenu( { onRouteToLogin, onRouteToDashboard} ) {
+
   const [overlay, setOverlay] = useState(false);
   const [uploadOpened, setUploadOpened] = useState(false);
   const [selectedPark, setSetselectedPark] = useState()
