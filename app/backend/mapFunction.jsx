@@ -3,19 +3,14 @@
 import React, {useState, useEffect} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 
-function ParkMap({filters=[]}) {
+function ParkMap({filters=[], setUniqueTypes}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
   const [selectedPOI, setSelectedPOI] = useState(null);
   //This code gets the users location to start the map at, and if the location is not found, it will start the map at the useState location
-  const [userLocation, setUserLocation] = useState({lat: 52.8866, lng:-118.10222});
-  const [uniqueTypes, setUniqueTypes] = useState({
-    Accommodation_Type: [],
-    Principal_type: [],
-    Facility_Type_Installation: [],
-    TrailDistance: [],
-  });
+  const [userLocation, setUserLocation] = useState({lat: 52.8866, lng:-118.10222}
+  );
 
   //This code gets the users location with permission on load and was made with help from https://developers.google.com/maps/documentation/javascript/geolocation, https://developers.google.com/maps/documentation/geolocation/overview
   //and the code snippets provided by VS code"
@@ -46,7 +41,7 @@ function ParkMap({filters=[]}) {
 
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
   //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
-  /*useEffect(() => {
+  useEffect(() => {
     async function loadData() {
       const urls = [
         //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
@@ -56,13 +51,13 @@ function ParkMap({filters=[]}) {
         "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
         "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
       ];
-      */
-  useEffect(() => {
-    async function loadData() {
-      const urls = [
-        //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
-        "https://opendata.arcgis.com/datasets/dff0acc0f20c4666a253860f6444bb43_0.geojson"
-      ];
+      
+      setUniqueTypes ({
+        Accommodation_Type: accommodationTypes,
+        Principal_type: principalTypes,
+        Facility_Type_Installation: facilityTypes,
+        TrailDistance: trailDistance,
+      });
 
       try {
         const responses = await Promise.all(urls.map(url => fetch(url)));
@@ -110,7 +105,7 @@ function ParkMap({filters=[]}) {
     }
 
     loadData();
-  }, []);
+  }, [setUniqueTypes]);
 
   //This code was made with help from gpt 
   // after having gpt check the code for bugs and having it ask if I wanted to have the markers place dynamicaly based on the filter settings and me responding "Doesn't it already do that?"
@@ -127,7 +122,7 @@ function ParkMap({filters=[]}) {
 
   return (
     <div>
-      <div className="h-screen w-screen overflow-y-hidden overflow-x-hidden">
+      <div style={{width:'100%', height:'700px'}}>
         <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
           <Map
           defaultCenter={userLocation}
@@ -140,12 +135,12 @@ function ParkMap({filters=[]}) {
               <AdvancedMarker
               key={poi.id}
               position={poi.location}
-              onClick={() => viewParkDetails(poi)}
+              onClick={() => setSelectedPOI(poi)}
             />
           ))}
         </Map>
       </APIProvider>
-    </div>
+      </div>
     </div>
   );
 }

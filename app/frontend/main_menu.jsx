@@ -13,7 +13,6 @@ import {MultiSelect} from "@mantine/core";
 const ParkMap = dynamic(() =>  import("../backend/mapFunction"), {
   ssr:false
 });
-import {getUniqueTypes} from "../backend/mapFunction";
 
 export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
   
