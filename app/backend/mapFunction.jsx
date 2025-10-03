@@ -78,6 +78,7 @@ function ParkMap({filters=[], setUniqueTypes}) {
               lat: parseFloat(f.geometry.coordinates[1]),
               lng: parseFloat(f.geometry.coordinates[0])
             },
+            properties: f.properties,
             reviews: []
           }))
         );
@@ -125,7 +126,7 @@ function ParkMap({filters=[], setUniqueTypes}) {
       <div style={{width:'100%', height:'700px'}}>
         <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
           <Map
-          defaultCenter={userLocation}
+          center={userLocation}
           defaultZoom={10}
           mapId='456dc2bedf64a06c67cc63ea'>
 
