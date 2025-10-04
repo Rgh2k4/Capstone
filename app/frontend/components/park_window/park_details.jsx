@@ -25,6 +25,34 @@ export default function ParkDetails({ park, openButtonUpload }) {
     checkFavorite();
   }, [park]);
 
+  async function toggleFavorite() {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("You must be logged in to favorite a park.");
+      return;
+    }
+
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    //This code creates the user doc if the user doesnt have one yet
+    if (!userSnap.exists()) {
+      await setDoc(userRef, { favorites: [] });
+    }
+
+    if (isFavorite) {
+      await updateDoc(userRef, {
+        favorites: arrayRemove(park.id),
+      });
+      setIsFavorite(false);
+    } else {
+      await updateDoc(userRef, {
+        favorites: arrayUnion(park.id),
+      });
+      setIsFavorite(true);
+    }
+  }
+
   let wildlifePhotos = ["image_1.jpeg", "image_2.jpeg"];
   let hasImage = false;
 
