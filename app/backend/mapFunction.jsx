@@ -146,4 +146,4 @@ function ParkMap({filters=[]}, viewParkDetails) {
 }
 
 
-export default ParkMap;
+export default mapFunction;

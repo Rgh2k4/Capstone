@@ -12,7 +12,7 @@ import {MultiSelect} from "@mantine/core";
 import {getUniqueTypes} from "../backend/mapFunction";
 import { GetUserData, isAdmin } from '../backend/database';
 
-const ParkMap = dynamic(() =>  import("../backend/mapFunction"), {
+const MapFunction = dynamic(() =>  import("../backend/mapFunction"), {
   ssr:false
 });
 
