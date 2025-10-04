@@ -1,8 +1,30 @@
 "use client";
 
 import Reviews from "./review_section";
+import {useState, useEffect} from "react";
+import {doc, updateDoc, arrayUnion, arrayRemove} from "firebase/firestore";
+import {db, auth} from "./firebase"
 
 export default function ParkDetails({ park, openButtonUpload }) {
+
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    async function checkFavorite() {
+      const user = auth.currentUser;
+      if (!user || !park?.id) return;
+
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const favorites = userSnap.data().favorites || [];
+        setIsFavorite(favorites.includes(park.id));
+      }
+    }
+    checkFavorite();
+  }, [park]);
+
   let wildlifePhotos = ["image_1.jpeg", "image_2.jpeg"];
   let hasImage = false;
 

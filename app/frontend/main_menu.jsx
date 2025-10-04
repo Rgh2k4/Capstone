@@ -10,7 +10,7 @@ import { auth } from "../backend/databaseIntegration.jsx";
 import { useEffect } from 'react';
 import {MultiSelect} from "@mantine/core";
 
-const ParkMap = dynamic(() =>  import("../backend/mapFunction"), {
+const MapFunction = dynamic(() =>  import("../backend/mapFunction"), {
   ssr:false
 });
 
@@ -80,7 +80,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
             </header>  
             <section className="h-screen w-full">
               
-              <ParkMap viewParkDetails={viewParkDetails} />
+              <MapFunction viewParkDetails={viewParkDetails} />
               <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
                 <ParkDetails park={selectedPark} openButtonUpload={handleOpenUpload}/>
               </Modal>
@@ -105,7 +105,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
               </div>
               
               <section className="h-[700px] w-full">
-                <ParkMap filters={selectedFilters} setUniqueTypes={setUniqueTypes}/>
+                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes}/>
                 </section>
         </main>
     );  
