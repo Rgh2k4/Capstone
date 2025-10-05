@@ -128,7 +128,7 @@ function ParkMap({filters=[]}, viewParkDetails) {
     async function computeRoute({origin, destination, travelMode = "DRIVE"}) {
       let response, data;
 
-       {
+       try {
         const response = await fetch(
           "https://routes.googleapis.com/directions/v2:computeRoutes",
           {
@@ -145,30 +145,47 @@ function ParkMap({filters=[]}, viewParkDetails) {
               travelMode: "DRIVE",
             }),
           }
-        )
-      }
-    };
+        );
+        
+        const data = await response.json();
+        
+        if (!response.ok){
+          throw new Error(data.error?.message || "Failed to fetch route");}
+          
+          const route = data.routes[0];
+          const polyline = route.polyline.encodedPolyline;
+          //As seen here https://developers.google.com/maps/documentation/routes/compute_route_directions google maps api uses meters for distance
+          //this ensures the distance is instead mesured in kilometers to 2 decimal places
+          const distance = (route.distanceMeters / 1000).toFixed(2);
+          const duration = route.duration;
+          routeData = {polyline, distance, duration};
 
-  return (
-    <div>
-      <div style={{width:'100%', height:'700px'}}>
-        <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
-          <Map
-          center={userLocation}
-          defaultZoom={10}
-          mapId='456dc2bedf64a06c67cc63ea'>
-
-            {filteredPois
-              .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
-              .map(poi => (
-              <AdvancedMarker
-              key={poi.id}
-              position={poi.location}
-              onClick={() => setSelectedPOI(poi)}
-            />
-          ))}
-        </Map>
-      </APIProvider>
+          return routeData;
+        } catch (error) {
+          console.error("There was an error when computing a route:", error);
+          return null;
+        }}
+        
+        return (
+        <div>
+          <div style={{width:'100%', height:'700px'}}>
+            <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
+              <Map
+              center={userLocation}
+              defaultZoom={10}
+              mapId='456dc2bedf64a06c67cc63ea'>
+                
+                {filteredPois
+                .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
+                .map(poi => (
+                <AdvancedMarker
+                key={poi.id}
+                position={poi.location}
+                onClick={() => setSelectedPOI(poi)}
+                />
+              ))}
+          </Map>
+        </APIProvider>
       </div>
     </div>
   );
