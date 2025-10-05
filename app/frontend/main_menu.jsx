@@ -14,26 +14,6 @@ const MapFunction = dynamic(() =>  import("../backend/mapFunction"), {
   ssr:false
 });
 
-export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
-  
-  const [overlay, setOverlay] = useState(false);
-  const [uploadOpened, setUploadOpened] = useState(false);
-  const [selectedPark, setSetselectedPark] = useState()
-  
-  function viewParkDetails({park}) {
-    setSetselectedPark({park})
-    const [upload, setUpload] = useState(false);
-    const [selectedFilters, setSelectedFilters] = useState([]);
-    const [uniqueTypes, setUniqueTypes] = useState({
-      Accommodation_Type: [],
-      Principal_type: [],
-      Facility_Type_Installation: [],
-      TrailDistance:[],
-    });
-    const user = auth.currentUser;
-    const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
-    const isAdmin = user && adminEmails.includes(user.email);
-
   function handleOpenOverlay() {
     setOverlay(true);
   }
@@ -53,10 +33,24 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
 
   useEffect(() => {
     checkUser();
+  })
+export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
+    const [upload, setUpload] = useState(false);
+    const [selectedFilters, setSelectedFilters] = useState([]);
+    const [overlay, setOverlay] = useState(false);
+    const [uploadOpened, setUploadOpened] = useState(false);
+    const [selectedPark, setSetselectedPark] = useState(null);
+    const [uniqueTypes, setUniqueTypes] = useState({
+      Accommodation_Type: [],
+      Principal_type: [],
+      Facility_Type_Installation: [],
+      TrailDistance:[],
+    });
   
-
-  }, []);
-
+  function viewParkDetails(park) {
+    const user = auth.currentUser;
+    const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
+    const isAdmin = user && adminEmails.includes(user.email);
 
     return (
         <main className="flex flex-col h-screen w-screen relative">
@@ -80,11 +74,11 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
             </header>  
             <section className="h-screen w-full">
               
-              <MapFunction viewParkDetails={viewParkDetails} />
+              <MapFunction viewParkDetails={viewParkDetails} filters={selectedFilters} setUniqueTypes={setUniqueTypes} />
               <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
                 <ParkDetails park={selectedPark} openButtonUpload={handleOpenUpload}/>
               </Modal>
-              <Modal isVisible={uploadOpened} onClose={() => setOverlay(false)} >
+              <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
                 <UploadWindow onClose={() => setUploadOpened(false)} />
               </Modal>
             </section>
@@ -105,7 +99,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
               </div>
               
               <section className="h-[700px] w-full">
-                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes}/>
+                <MapFunction />
                 </section>
         </main>
     );  

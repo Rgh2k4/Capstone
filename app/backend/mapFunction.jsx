@@ -1,9 +1,9 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 
-function mapFunction({filters=[], setUniqueTypes}) {
+function MapFunction({filters=[], setUniqueTypes}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -56,13 +56,6 @@ function mapFunction({filters=[], setUniqueTypes}) {
         "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
       ];
       
-      setUniqueTypes ({
-        Accommodation_Type: accommodationTypes,
-        Principal_type: principalTypes,
-        Facility_Type_Installation: facilityTypes,
-        TrailDistance: trailDistance,
-      });
-
       try {
         const responses = await Promise.all(urls.map(url => fetch(url)));
         const datasets = await Promise.all(responses.map(r => r.json()));
@@ -91,7 +84,7 @@ function mapFunction({filters=[], setUniqueTypes}) {
       } catch (err) {
         console.error("Error loading datasets:", err);
       }
-      
+
       //The following code extracts the unique sub-types for use in the front-end filter and was made with the help of https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set,
       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter, and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
       const accommodationTypes = getUniqueSubTypes(allPois, 'Accommodation_Type');
@@ -175,5 +168,4 @@ function mapFunction({filters=[], setUniqueTypes}) {
   );
 }
 
-
-export default mapFunction;
+export default MapFunction;
