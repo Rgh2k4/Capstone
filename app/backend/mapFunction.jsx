@@ -1,6 +1,6 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 
 function ParkMap({filters=[]}, viewParkDetails) {
@@ -90,7 +90,7 @@ function ParkMap({filters=[]}, viewParkDetails) {
       } catch (err) {
         console.error("Error loading datasets:", err);
       }
-      
+
       //The following code extracts the unique sub-types for use in the front-end filter and was made with the help of https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set,
       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter, and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
       const accommodationTypes = getUniqueSubTypes(allPois, 'Accommodation_Type');
@@ -174,5 +174,4 @@ function ParkMap({filters=[]}, viewParkDetails) {
   );
 }
 
-
-export default mapFunction;
+export default MapFunction;

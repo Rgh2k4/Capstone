@@ -64,10 +64,24 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard} ) {
 
   useEffect(() => {
     checkUser();
+  })
+export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
+    const [upload, setUpload] = useState(false);
+    const [selectedFilters, setSelectedFilters] = useState([]);
+    const [overlay, setOverlay] = useState(false);
+    const [uploadOpened, setUploadOpened] = useState(false);
+    const [selectedPark, setSetselectedPark] = useState(null);
+    const [uniqueTypes, setUniqueTypes] = useState({
+      Accommodation_Type: [],
+      Principal_type: [],
+      Facility_Type_Installation: [],
+      TrailDistance:[],
+    });
   
-
-  }, []);
-
+  function viewParkDetails(park) {
+    const user = auth.currentUser;
+    const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
+    const isAdmin = user && adminEmails.includes(user.email);
 
     return (
         <main className="flex flex-col h-screen w-screen relative">
@@ -93,7 +107,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard} ) {
               <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
                 <ParkDetails park={selectedPark} openButtonUpload={handleOpenUpload}/>
               </Modal>
-              <Modal isVisible={uploadOpened} onClose={() => setOverlay(false)} >
+              <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
                 <UploadWindow onClose={() => setUploadOpened(false)} />
               </Modal>
             </section>
