@@ -12,6 +12,10 @@ function ParkMap({filters=[]}, viewParkDetails) {
   const [userLocation, setUserLocation] = useState({lat: 52.8866, lng:-118.10222}
   );
 
+  //https://developers.google.com/maps/documentation/utilities/polylineutility & https://developers.google.com/maps/documentation/javascript/reference/polygon#Polyline
+  const mapRef = useRef(null);
+  const polylineRef = useRef(null);
+
   //This code gets the users location with permission on load and was made with help from https://developers.google.com/maps/documentation/javascript/geolocation, https://developers.google.com/maps/documentation/geolocation/overview
   //and the code snippets provided by VS code"
   useEffect(() => {
@@ -119,6 +123,31 @@ function ParkMap({filters=[]}, viewParkDetails) {
     )
   )
   :pois;
+
+    //https://developers.google.com/maps/documentation/routes/compute-route-directions
+    async function computeRoute({origin, destination, travelMode = "DRIVE"}) {
+      let response, data;
+
+       {
+        const response = await fetch(
+          "https://routes.googleapis.com/directions/v2:computeRoutes",
+          {
+            method: "POST",
+            headers: {
+              //https://cloud.google.com/docs/authentication/api-keys-use#node.js
+              "Content-Type": "application/json",
+              "X-Goog-Api-Key":"AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI",
+              "X-Goog-FieldMask":"routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline",
+            },
+            body: JSON.stringify({
+              origin: {location:{ latLng: origin}},
+              destination: {location: { latLng: destination}},
+              travelMode: "DRIVE",
+            }),
+          }
+        )
+      }
+    };
 
   return (
     <div>
