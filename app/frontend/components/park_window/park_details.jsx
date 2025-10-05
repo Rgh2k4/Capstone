@@ -4,6 +4,8 @@ import Reviews from "./review_section";
 import {useState, useEffect} from "react";
 import {doc, updateDoc, arrayUnion, arrayRemove} from "firebase/firestore";
 import {db, auth} from "./firebase"
+import { ActionIcon } from '@mantine/core';
+import { IconHeart } from '@tabler/icons-react';
 
 export default function ParkDetails({ park, openButtonUpload }) {
 
@@ -63,6 +65,22 @@ export default function ParkDetails({ park, openButtonUpload }) {
   function handleData({ user }) {
     alert(`${user.username} has been reported.`);
   }
+  
+  const FavoriteButton = () => (
+  <ActionIcon
+      size={42}
+      variant="default"
+      aria-label="Favorite Location"
+      onClick={toggleFavorite}
+    >
+      <IconHeart
+        size={24}
+        className={`text-xl transition-transform ${
+          isFavorite ? "text-red-500 scale-110" : "text-gray-500"
+        }`}
+      />
+    </ActionIcon>
+  );
 
   checkImages(wildlifePhotos);
 
@@ -70,7 +88,8 @@ export default function ParkDetails({ park, openButtonUpload }) {
     <main className="flex flex-col">
       <header className="flex flex-col">
         <img src="https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg" alt="" className="h-75"/>
-      </header>
+      </header>\
+      
       <section className="my-20 place-self-center">
         <h1 className="font-bold text-2xl">Ratings</h1>
       </section>
