@@ -47,20 +47,32 @@ export const CreateAdminAccount = async (data) => {
         password: data.password,
         dateCreated: Date.now(),
     }
-    await setDoc(doc(db, "users", data.uid), {
-      user_ID: data.uid,
-      email: data.email,
-      password: data.password,
-      dateCreated: Date.now(),
-      role: "Admin",
-      note: "",
-      lastLogin: "",
-    });
+  }
+}
 
-    await setDoc(doc(db, "admins", data.uid), {
-    });
+export async function addData(userID, reviewData) {
 
-    return true;
+    try {
+        const refId = await addDoc(collection(database, "users", userID, "review"), reviewData);
+        return refId;
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+    try {
+      await setDoc(doc(db, "users", data.uid), {
+        user_ID: data.uid,
+        email: data.email,
+        password: data.password,
+        dateCreated: Date.now(),
+        role: "Admin",
+        note: "",
+        lastLogin: "",
+      });
+
+      await setDoc(doc(db, "admins", data.uid), {
+      });
+
+      return true;
   } catch (error) {
     console.log(error);
   }
