@@ -30,8 +30,8 @@ export function signUp(email, password) {
     .then((userCredential) => {
       // Signed in
       const user = userCredential.user;
-      console.log('User signed up:', user);
       CreateUserAccount(user);
+      //console.log('User signed up:', user);
       return true;
     })
     .catch((error) => {

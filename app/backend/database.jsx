@@ -1,33 +1,13 @@
 import { database } from "./databaseIntegration";
-import { collection, addDoc } from "firebase/firestore";
-
-export async function addData(userID, data) {
-  try {
-    const refId = await addDoc(
-      collection(database, "users", userID, "reviewData"),
-      data
-    );
-    return refId;
-  } catch (error) {
-    console.error("Error: ", error);
-  }
-}
+import { collection, addDoc, setDoc, doc } from "firebase/firestore";
 
 export async function CreateUserAccount(data) {
   try {
-    const refId = await addDoc(collection(database, "users"), data);
-    return refId;
-  } catch (error) {
-    console.error("Error: ", error);
-  }
-}
-
-export const CreateUserAccount = async (data) => {
-  try {
-    await setDoc(doc(db, "users", data.uid), {
+    console.log("Adding user to Firestore with ID:", data.uid);
+    
+    await setDoc(doc(database, "users", data.email), {
       user_ID: data.uid,
       email: data.email,
-      password: data.password,
       dateCreated: Date.now(),
       role: "User",
       note: "",
@@ -39,16 +19,25 @@ export const CreateUserAccount = async (data) => {
   }
 };
 
-export const CreateAdminAccount = async (data) => {
-  try {
-    const userImportRecords = {
-        user_ID: data.uid,
-        email: data.email,
-        password: data.password,
-        dateCreated: Date.now(),
-    }
-  }
-}
+export async function LoadUserList(data) {
+
+};
+
+export async function SetLastLoginDate(data) {
+
+};
+
+export async function EditUser(data) {
+
+};
+
+export async function DeleteUser(data) {
+
+};
+
+export async function CreateAdminAccount(data) {
+
+};
 
 export async function addData(userID, reviewData) {
 
