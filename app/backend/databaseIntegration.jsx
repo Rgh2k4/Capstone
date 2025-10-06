@@ -5,6 +5,7 @@ import { getAnalytics } from "firebase/analytics";
 import {getStorage} from "firebase/storage"
 import { getFirestore } from "firebase/firestore";
 import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth";
+import { CreateUserAccount } from "./database";
 
 
 // Your web app's Firebase configuration
@@ -30,6 +31,7 @@ export function signUp(email, password) {
       // Signed in
       const user = userCredential.user;
       console.log('User signed up:', user);
+      CreateUserAccount(user);
       return true;
     })
     .catch((error) => {
