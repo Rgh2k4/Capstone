@@ -54,17 +54,6 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard} ) {
     setUploadOpened(true);
   }
 
-  function checkUser() {
-    if (!user) {
-      console.log("No user is logged in");
-    } else {
-      console.log("User is logged in:", user.email);
-    }
-  }
-
-  useEffect(() => {
-    checkUser();
-  })
 export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
     const [upload, setUpload] = useState(false);
     const [selectedFilters, setSelectedFilters] = useState([]);
@@ -77,8 +66,21 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
       Facility_Type_Installation: [],
       TrailDistance:[],
     });
-  
-  function viewParkDetails(park) {
+    const [user, currentUser] = useState(null);
+    
+    useEffect(() => {
+      checkUser();
+    })
+    
+    function checkUser() {
+      if (!user) {
+        console.log("No user is logged in");
+      } else {
+        console.log("User is logged in:", user.email);
+      }
+    }
+    
+    function viewParkDetails(park) {
     const user = auth.currentUser;
     const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
     const isAdmin = user && adminEmails.includes(user.email);
