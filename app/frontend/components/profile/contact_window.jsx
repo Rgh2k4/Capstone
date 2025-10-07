@@ -5,12 +5,12 @@ export default function ContactWindow({
   companyPhone = "(111) 111-1111",
 }) {
   return (
-    <main className="min-h-[80vh] bg-gradient-to-b from-sky-300 to-sky-700 flex flex-col items-center justify-start pt-16">
-      <h1 className="text-7xl md:text-8xl font-bold text-gray-200 text-shadow-lg text-shadow-black text-center mb-10">
+    <main className="min-h-[80vh] p-12  flex-col items-center justify-start pt-16">
+      <h1 className="text-7xl md:text-8xl font-bold text-black-200 text-shadow-black text-center mb-10">
         Contact Us
       </h1>
 
-      <section className="w-[540px] max-w-[90vw] rounded-2xl bg-white p-8 shadow-lg">
+      <section className="w-[540px] max-w-[90vw] rounded-2xl">
         <form className="flex flex-col gap-6">
           <input
             type="text"

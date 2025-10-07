@@ -1,7 +1,7 @@
 import { Button } from "@mantine/core";
 import React, { useState } from "react";
 
-function SettingsMenu({ onRouteToLogin, onChangeCredential, onDeleteAccount }) {
+function SettingsMenu({ onRouteToLogin, onChangeCredential, onDeleteAccount, onContactSupport }) {
   const [submited1, setSubmitted1] = useState(false);
   const [submited2, setSubmitted2] = useState(false);
   const [submited3, setSubmitted3] = useState(false);
@@ -17,6 +17,7 @@ function SettingsMenu({ onRouteToLogin, onChangeCredential, onDeleteAccount }) {
   }
   function handleContact() {
     setSubmitted3(true);
+    onContactSupport();
   }
   function handleDelete() {
     setSubmitted4(true);
