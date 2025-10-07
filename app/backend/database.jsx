@@ -1,5 +1,5 @@
+import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
-import { collection, addDoc, setDoc, doc, getDoc, deleteDoc, getDocs, writeBatch} from "firebase/firestore";
 import { updateEmail, updatePassword } from "firebase/auth";
 
 export async function CreateUserAccount(data) {
@@ -9,10 +9,10 @@ export async function CreateUserAccount(data) {
     await setDoc(doc(database, "users", data.email), {
       user_ID: data.uid,
       email: data.email,
-      dateCreated: Date.now(),
+      dateCreated: serverTimestamp(),
       role: "User",
       note: "",
-      lastLogin: "",
+      lastLogin: serverTimestamp(),
     });
     return true;
   } catch (error) {
@@ -20,15 +20,90 @@ export async function CreateUserAccount(data) {
   }
 };
 
+export async function LoadUserList() {
+  try {
+    const querySnapshot = await getDocs(collection(database, "users"));
+    const users = [];
 
-export async function LoadUserList(data) {
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.role === "User") {
+        users.push(data);
+      }
+    });
+
+    return users;
+  } catch (error) {
+    console.error("Error getting user list:", error);
+    return [];
+  }
 
 };
 
+export async function LoadAdminList() {
+  try {
+    const querySnapshot = await getDocs(collection(database, "users"));
+    const admins = [];
 
-export async function SetLastLoginDate(data) {
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.role === "Admin") {
+        admins.push(data);
+      }
+    });
+
+    return admins;
+  } catch (error) {
+    console.error("Error getting admin list:", error);
+    return [];
+  }
 
 };
+
+export async function UpdateLastLogin(user) {
+  try {
+    await updateDoc(doc(database, "users", user.email), {
+      lastLogin: serverTimestamp(),
+    });
+    console.log("Updated last login for", user.email);
+  } catch (error) {
+    console.error("Error updating last login:", error);
+  }
+}
+
+export async function GetUserData(userEmail) {
+  try {
+    const userDoc = await getDoc(doc(database, "users", userEmail));
+    if (userDoc.exists()) {     
+      return userDoc.data();
+    } else {
+      console.log("No such document!");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting user data:", error);
+    return null;
+  }
+};
+
+export async function SetDisplayName(user, displayName) {
+  try {
+    await updateDoc(doc(database, "users", user.email), {
+      displayName: displayName,
+    });
+    console.log("Updated display name for", user.email);
+  } catch (error) {
+    console.error("Error updating display name:", error);
+  }
+}
+
+export function isAdmin(data) {
+  if (data.role === "Admin") {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 
 export async function EditUser(data) {
@@ -99,10 +174,6 @@ export async function DeleteUser(data) {
   }
 };
 
-
-export async function CreateAdminAccount(data) {
-
-};
 
 
 export async function addData(userID, reviewData) {

@@ -7,10 +7,11 @@ import ReportWindow from "./components/admin/reports/report_window";
 import AccountList from "./components/admin/accounts/account_list";
 import Add from "./components/admin/accounts/add_window";
 import Edit from "./components/admin/accounts/edit_window";
-import users from "./components/admin/user_test_data.json";
+import testUsers from "./components/admin/user_test_data.json";
 import { Button } from "@mantine/core";
 import { auth } from "../backend/databaseIntegration.jsx";
 import ProfileMenu from "./components/profile/profile_menu";
+import { GetUserData, LoadAdminList, LoadUserList } from "../backend/database";
 
 function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [showModal, setShowModal] = useState(false);
@@ -20,14 +21,35 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [role, setRole] = useState("");
   const [account, setAccount] = useState();
   const [pageName, setPageName] = useState("Dashboard"); // Dyanmically change the page based on the button clicked.
-  const [db, setDb] = useState(users);
+  const [db, setDb] = useState(testUsers);
   const [idCounter, setIdCounter] = useState(db.accounts.length + 1);
+  const [users, setUsers] = useState([]);
+  const [admins, setAdmins] = useState([]);
 
+  const [isAdmin, setIsAdmin] = useState(false)
   const user = auth.currentUser;
+  const userData = GetUserData(user.email).then(userData => {
+    if (userData.role === "Admin") {
+      setIsAdmin(true)
+    } else {
+      onRouteToMainMenu();
+    }
+  });
 
-  const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
-  const isAdmin = user && adminEmails.includes(user.email);
 
+  useEffect(() => {
+    const userList = LoadUserList().then(userList => {
+      console.log("User List:", userList);
+      setUsers(userList)
+    });
+    const adminList = LoadAdminList().then(adminList => {
+      console.log("Admin List:", adminList);
+      setAdmins(adminList)
+    });
+    
+  
+  }, [])
+  
 
   function handleDeleteAccount(id) {
     setDb(db => ({...db,
@@ -50,16 +72,6 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
     setDb(db => ({...db,
     accounts: [...db.accounts, account]}));
   }
-  
-  useEffect(() => {
-    if (!user) {
-      onRouteToLogin();
-      return;
-    }
-    if (!isAdmin) {
-      onRouteToMainMenu();
-    }
-  }, [user, isAdmin, onRouteToLogin, onRouteToMainMenu]);
 
   return (
   <div className="flex h-screen w-screen">
@@ -69,7 +81,6 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
       </h1>
       <nav className="flex flex-col space-y-3">
         {["Dashboard", "Reviews", "Reports", "Accounts"].map((page) => (
-        <>
           <button
           key={page}
           onClick={() => setPageName(page)}
@@ -81,7 +92,6 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
               >
             {page}
           </button>
-        </>
         ))}
       </nav>
     </aside>
@@ -92,7 +102,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
           <h1 className="text-4xl font-bold text-gray-800">{pageName}</h1>
           <div className=" flex flex-row justify-end space-x-8">
             {user && <Button size='lg' onClick={onRouteToMainMenu}>Main Menu</Button>}
-            <ProfileMenu onRouteToLogin={onRouteToLogin}/>
+            <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
           </div>
         </div>
         {pageName === "Dashboard" && (
@@ -149,7 +159,8 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
               setShowModalAdd={setShowModalAdd}
               setRole={setRole}
               sendUser={setAccount}
-              accounts={db.accounts}
+              users={users}
+              admins={admins}
             />
           </div>
         )}
