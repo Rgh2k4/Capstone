@@ -7,8 +7,9 @@ import Modal from "../Modal";
 import ChangeCredential from "./change_password";
 import { Button } from "@mantine/core";
 import { auth } from "../../../backend/databaseIntegration.jsx";
+import { SetDisplayName } from "@/app/backend/database";
 
-export default function ProfileMenu( { onRouteToLogin } ) {
+export default function ProfileMenu( { onRouteToLogin, userData } ) {
 
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
@@ -16,7 +17,6 @@ export default function ProfileMenu( { onRouteToLogin } ) {
   const [credentialType, setCredentialType] = useState('');
 
   const user = auth.currentUser;
-  const displayName = user.displayName ? user.displayName : "Annonymous";
 
   function handleLogout() {
     auth.signOut();
@@ -24,9 +24,8 @@ export default function ProfileMenu( { onRouteToLogin } ) {
   }
 
   function handleChangeDisplayName(newName) {
-    user.displayName = newName;
-    //console.log(user.displayName);
-    return true;
+    SetDisplayName(userData, newName);
+    setShowModal(false);
   }
 
   function handleDeleteAccount() {
@@ -67,7 +66,7 @@ export default function ProfileMenu( { onRouteToLogin } ) {
       </ul>
 
       <Modal isVisible={showModal} onClose={() => setShowModal(false)}>
-        <ProfileWindow displayName={displayName} email={user.email} onChangeDisplayName={handleChangeDisplayName} />
+        <ProfileWindow email={userData.email} dateCreated={userData.dateCreated} displayName={userData.displayName} onChangeDisplayName={handleChangeDisplayName} />
       </Modal>
       <Modal isVisible={showModal2} onClose={() => setShowModal2(false)}>
         <SettingsMenu onRouteToLogin={onRouteToLogin} onChangeCredential={handleChangeCredential} onDeleteAccount={handleDeleteAccount}/>

@@ -5,7 +5,7 @@ import { getAnalytics } from "firebase/analytics";
 import {getStorage} from "firebase/storage"
 import { getFirestore } from "firebase/firestore";
 import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth";
-import { CreateUserAccount } from "./database";
+import { CreateUserAccount, UpdateLastLogin } from "./database";
 
 
 // Your web app's Firebase configuration
@@ -48,7 +48,8 @@ export function logIn(email, password) {
     .then((userCredential) => {
       // Signed in
       const user = userCredential.user;
-      console.log('User logged in:', user);
+      UpdateLastLogin(user);
+      //console.log('User logged in:', user);
       return true;
     })
     .catch((error) => {

@@ -9,20 +9,28 @@ import Modal from './components/Modal';
 import { auth } from "../backend/databaseIntegration.jsx";
 import { useEffect } from 'react';
 import {MultiSelect} from "@mantine/core";
+import {getUniqueTypes} from "../backend/mapFunction";
+import { GetUserData, isAdmin } from '../backend/database';
 
 const ParkMap = dynamic(() =>  import("../backend/mapFunction"), {
   ssr:false
 });
-import {getUniqueTypes} from "../backend/mapFunction";
 
 export default function MainMenu( { onRouteToLogin, onRouteToDashboard} ) {
 
   const [overlay, setOverlay] = useState(false);
   const [uploadOpened, setUploadOpened] = useState(false);
   const [selectedPark, setSetselectedPark] = useState()
+  const [isAdmin, setIsAdmin] = useState(false)
   const user = auth.currentUser;
-  const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
-  const isAdmin = user && adminEmails.includes(user.email);
+  const userData = GetUserData(user.email).then(userData => {
+    console.log("User Data:", userData);
+    console.log("Is Admin:", userData.role === "Admin");
+    if (userData.role === "Admin") {
+      setIsAdmin(true)
+    }
+  });
+
   
   const [upload, setUpload] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
@@ -72,7 +80,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard} ) {
                   {user ? (
                     <>
                       {isAdmin && <Button size='lg' onClick={onRouteToDashboard}>Dashboard</Button>}
-                      <ProfileMenu onRouteToLogin={onRouteToLogin}/>
+                      <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
                     </>
                     ) : (
                       <Button size='lg' onClick={onRouteToLogin}>Log in</Button>
