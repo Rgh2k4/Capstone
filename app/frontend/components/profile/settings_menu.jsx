@@ -25,53 +25,58 @@ function SettingsMenu({ onRouteToLogin, onChangeCredential, onDeleteAccount, onC
   }
 
   return (
-    <div className=" flex flex-col justify-center items-center space-y-6 p-32">
-      <div className=" mb-12">
-        <h1 className=" text-5xl font-bold">Settings</h1>
-      </div>
-      <div>
+    <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center space-y-6 p-12 bg-white/5 backdrop-blur-md rounded-2xl shadow-lg border border-white/10">
+      <h1 className="text-4xl font-bold text-center mb-4">Settings</h1>
+      <p className="text-center mb-6">
+        Manage your account preferences below.
+      </p>
+
+      <div className="w-full flex flex-col space-y-4">
         <Button
-          size="lg"
-          type="submit"
-          variant="filled"
+          fullWidth
+          size="md"
+          variant="gradient"
+          gradient={{ from: "indigo", to: "cyan" }}
           loading={submited1}
           onClick={handleChangeEmail}
         >
           Change Email
         </Button>
-      </div>
-      <div>
+
         <Button
-          size="lg"
-          type="submit"
-          variant="filled"
+          fullWidth
+          size="md"
+          variant="gradient"
+          gradient={{ from: "violet", to: "pink" }}
           loading={submited2}
           onClick={handleChangePassword}
         >
           Change Password
         </Button>
-      </div>
-      <div>
+
         <Button
-          size="lg"
-          type="submit"
-          variant="filled"
+          fullWidth
+          size="md"
+          variant="light"
+          color="blue"
           loading={submited3}
           onClick={handleContact}
         >
-          Contact Us
+          Contact Support
         </Button>
-      </div>
-      <div>
-        <Button
-          size="lg"
-          type="submit"
-          variant="filled"
-          loading={submited4}
-          onClick={handleDelete}
-        >
-          Delete Account
-        </Button>
+
+        <div className="pt-2 border-t border-gray-700 mt-4">
+          <Button
+            fullWidth
+            size="md"
+            variant="filled"
+            color="red"
+            loading={submited4}
+            onClick={handleDelete}
+          >
+            Delete Account
+          </Button>
+        </div>
       </div>
     </div>
   );
