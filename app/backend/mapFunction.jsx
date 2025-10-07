@@ -3,7 +3,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 
-function MapFunction({filters=[], setUniqueTypes}) {
+function MapFunction({filters=[]}, setUniqueTypes, viewParkDetails) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -55,7 +55,7 @@ function MapFunction({filters=[], setUniqueTypes}) {
         "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
         "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
       ];
-      
+
       try {
         const responses = await Promise.all(urls.map(url => fetch(url)));
         const datasets = await Promise.all(responses.map(r => r.json()));
@@ -120,8 +120,6 @@ function MapFunction({filters=[], setUniqueTypes}) {
 
     //https://developers.google.com/maps/documentation/routes/compute-route-directions
     async function computeRoute({origin, destination, travelMode = "DRIVE"}) {
-      let response, data;
-
        try {
         const response = await fetch(
           "https://routes.googleapis.com/directions/v2:computeRoutes",
@@ -136,7 +134,7 @@ function MapFunction({filters=[], setUniqueTypes}) {
             body: JSON.stringify({
               origin: {location:{ latLng: origin}},
               destination: {location: { latLng: destination}},
-              travelMode: "DRIVE",
+              travelMode,
             }),
           }
         );
@@ -154,7 +152,7 @@ function MapFunction({filters=[], setUniqueTypes}) {
           const duration = route.duration;
           routeData = {polyline, distance, duration};
 
-          return routeData;
+          return {polyline, distance, duration};
         } catch (error) {
           console.error("There was an error when computing a route:", error);
           return null;
@@ -175,7 +173,9 @@ function MapFunction({filters=[], setUniqueTypes}) {
                 <AdvancedMarker
                 key={poi.id}
                 position={poi.location}
-                onClick={() => setSelectedPOI(poi)}
+                onClick={() => {setSelectedPOI(poi);
+                  viewParkDetails?.(poi);
+                }}
                 />
               ))}
           </Map>

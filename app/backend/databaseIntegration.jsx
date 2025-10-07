@@ -2,7 +2,9 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import {getStorage} from "firebase/storage"
+import { getFirestore } from "firebase/firestore";
 import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth";
+import { CreateUserAccount, UpdateLastLogin } from "./database";
 
 
 // Your web app's Firebase configuration
@@ -27,7 +29,8 @@ export function signUp(email, password) {
     .then((userCredential) => {
       // Signed in
       const user = userCredential.user;
-      console.log('User signed up:', user);
+      CreateUserAccount(user);
+      //console.log('User signed up:', user);
       return true;
     })
     .catch((error) => {
@@ -44,7 +47,8 @@ export function logIn(email, password) {
     .then((userCredential) => {
       // Signed in
       const user = userCredential.user;
-      console.log('User logged in:', user);
+      UpdateLastLogin(user);
+      //console.log('User logged in:', user);
       return true;
     })
     .catch((error) => {
@@ -63,3 +67,4 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+export const database = getFirestore(app);

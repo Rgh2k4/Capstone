@@ -7,6 +7,7 @@ import AdminMenu from './frontend/admin_menu.jsx';
 import { auth } from "./backend/databaseIntegration.jsx";
 import { onAuthStateChanged } from "firebase/auth";
 import { Loader } from '@mantine/core';
+import { UpdateLastLogin } from './backend/database.jsx';
 
 
 export default function Home() {
@@ -14,8 +15,8 @@ export default function Home() {
 
   const [pageScreen, setPageScreen] = useState(null);
 
-  function handleLogin() {
-    setPageScreen(<MainMenu onRouteToLogin={handleRouteToLogin} onRouteToDashboard={handleRouteToDashboard}/>);
+  function handleLogin(user) {
+    setPageScreen(<MainMenu onRouteToLogin={handleRouteToLogin} onRouteToDashboard={handleRouteToDashboard} user={user}/>);
   }
   function handleSignUp() {
     setPageScreen(<SignupPage handleNewAccount={handleNewAccount} />);

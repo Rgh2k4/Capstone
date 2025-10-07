@@ -9,10 +9,38 @@ import Modal from './components/Modal';
 import { auth } from "../backend/databaseIntegration.jsx";
 import { useEffect } from 'react';
 import {MultiSelect} from "@mantine/core";
+import {getUniqueTypes} from "../backend/mapFunction";
+import { GetUserData, isAdmin } from '../backend/database';
 
 const MapFunction = dynamic(() =>  import("../backend/mapFunction"), {
   ssr:false
 });
+
+export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
+
+  const [overlay, setOverlay] = useState(false);
+  const [uploadOpened, setUploadOpened] = useState(false);
+  const [selectedPark, setSelectedPark] = useState(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const user = auth.currentUser;
+  const userData = GetUserData(user.email).then(userData => {
+    console.log("User Data:", userData);
+    console.log("Is Admin:", userData.role === "Admin");
+    if (userData.role === "Admin") {
+      setIsAdmin(true)}
+  });
+  const [upload, setUpload] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState([]);
+  const [uniqueTypes, setUniqueTypes] = useState({
+    Accommodation_Type: [],
+    Principal_type: [],
+    Facility_Type_Installation: [],
+    TrailDistance:[],
+  });
+  
+  function viewParkDetails({park}) {
+    setSelectedPark({park})
+  }
 
   function handleOpenOverlay() {
     setOverlay(true);
@@ -22,20 +50,6 @@ const MapFunction = dynamic(() =>  import("../backend/mapFunction"), {
     setOverlay(false);
     setUploadOpened(true);
   }
-
-export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
-    const [upload, setUpload] = useState(false);
-    const [selectedFilters, setSelectedFilters] = useState([]);
-    const [overlay, setOverlay] = useState(false);
-    const [uploadOpened, setUploadOpened] = useState(false);
-    const [selectedPark, setSetselectedPark] = useState(null);
-    const [uniqueTypes, setUniqueTypes] = useState({
-      Accommodation_Type: [],
-      Principal_type: [],
-      Facility_Type_Installation: [],
-      TrailDistance:[],
-    });
-    const [user, currentUser] = useState(null);
     
     useEffect(() => {
       checkUser();
@@ -48,11 +62,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
         console.log("User is logged in:", user.email);
       }
     }
-    
-    function viewParkDetails(park) {
-    const user = auth.currentUser;
     const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
-    const isAdmin = user && adminEmails.includes(user.email);
 
     return (
         <main className="flex flex-col h-screen w-screen relative">
@@ -65,7 +75,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
                   {user ? (
                     <>
                       {isAdmin && <Button size='lg' onClick={onRouteToDashboard}>Dashboard</Button>}
-                      <ProfileMenu onRouteToLogin={onRouteToLogin}/>
+                      <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
                     </>
                     ) : (
                       <Button size='lg' onClick={onRouteToLogin}>Log in</Button>
@@ -76,7 +86,6 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
             </header>  
             <section className="h-screen w-full">
               
-              <MapFunction viewParkDetails={viewParkDetails} filters={selectedFilters} setUniqueTypes={setUniqueTypes} />
               <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
                 <ParkDetails park={selectedPark} openButtonUpload={handleOpenUpload}/>
               </Modal>
@@ -101,9 +110,8 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
               </div>
               
               <section className="h-[700px] w-full">
-                <MapFunction />
-                </section>
+                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />
+              </section>
         </main>
     );  
-  }
 }

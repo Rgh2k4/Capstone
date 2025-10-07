@@ -11,6 +11,7 @@ import users from "./components/admin/user_test_data.json";
 import { Button } from "@mantine/core";
 import { auth } from "../backend/databaseIntegration.jsx";
 import ProfileMenu from "./components/profile/profile_menu";
+import { GetUserData } from "../backend/database";
 
 function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [showModal, setShowModal] = useState(false);
@@ -23,10 +24,18 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [db, setDb] = useState(users);
   const [idCounter, setIdCounter] = useState(db.accounts.length + 1);
 
+  const [isAdmin, setIsAdmin] = useState(false)
   const user = auth.currentUser;
+  const userData = GetUserData(user.email).then(userData => {
+    console.log("User Data:", userData);
+    console.log("Is Admin:", userData.role === "Admin");
+    if (userData.role === "Admin") {
+      setIsAdmin(true)
+    } else {
+      onRouteToMainMenu();
+    }
+  });
 
-  const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
-  const isAdmin = user && adminEmails.includes(user.email);
 
 
   function handleDeleteAccount(id) {
@@ -50,16 +59,6 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
     setDb(db => ({...db,
     accounts: [...db.accounts, account]}));
   }
-  
-  useEffect(() => {
-    if (!user) {
-      onRouteToLogin();
-      return;
-    }
-    if (!isAdmin) {
-      onRouteToMainMenu();
-    }
-  }, [user, isAdmin, onRouteToLogin, onRouteToMainMenu]);
 
   return (
   <div className="flex h-screen w-screen">
@@ -92,7 +91,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
           <h1 className="text-4xl font-bold text-gray-800">{pageName}</h1>
           <div className=" flex flex-row justify-end space-x-8">
             {user && <Button size='lg' onClick={onRouteToMainMenu}>Main Menu</Button>}
-            <ProfileMenu onRouteToLogin={onRouteToLogin}/>
+            <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
           </div>
         </div>
         {pageName === "Dashboard" && (
