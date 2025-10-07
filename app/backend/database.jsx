@@ -1,6 +1,5 @@
-import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
-import { collection, addDoc, setDoc, doc, deleteDoc, getDocs, writeBatch} from "firebase/firestore";
 import { updateEmail, updatePassword } from "firebase/auth";
 
 export async function CreateUserAccount(data) {
@@ -98,14 +97,6 @@ export async function SetDisplayName(user, displayName) {
   }
 }
 
-export async function EditUser(data) {
-
-};
-
-export async function DeleteUser(data) {
-
-};
-
 export function isAdmin(data) {
   if (data.role === "Admin") {
     return true;
@@ -114,13 +105,6 @@ export function isAdmin(data) {
   }
 }
 
-export async function LoadUserList(data) {
-
-};
-
-export async function SetLastLoginDate(data) {
-
-};
 
 export async function EditUser(data) {
   try {
@@ -180,9 +164,6 @@ export async function DeleteUser(data) {
   }
 };
 
-export async function CreateAdminAccount(data) {
-
-};
 
 export async function addData(userID, reviewData) {
 
