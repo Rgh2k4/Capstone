@@ -141,28 +141,39 @@ export async function EditUser(data) {
   }
 };
 
+
 export async function DeleteUser(data) {
   try {
     const email = data?.email;
     if (!email) return false;
 
-    const userRef = doc(database, "users", email);
-
-    const reviewsSnap = await getDocs(collection(userRef, "review"));
-    if (!reviewsSnap.empty) {
-      const batch = writeBatch(database);
-      reviewsSnap.forEach((d) => batch.delete(d.ref));
-      await batch.commit();
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        await user.delete();
+      } catch (e) {
+        console.error("Auth delete error", e);
+  
+      }
     }
 
-    await deleteDoc(userRef);
+    const userRef = doc(database, "users", email);
+   
+    // const reviewsSnap = await getDocs(collection(userRef, "review"));
+    // if (!reviewsSnap.empty) {
+    //   const batch = writeBatch(database);
+    //   reviewsSnap.forEach((d) => batch.delete(d.ref));
+    //   await batch.commit();
+    // }
 
+    await deleteDoc(userRef);
     return true;
   } catch (error) {
     console.error("DeleteUser error:", error);
     return false;
   }
 };
+
 
 
 export async function addData(userID, reviewData) {
