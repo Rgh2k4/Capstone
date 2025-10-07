@@ -82,7 +82,7 @@ export default function ProfileMenu( { onRouteToLogin, userData } ) {
         <ChangeCredential type={credentialType} onSubmit={handleSubmitCredential}/>
       </Modal>
       <Modal isVisible={showModal4} onClose={() => setShowModal4(false)}>
-        <ContactWindow type={credentialType} onSubmit={handleSubmitCredential}/>
+        <ContactWindow type={credentialType} onSubmit={handleSubmitCredential} onClose={() => setShowModal4(false)} />
       </Modal>
     </details>
   );
