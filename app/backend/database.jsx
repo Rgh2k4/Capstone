@@ -1,5 +1,5 @@
 import { database } from "./databaseIntegration";
-import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc } from "firebase/firestore";
+import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, getDocs } from "firebase/firestore";
 
 export async function CreateUserAccount(data) {
   try {
@@ -19,7 +19,43 @@ export async function CreateUserAccount(data) {
   }
 };
 
-export async function LoadUserList(data) {
+export async function LoadUserList() {
+  try {
+    const querySnapshot = await getDocs(collection(database, "users"));
+    const users = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.role === "User") {
+        users.push(data);
+      }
+    });
+
+    return users;
+  } catch (error) {
+    console.error("Error getting user list:", error);
+    return [];
+  }
+
+};
+
+export async function LoadAdminList() {
+  try {
+    const querySnapshot = await getDocs(collection(database, "users"));
+    const admins = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.role === "Admin") {
+        admins.push(data);
+      }
+    });
+
+    return admins;
+  } catch (error) {
+    console.error("Error getting admin list:", error);
+    return [];
+  }
 
 };
 
