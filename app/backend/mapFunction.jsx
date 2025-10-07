@@ -3,7 +3,7 @@
 import React, {useState, useEffect} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 
-function ParkMap({filters=[]}) {
+function ParkMap({filters=[]}, viewParkDetails) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -50,18 +50,17 @@ function ParkMap({filters=[]}) {
     async function loadData() {
       const urls = [
         //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
-        "https://opendata.arcgis.com/datasets/dff0acc0f20c4666a253860f6444bb43_0.geojson",
-        "https://opendata.arcgis.com/datasets/1769ca13cd044206ba59aa1b0bc84356_0.geojson",
-        "https://opendata.arcgis.com/datasets/28b55decfac848c782819b1706e58aa1_0.geojson",
-        "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
-        "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
-      ];
-      */
-  useEffect(() => {
-    async function loadData() {
-      const urls = [
-        //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
-        "https://opendata.arcgis.com/datasets/dff0acc0f20c4666a253860f6444bb43_0.geojson"
+        ];
+        */
+       useEffect(() => {
+         async function loadData() {
+           const urls = [
+             //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
+             "https://opendata.arcgis.com/datasets/dff0acc0f20c4666a253860f6444bb43_0.geojson",
+             "https://opendata.arcgis.com/datasets/1769ca13cd044206ba59aa1b0bc84356_0.geojson",
+             "https://opendata.arcgis.com/datasets/28b55decfac848c782819b1706e58aa1_0.geojson",
+             "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
+             "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
       ];
 
       try {

@@ -19,7 +19,7 @@ export default function Login({ handleLogin, handleSignUp }) {
     e.preventDefault();
     logIn(email, password).then((authenticated) => {
       if (authenticated) {
-        handleLogin(); 
+        handleLogin();
       }
       else {
       setErrorMessage("User does not exist or password is incorrect.");

@@ -1,10 +1,14 @@
 import { Button, Input } from "@mantine/core";
 import { useState } from "react";
 
-function ProfileWindow({ onChangeDisplayName, displayName, email }) {
-  const [name, setName] = useState(displayName || "Annonymous");
+function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated }) {
+  const [name, setName] = useState(displayName);
   const [submited, setSubmitted] = useState(false);
   const [status, setStatus] = useState("");
+  console.log(displayName);
+  console.log(email);
+  console.log(dateCreated);
+  
 
   function handleChangeDisplayName(e) {
     e.preventDefault();
@@ -67,7 +71,7 @@ function ProfileWindow({ onChangeDisplayName, displayName, email }) {
             value={email}
           />
         </Input.Wrapper>
-        <p className=" mt-6 text-1xl font-semibold italic">Acoount Created: "dateCreated"</p>
+        <p className=" mt-6 text-1xl font-semibold italic">Acoount Created: {dateCreated}</p>
       </div>
     </div>
   );
