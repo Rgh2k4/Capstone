@@ -71,8 +71,8 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard} ) {
 
     return (
         <main className="flex flex-col h-screen w-screen relative">
-            <header className="w-screen p-2 flex justify-between items-center bg-blue-300">
-                <h1 className="w-60 ml-18 text-2xl break-normal font-bold text-white text-shadow-lg text-shadow-black text-center">
+            <header className="w-screen p-2 flex justify-between items-center bg-blue-300 absolute top-0 z-10 shadow-md shadow-gray-600">
+                <h1 className="w-60 ml-18 text-2xl break-normal font-bold text-white text-shadow-sm text-shadow-black text-center">
                     National Parks Information System
                 </h1>
                 <input type="text" value="Search..." readOnly className="w-3xl pl-6 h-15 rounded-full text-neutral-950 bg-white border-2 border-gray-400"></input>
@@ -89,7 +89,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard} ) {
 
                 </div>
             </header>  
-            <section className="h-screen w-full">
+            <section className="h-fit w-full">
               <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
                 <ParkDetails park={selectedPark} openButtonUpload={handleOpenUpload}/>
               </Modal>
@@ -98,22 +98,22 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard} ) {
               </Modal>
             </section>
             
-            <div className="p-4">
-              <MultiSelect
-              label="Filter Points of Interest"
-              placeholder="Select filters..."
-              searchable
-              value={selectedFilters}
-              onChange={setSelectedFilters}
-              data={[
-                {group: "Accommodations", items: uniqueTypes.Accommodation_Type},
-                {group: "Principal Types", items: uniqueTypes.Principal_type},
-                {group: "Facilities", items: uniqueTypes.Facility_Type_Installation },
-                {group: "Trail Distance", items: uniqueTypes.TrailDistance},
-              ]}/>
-              </div>
               
-              <section className="h-[700px] w-full">
+              <section className="w-full">
+                <div className="p-4 z-10 absolute mt-24">
+                  <MultiSelect
+                  label="Filter Points of Interest"
+                  placeholder="Select filters..."
+                  searchable
+                  value={selectedFilters}
+                  onChange={setSelectedFilters}
+                  data={[
+                    {group: "Accommodations", items: uniqueTypes.Accommodation_Type},
+                    {group: "Principal Types", items: uniqueTypes.Principal_type},
+                    {group: "Facilities", items: uniqueTypes.Facility_Type_Installation },
+                    {group: "Trail Distance", items: uniqueTypes.TrailDistance},
+                  ]}/>
+                </div>
                 <ParkMap filters={selectedFilters} setUniqueTypes={setUniqueTypes} viewParkDetails={viewParkDetails} />
               </section>
         </main>
