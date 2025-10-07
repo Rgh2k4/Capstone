@@ -1,5 +1,5 @@
 import { database } from "./databaseIntegration";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs } from "firebase/firestore";
 
 
 export async function addData(userID, reviewData) {
@@ -10,4 +10,21 @@ export async function addData(userID, reviewData) {
     } catch (error) {
         console.error("Error: ", error);
     }
+}
+
+export async function readData(userID) {
+    const review = [];
+
+    try {
+        const reviewData = await getDocs(query(collection(database, "users", userID, "review")));
+        reviewData.forEach((review) => {
+            review.push({
+                ...review.data()
+            });
+        });
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+
+    return review;
 }
