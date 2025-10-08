@@ -3,7 +3,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 
-function MapFunction({filters=[]}, setUniqueTypes, viewParkDetails) {
+function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -55,16 +55,27 @@ function MapFunction({filters=[]}, setUniqueTypes, viewParkDetails) {
         "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
         "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
       ];
-
+      
       try {
         const responses = await Promise.all(urls.map(url => fetch(url)));
-        const datasets = await Promise.all(responses.map(r => r.json()));
+        const datasets = await Promise.all(responses.map((r) => {
+          if (!r.ok) throw new Error(`Failed to load ${r.url}: ${r.status}`);
+          return r.json();
+        }));
+        datasets.forEach((data, i) => {
+          console.log(`Dataset ${i}:`, data.features?.length, "features");
+          data.features?.slice(0,5).forEach(f => {
+            console.log(
+              `[RAW POI] Name: ${f.properties?.Name_e || f.properties?.Nom_f}, Label5k: ${f.properties?.Label_e_5k_less}`
+            );
+          });
+        });
 
         const allPois = datasets.flatMap((data, datasetIndex) =>
-          data.features
+          (data.features || [])
           .filter(f => f.geometry?.coordinates?.length === 2 &&
             //This line filters out any POIs without either english or french names and only shows 5k_less trails by default
-            (f.properties?.Name_e || f.properties?.Nom_f) &&
+            (f.properties?.Name_e || f.properties?.Nom_f) ||
             (f.properties?.Label_e_5k_less))
           .map((f, idx) => ({
             //${} inserts the value of a variable/expression into the string
@@ -81,9 +92,6 @@ function MapFunction({filters=[]}, setUniqueTypes, viewParkDetails) {
         );
 
         setPois(allPois);
-      } catch (err) {
-        console.error("Error loading datasets:", err);
-      }
 
       //The following code extracts the unique sub-types for use in the front-end filter and was made with the help of https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set,
       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter, and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
@@ -92,16 +100,28 @@ function MapFunction({filters=[]}, setUniqueTypes, viewParkDetails) {
       const facilityTypes = getUniqueSubTypes(allPois, 'Facility_Type_Installation');
       // This code is the same but for trail distances
       const trailDistanceFields = ['Label_e_5k_less', 'Label_e_20k_5k', 'Label_e_100k_20k', 'Label_e_100k_plus'];
-      const trailDistance = trailDistanceFields.flatMap(field => getUniqueSubTypes(allPois, field));
+      const trailDistance = uniqueArray(
+        trailDistanceFields.flatMap(field => getUniqueSubTypes(allPois, field))
+      );
+
+      // This code converts strings to catch duplicates like 'Marina//Marina' from raising errors
+      //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
+      function uniqueArray(arr) { 
+        return [...new Set(arr.map(String))];
+        }
       
       setUniqueTypes({
-        Accommodation_Type: accommodationTypes,
-        Principal_type: principalTypes,
-        Facility_Type_Installation: facilityTypes,
-        TrailDistance: trailDistance
+        Accommodation_Type: uniqueArray(accommodationTypes),
+        Principal_type: uniqueArray(principalTypes),
+        Facility_Type_Installation: uniqueArray(facilityTypes),
+        TrailDistance: uniqueArray(trailDistance)
       });
+    
+    } catch (err) {
+      console.error("Error loading datasets:", err);
     }
-
+  }
+   
     loadData();
   }, [setUniqueTypes]);
 
@@ -110,10 +130,10 @@ function MapFunction({filters=[]}, setUniqueTypes, viewParkDetails) {
   const filteredPois = filters.length
   ? pois.filter(poi =>
     filters.some(f =>
-      poi.properties?.Accommodation_Type === f ||
-      poi.properties?.Principal_type === f ||
-      poi.properties?.Facility_Type_Installation === f ||
-      ['Label_e_5k_less', 'Label_e_20k_5k', 'Label_e_100k_20k', 'Label_e_100k_plus'].some(label => poi.properties?.[label] === f)
+      [poi.properties?.Accommodation_Type, poi.properties?.Principal_type, poi.properties?.Facility_Type_Installation]
+        .some(val => String(val).trim() === String(f).trim()) ||
+      ['Label_e_5k_less', 'Label_e_20k_5k', 'Label_e_100k_20k', 'Label_e_100k_plus']
+        .some(label => String(poi.properties?.[label]).trim() === String(f).trim())
     )
   )
   :pois;
@@ -158,12 +178,20 @@ function MapFunction({filters=[]}, setUniqueTypes, viewParkDetails) {
           return null;
         }}
         
+        console.log("=== Rendering POIs ===");
+        console.log("Filtered POIs:", filteredPois);
+        filteredPois.forEach(poi => {
+          console.log(
+            `[POI] id=${poi.id}, lat=${poi.location?.lat}, lng=${poi.location?.lng}`
+          );
+        });
+
         return (
         <div>
           <div style={{width:'100%', height:'700px'}}>
             <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
               <Map
-              center={userLocation}
+              defaultCenter={userLocation}
               defaultZoom={10}
               mapId='456dc2bedf64a06c67cc63ea'>
                 

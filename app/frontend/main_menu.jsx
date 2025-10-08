@@ -64,6 +64,14 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
     }
     const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
 
+    //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split
+    function normalizeOption(str) {
+      if (typeof str !== "string") return str;
+      //This removes slashes, duplications and whitespace
+      const parts = [...new Set(str.split('/').map(s => s.trim()))];
+      return parts.join(' / ');
+    }
+
     return (
         <main className="flex flex-col h-screen w-screen relative">
             <header className="w-screen p-2 flex justify-between items-center bg-blue-300">
@@ -93,7 +101,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
                 <UploadWindow onClose={() => setUploadOpened(false)} />
               </Modal>
             </section>
-            
+
             <div className="p-4">
               <MultiSelect
               label="Filter Points of Interest"
