@@ -115,23 +115,23 @@ export async function AdminEditUser({ oldData, newData }) {
     const oldRef = doc(database, "users", oldEmail);
     const snap = await getDoc(oldRef);
     const base = snap.exists() ? snap.data() : {};
-
-    const payload = {
-      ...base,
-      email: newEmail,
-      role: newData.role ?? base.role ?? "User",
-      note: newData.note ?? base.note ?? "",
-      user_ID: base.user_ID ?? oldData?.user_ID ?? "",
-      dateCreated: base.dateCreated ?? Date.now(),
-      lastLogin: base.lastLogin ?? "",
-    };
+    const role = newData.role ?? base.role ?? "User";
+    const note = newData.note ?? base.note ?? "";
 
     if (newEmail !== oldEmail) {
-      await setDoc(doc(database, "users", newEmail), payload);
+      const newRef = doc(database, "users", newEmail);
+      const moved = {
+        ...base, 
+        email: newEmail,
+        role,
+        note,
+      };
+      await setDoc(newRef, moved);
       await deleteDoc(oldRef);
     } else {
-      await setDoc(oldRef, payload, { merge: true });
+      await updateDoc(oldRef, { role, note });
     }
+
     return true;
   } catch {
     return false;
