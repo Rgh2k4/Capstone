@@ -68,8 +68,53 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
     function normalizeOption(str) {
       if (typeof str !== "string") return str;
       //This removes slashes, duplications and whitespace
-      const parts = [...new Set(str.split('/').map(s => s.trim()))];
+      const parts = [...new Set(str.split('/').map(s => s.trim()).filter(Boolean))];
       return parts.join(' / ');
+    }
+    
+    //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+    function uniqueCleanArray(arr) {
+      const cleaned = arr
+      .filter(Boolean)
+      .map(v => normalizeOption(v))
+      .map(String);
+      return [...new Set(cleaned)];
+    }
+    
+    function uniqueArray(arr) {
+      return [...new Set(arr.map(normalizeOption))];
+    }
+    
+    //This code ensures each unique subtype is only grabbed once total from all of the API's to prevent Mantine multiselect throwing an error
+    //It was made with the help of gpt after asking it "How can I ensure each uniquesubtype is grabbed only once from all 4 of these apis?"
+    function buildMultiSelectData(uniqueTypes) {
+      const allValues = new Set();
+      return [
+        { 
+      group: "Accommodations", 
+      items: uniqueTypes.Accommodation_Type
+        .map(normalizeOption)
+        .filter(v => v && !allValues.has(v) && allValues.add(v)) 
+      },
+      { 
+        group: "Principal Types", 
+        items: uniqueTypes.Principal_type
+          .map(normalizeOption)
+          .filter(v => v && !allValues.has(v) && allValues.add(v)) 
+      },
+      { 
+        group: "Facilities", 
+        items: uniqueTypes.Facility_Type_Installation
+          .map(normalizeOption)
+          .filter(v => v && !allValues.has(v) && allValues.add(v)) 
+      },
+      { 
+        group: "Trail Distance", 
+        items: uniqueTypes.TrailDistance
+          .map(normalizeOption)
+          .filter(v => v && !allValues.has(v) && allValues.add(v)) 
+        },
+      ];
     }
 
     return (
@@ -109,12 +154,8 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
               searchable
               value={selectedFilters}
               onChange={setSelectedFilters}
-              data={[
-                {group: "Accommodations", items: uniqueTypes.Accommodation_Type},
-                {group: "Principal Types", items: uniqueTypes.Principal_type},
-                {group: "Facilities", items: uniqueTypes.Facility_Type_Installation },
-                {group: "Trail Distance", items: uniqueTypes.TrailDistance},
-              ]}/>
+              data={buildMultiSelectData(uniqueTypes)}
+              />
               </div>
               
               <section className="h-[700px] w-full">
