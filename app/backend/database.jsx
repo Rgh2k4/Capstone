@@ -174,7 +174,7 @@ export async function EditUser(data) {
 };
 
 
-export async function DeleteUser(data) {
+export async function DeleteUser() {
   try {
     const email = data?.email;
     if (!email) return false;
@@ -182,7 +182,7 @@ export async function DeleteUser(data) {
     const user = auth.currentUser;
     if (user) {
       try {
-        await user.delete();
+        await user.delete()
       } catch (e) {
         console.error("Auth delete error (re-auth may be required):", e);
  
