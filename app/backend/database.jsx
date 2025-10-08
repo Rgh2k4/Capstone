@@ -31,6 +31,38 @@ export async function SetLastLoginDate(data) {
 };
 
 
+export async function AdminEditUser({ oldData, newData }) {
+  try {
+    const oldEmail = oldData?.email?.trim();
+    const newEmail = newData?.email?.trim();
+    if (!oldEmail || !newEmail) return false;
+
+    const oldRef = doc(database, "users", oldEmail);
+    const snap = await getDoc(oldRef);
+    const base = snap.exists() ? snap.data() : {};
+
+    const payload = {
+      ...base,
+      email: newEmail,
+      role: newData.role ?? base.role ?? "User",
+      note: newData.note ?? base.note ?? "",
+      user_ID: base.user_ID ?? oldData?.user_ID ?? "",
+      dateCreated: base.dateCreated ?? Date.now(),
+      lastLogin: base.lastLogin ?? "",
+    };
+
+    if (newEmail !== oldEmail) {
+      await setDoc(doc(database, "users", newEmail), payload);
+      await deleteDoc(oldRef);
+    } else {
+      await setDoc(oldRef, payload, { merge: true });
+    }
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export async function EditUser(data) {
   try {
     const user = auth.currentUser;
@@ -77,13 +109,13 @@ export async function DeleteUser(data) {
       try {
         await user.delete();
       } catch (e) {
-        console.error("Auth delete error", e);
-  
+        console.error("Auth delete error (re-auth may be required):", e);
+ 
       }
     }
 
     const userRef = doc(database, "users", email);
-   
+
     // const reviewsSnap = await getDocs(collection(userRef, "review"));
     // if (!reviewsSnap.empty) {
     //   const batch = writeBatch(database);
