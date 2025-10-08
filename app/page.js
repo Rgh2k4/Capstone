@@ -7,6 +7,7 @@ import AdminMenu from './frontend/admin_menu.jsx';
 import { auth } from "./backend/databaseIntegration.jsx";
 import { onAuthStateChanged } from "firebase/auth";
 import { Loader } from '@mantine/core';
+import { UpdateLastLogin } from './backend/database.jsx';
 
 
 export default function Home() {

@@ -1,7 +1,7 @@
 import AdminList from "./admin_list";
 import UserList from "./user_list";
 
-function AccountList({ setShowModalEdit, setShowModalAdd, setRole, sendUser, accounts }) {
+function AccountList({ setShowModalEdit, setShowModalAdd, setRole, sendUser, users, admins }) {
   const handleAdd = (role) => {
     setRole(role);
     setShowModalAdd(true);
@@ -25,7 +25,7 @@ function AccountList({ setShowModalEdit, setShowModalAdd, setRole, sendUser, acc
             </button>
           </div>
           <div className="rounded-b-lg p-4 overflow-y-auto">
-            <AdminList handleEdit={handleEdit} data={accounts} />
+            <UserList handleEdit={handleEdit} data={users}  />
           </div>
         </section>
 
@@ -37,7 +37,7 @@ function AccountList({ setShowModalEdit, setShowModalAdd, setRole, sendUser, acc
             </button>
           </div>
           <div className="rounded-b-lg p-4 overflow-y-auto">
-            <UserList handleEdit={handleEdit} data={accounts}  />
+            <AdminList handleEdit={handleEdit} data={admins} />
           </div>
         </section>
       </div>
