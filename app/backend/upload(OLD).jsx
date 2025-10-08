@@ -51,7 +51,7 @@ export function setupUploadEvents() {
     document.getElementById("close-upload")?.addEventListener("click", closeSidebar);
     document.getElementById("cancel-upload")?.addEventListener("click", closeSidebar);
 }
-
+//asdsadsa
 function closeSidebar() {
     const sidebar = document.getElementById("upload-sidebar");
     sidebar?.classList.add("translate-x-full");
