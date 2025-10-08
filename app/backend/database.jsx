@@ -203,3 +203,20 @@ export async function addData(userID, reviewData) {
     console.log(error);
   }
 };
+
+export async function readData(userID) {
+    const review = [];
+
+    try {
+        const reviewData = await getDocs(query(collection(database, "users", userID, "review")));
+        reviewData.forEach((review) => {
+            review.push({
+                ...review.data()
+            });
+        });
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+
+    return review;
+};
