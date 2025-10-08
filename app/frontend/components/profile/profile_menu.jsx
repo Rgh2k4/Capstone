@@ -7,8 +7,12 @@ import Modal from "../Modal";
 import ChangeCredential from "./change_credential";
 import { Button } from "@mantine/core";
 import { auth } from "../../../backend/databaseIntegration.jsx";
+<<<<<<< HEAD
+import { DeleteUser } from "../../../backend/functions/database.jsx";
+=======
 import { SetDisplayName } from "@/app/backend/database";
 import ContactWindow from "./contact_window";
+>>>>>>> d2aa530159290fa2dd4c9909387e3d19b1a5a524
 
 export default function ProfileMenu( { onRouteToLogin, userData } ) {
 
@@ -30,9 +34,14 @@ export default function ProfileMenu( { onRouteToLogin, userData } ) {
     setShowModal(false);
   }
 
-  function handleDeleteAccount() {
-    user.delete();
-    onRouteToLogin();
+async function handleDeleteAccount() {
+    if (!user?.email) return;
+    const ok = await DeleteUser({ email: user.email });
+    if (ok) {
+      onRouteToLogin();
+    } else {
+      alert("Account deletion failed. Please sign in again and retry.");
+    }
   }
 
   
