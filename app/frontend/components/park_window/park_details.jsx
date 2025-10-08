@@ -3,11 +3,13 @@
 import Reviews from "./review_section";
 import {useState, useEffect} from "react";
 import {doc, updateDoc, arrayUnion, arrayRemove} from "firebase/firestore";
-import {db, auth} from "../../../backend/databaseIntegration"
+import {database as db, auth} from "../../../backend/databaseIntegration"
 import { ActionIcon } from '@mantine/core';
 import { IconHeart } from '@tabler/icons-react';
 
 export default function ParkDetails({ park, openButtonUpload }) {
+
+  if (!park) return null;
 
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -88,7 +90,7 @@ export default function ParkDetails({ park, openButtonUpload }) {
     <main className="flex flex-col">
       <header className="flex flex-col">
         <img src="https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg" alt="" className="h-75"/>
-      </header>\
+      </header>
       
       <section className="my-20 place-self-center">
         <h1 className="font-bold text-2xl">Ratings</h1>
