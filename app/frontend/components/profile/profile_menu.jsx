@@ -33,7 +33,7 @@ export default function ProfileMenu( { onRouteToLogin, userData } ) {
 
 async function handleDeleteAccount() {
     if (!user?.email) return;
-    const ok = await DeleteUser({ email: user.email });
+    const ok = await DeleteUser();
     if (ok) {
       onRouteToLogin();
     } else {
