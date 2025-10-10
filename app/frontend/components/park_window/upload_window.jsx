@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { setupUploadEvents } from "../../../backend/upload.jsx";
+import { setupUploadEvents } from "../../../backend/upload(OLD).jsx";
 import { auth, storage } from "../../../backend/databaseIntegration.jsx";
 import { ref, uploadBytes } from "firebase/storage";
+import { uploadImage } from "@/app/backend/UploadStorage.jsx";
 
 export default function Upload_Window() {
   useEffect(() => {
@@ -11,6 +12,13 @@ export default function Upload_Window() {
     window.storage = { ref: (path) => ({ put: (file, meta) => uploadBytes(ref(storage, path), file, meta) }) };
     setupUploadEvents();
   }, []);
+
+  function handleImageFile(e) {
+    const file = e.target.files[0];
+    if (file) {
+      uploadImage(file);
+    }
+  }
 
   return (
     <main className="w-[920px] max-w-[92vw]">
@@ -43,6 +51,7 @@ export default function Upload_Window() {
             />
             <div className="flex items-center justify-end gap-3">
               <button id="cancel-upload" className="rounded-xl border px-6 py-3">Cancel</button>
+              <input type="file" onChange={handleImageFile} />
               <button id="upload-button" className="rounded-xl bg-[#a7d8ff] px-8 py-3 text-xl font-semibold shadow">Submit</button>
             </div>
           </div>

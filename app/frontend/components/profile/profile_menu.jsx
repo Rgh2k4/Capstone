@@ -4,16 +4,19 @@ import { useState } from "react";
 import ProfileWindow from "./profile_window";
 import SettingsMenu from "./settings_menu";
 import Modal from "../Modal";
-import ChangeCredential from "./change_password";
+import ChangeCredential from "./change_credential";
 import { Button } from "@mantine/core";
 import { auth } from "../../../backend/databaseIntegration.jsx";
+import { DeleteUser } from "../../../backend/database.jsx";
 import { SetDisplayName } from "@/app/backend/database";
+import ContactWindow from "./contact_window";
 
 export default function ProfileMenu( { onRouteToLogin, userData } ) {
 
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
   const [showModal3, setShowModal3] = useState(false);
+  const [showModal4, setShowModal4] = useState(false);
   const [credentialType, setCredentialType] = useState('');
 
   const user = auth.currentUser;
@@ -28,9 +31,13 @@ export default function ProfileMenu( { onRouteToLogin, userData } ) {
     setShowModal(false);
   }
 
-  function handleDeleteAccount() {
-    user.delete();
-    onRouteToLogin();
+async function handleDeleteAccount() {
+    const ok = await DeleteUser();
+    if (ok) {
+      onRouteToLogin();
+    } else {
+      alert("Account deletion failed. Please sign in again and retry.");
+    }
   }
 
   
@@ -44,9 +51,14 @@ export default function ProfileMenu( { onRouteToLogin, userData } ) {
     setShowModal3(true);
   }
 
+  function handleContactSupport() {
+    setShowModal2(false);
+    setShowModal4(true);
+  }
+
 
   
-  function handleSubmitCredential(value) {    
+  function handleSubmitCredential(value) { 
     setShowModal3(false);
   }
   
@@ -69,10 +81,13 @@ export default function ProfileMenu( { onRouteToLogin, userData } ) {
         <ProfileWindow email={userData.email} dateCreated={userData.dateCreated} displayName={userData.displayName} onChangeDisplayName={handleChangeDisplayName} />
       </Modal>
       <Modal isVisible={showModal2} onClose={() => setShowModal2(false)}>
-        <SettingsMenu onRouteToLogin={onRouteToLogin} onChangeCredential={handleChangeCredential} onDeleteAccount={handleDeleteAccount}/>
+        <SettingsMenu onRouteToLogin={onRouteToLogin} onChangeCredential={handleChangeCredential} onDeleteAccount={handleDeleteAccount} onContactSupport={handleContactSupport}/>
       </Modal>
       <Modal isVisible={showModal3} onClose={() => setShowModal3(false)}>
         <ChangeCredential type={credentialType} onSubmit={handleSubmitCredential}/>
+      </Modal>
+      <Modal isVisible={showModal4} onClose={() => setShowModal4(false)}>
+        <ContactWindow type={credentialType} onSubmit={handleSubmitCredential} onClose={() => setShowModal4(false)} />
       </Modal>
     </details>
   );
