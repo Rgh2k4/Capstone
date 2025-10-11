@@ -2,7 +2,7 @@
 
 import Reviews from "./review_section";
 import {useState, useEffect} from "react";
-import {doc, updateDoc, arrayUnion, arrayRemove} from "firebase/firestore";
+import {doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove} from "firebase/firestore";
 import {database as db, auth} from "../../../backend/databaseIntegration"
 import { ActionIcon } from '@mantine/core';
 import { IconHeart } from '@tabler/icons-react';
@@ -61,7 +61,7 @@ export default function ParkDetails({ park, openButtonUpload }) {
   let hasImage = false;
 
   function checkImages(photos) {
-    if (!photos[0] == "" || null) hasImage = true;
+    if (photos && photos[0]) hasImage = true;
   }
 
   function handleData({ user }) {
@@ -96,13 +96,13 @@ export default function ParkDetails({ park, openButtonUpload }) {
         <h1 className="font-bold text-2xl">Ratings</h1>
       </section>
       <section className="flex flex-col items-center text-justify mb-20">
-        <h1 className="font-extrabold text-2xl mb-10">
-          {park.name}
-        </h1>
-        <p className="w-3/4">
-          {park.description}
-        </p>
+      <h1 className="font-extrabold text-2xl mb-10 flex items-center gap-2">
+      {park.name}
+      <FavoriteButton />
+      </h1>
+      <p className="w-3/4">{park.description}</p>
       </section>
+
       <section className="flex flex-col items-center">
         <h1 className="font-bold text-xl mb-15">Wildlife</h1>
         <div className="flex gap-5">
