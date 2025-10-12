@@ -1,48 +1,53 @@
 "use client";
-import { Button } from '@mantine/core';
+import { Button } from "@mantine/core";
 import { useState } from "react";
 import ParkDetails from "./components/park_window/park_details";
 import ProfileMenu from "./components/profile/profile_menu";
 import dynamic from "next/dynamic";
-import UploadWindow from './components/park_window/upload_window.jsx';
-import Modal from './components/Modal';
+import UploadWindow from "./components/park_window/upload_window.jsx";
+import Modal from "./components/Modal";
 import { auth } from "../backend/databaseIntegration.jsx";
-import { useEffect } from 'react';
-import {MultiSelect} from "@mantine/core";
-import {getUniqueTypes} from "../backend/mapFunction";
-import { GetUserData, isAdmin } from '../backend/database';
+import { useEffect } from "react";
+import { MultiSelect } from "@mantine/core";
+import { getUniqueTypes } from "../backend/mapFunction";
+import { GetUserData, isAdmin } from "../backend/database";
 
 const MapFunction = dynamic(() =>  import("../backend/mapFunction"), {
   ssr:false
 });
 
-export default function MainMenu( { onRouteToLogin, onRouteToDashboard} ) {
-
+export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [overlay, setOverlay] = useState(false);
   const [uploadOpened, setUploadOpened] = useState(false);
-  const [selectedPark, setSetselectedPark] = useState()
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [selectedPark, setSetselectedPark] = useState();
   const user = auth.currentUser;
-  const userData = GetUserData(user.email).then(userData => {
-    console.log("User Data:", userData);
-    console.log("Is Admin:", userData.role === "Admin");
-    if (userData.role === "Admin") {
-      setIsAdmin(true)
-    }
-  });
+  const [userData, setUserData] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  
+  function setupUser() {
+    //console.log("Current user:", user);
+    const email = auth.currentUser.email;
+    GetUserData(email).then((data) => {
+      console.log("User Data:", data);
+      console.log("Is Admin:", data.role === "Admin");
+      if (data.role === "Admin") {
+        setIsAdmin(true);
+      }
+      setUserData(data);
+    });
+  }
+
   const [upload, setUpload] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [uniqueTypes, setUniqueTypes] = useState({
     Accommodation_Type: [],
     Principal_type: [],
     Facility_Type_Installation: [],
-    TrailDistance:[],
+    TrailDistance: [],
   });
-  
-  function viewParkDetails({park}) {
-    setSetselectedPark({park})
+
+  function viewParkDetails({ park }) {
+    setSetselectedPark({ park });
   }
 
   function handleOpenOverlay() {
