@@ -11,7 +11,7 @@ import testUsers from "./components/admin/user_test_data.json";
 import { Button } from "@mantine/core";
 import { auth } from "../backend/databaseIntegration.jsx";
 import ProfileMenu from "./components/profile/profile_menu";
-import { GetUserData, LoadAdminList, LoadUserList } from "../backend/database";
+import { GetUserData, isAdmin, LoadAdminList, LoadUserList } from "../backend/database";
 
 function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [showModal, setShowModal] = useState(false);
@@ -26,18 +26,31 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [users, setUsers] = useState([]);
   const [admins, setAdmins] = useState([]);
 
-  const [isAdmin, setIsAdmin] = useState(false)
+
   const user = auth.currentUser;
-  const userData = GetUserData(user.email).then(userData => {
-    if (userData.role === "Admin") {
-      setIsAdmin(true)
-    } else {
-      onRouteToMainMenu();
-    }
-  });
+  const [userData, setUserData] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  function setupUser() {
+    //console.log("Current user:", user);
+    const email = auth.currentUser.email;
+    GetUserData(email).then((data) => {
+      //console.log("User Data:", data);
+      console.log("Is Admin:", data.role === "Admin");
+      if (data.role === "Admin") {
+        setIsAdmin(true);
+      } else {
+        alert("Access Denied. Redirecting to Main Menu.");
+        onRouteToMainMenu();
+      }
+      setUserData(data);
+    });
+  }
 
 
   useEffect(() => {
+    setupUser();
+
     const userList = LoadUserList().then(userList => {
       console.log("User List:", userList);
       setUsers(userList)
@@ -46,8 +59,6 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
       console.log("Admin List:", adminList);
       setAdmins(adminList)
     });
-    
-  
   }, [])
   
 
@@ -101,8 +112,12 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
         <div className="grid grid-cols-2 mb-20">
           <h1 className="text-4xl font-bold text-gray-800">{pageName}</h1>
           <div className=" flex flex-row justify-end space-x-8">
-            {user && <Button size='lg' onClick={onRouteToMainMenu}>Main Menu</Button>}
-            <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
+            {userData && (
+              <>
+                <Button size='lg' onClick={onRouteToMainMenu}>Main Menu</Button>
+                <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
+              </>
+            )}
           </div>
         </div>
         {pageName === "Dashboard" && (
