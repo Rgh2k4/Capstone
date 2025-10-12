@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@googlemaps/polyline-codec": "^1.0.28",
     "@mantine/carousel": "^8.3.2",
     "@mantine/charts": "^8.3.2",
     "@mantine/code-highlight": "^8.3.2",

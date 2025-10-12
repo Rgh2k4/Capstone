@@ -2,6 +2,7 @@
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
 import React, {useState, useEffect, useRef} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
+import {decode} from "@googlemaps/polyline-codec"
 
 function ParkMap({filters=[]}, viewParkDetails) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
@@ -9,8 +10,8 @@ function ParkMap({filters=[]}, viewParkDetails) {
   const [pois, setPois] = useState([]);
   const [selectedPOI, setSelectedPOI] = useState(null);
   //This code gets the users location to start the map at, and if the location is not found, it will start the map at the useState location
-  const [userLocation, setUserLocation] = useState({lat: 52.8866, lng:-118.10222}
-  );
+  const [userLocation, setUserLocation] = useState({lat: 52.8866, lng:-118.10222});
+  const [routeData, setRouteData] = useState(null);
 
   //https://developers.google.com/maps/documentation/utilities/polylineutility & https://developers.google.com/maps/documentation/javascript/reference/polygon#Polyline
   const mapRef = useRef(null);
@@ -149,6 +150,17 @@ function ParkMap({filters=[]}, viewParkDetails) {
       let response, data;
 
        try {
+        if (filteredPois.length < 2) {
+          alert("Please select at least 2 points on the map to compute a route");
+          return
+        }
+
+        const origin = {latlng: userLocation};
+        const destination = {latLng: filteredPois[filteredPois.length - 1].location};
+        const intermediates = filteredPois
+          .slice(0, filteredPois.length - 1)
+          .map(p => ({location: {latLng: p.location}}));
+
         const response = await fetch(
           "https://routes.googleapis.com/directions/v2:computeRoutes",
           {
