@@ -83,6 +83,10 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
     function uniqueArray(arr) {
       return [...new Set(arr.map(normalizeOption))];
     }
+
+    function handleComputeRoute(){
+      
+    }
     
     //This code ensures each unique subtype is only grabbed once total from all of the API's to prevent Mantine multiselect throwing an error
     //It was made with the help of gpt after asking it "How can I ensure each uniquesubtype is grabbed only once from all 4 of these apis?"
@@ -153,17 +157,6 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
                 <UploadWindow onClose={() => setUploadOpened(false)} />
               </Modal>
             </section>
-
-            {/*<div className="p-4">
-              <MultiSelect
-              label="Filter Points of Interest"
-              placeholder="Select filters..."
-              searchable
-              value={selectedFilters}
-              onChange={setSelectedFilters}
-              data={buildMultiSelectData(uniqueTypes)}
-              />
-              </div>*/}
               
               <section className="h-[700px] w-full">
                 <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />

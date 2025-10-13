@@ -178,6 +178,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
           throw new Error(data.error?.message || "Failed to fetch route");}
           
           const route = data.routes[0];
+
           const polyline = route.polyline.encodedPolyline;
           //As seen here https://developers.google.com/maps/documentation/routes/compute_route_directions google maps api uses meters for distance
           //this ensures the distance is instead mesured in kilometers to 2 decimal places
@@ -222,6 +223,18 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
           </Map>
         </APIProvider>
       </div>
+      
+      </div>
+  );
+}
+
+export function computeRoute(routeData) {
+  if (!routeData) return null;
+
+  return (
+    <div>
+      <strong>Route Distance:</strong> {routeData.distance} km<br/>
+      <strong>Duration:</strong> {routeData.duration}
     </div>
   );
 }
