@@ -1,26 +1,27 @@
 "use client";
-import { Button } from '@mantine/core';
+import { Button } from "@mantine/core";
 import { useState } from "react";
 import ParkDetails from "./components/park_window/park_details";
 import ProfileMenu from "./components/profile/profile_menu";
 import dynamic from "next/dynamic";
-import UploadWindow from './components/park_window/upload_window.jsx';
-import Modal from './components/Modal';
+import UploadWindow from "./components/park_window/upload_window.jsx";
+import Modal from "./components/Modal";
 import { auth } from "../backend/databaseIntegration.jsx";
-import { useEffect } from 'react';
-import {MultiSelect} from "@mantine/core";
-import { GetUserData, isAdmin } from '../backend/database';
+import { useEffect } from "react";
+import { MultiSelect } from "@mantine/core";
+import { getUniqueTypes } from "../backend/mapFunction";
+import { GetUserData, isAdmin } from "../backend/database";
 
-const MapFunction = dynamic(() =>  import("../backend/mapFunction"), {
-  ssr:false
+const ParkMap = dynamic(() => import("../backend/mapFunction"), {
+  ssr: false,
 });
+
 
 export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
 
   const [overlay, setOverlay] = useState(false);
   const [uploadOpened, setUploadOpened] = useState(false);
-  const [selectedPark, setSelectedPark] = useState(null)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [selectedPark, setSelectedPark] = useState(null);
   const user = auth.currentUser;
   const userData = GetUserData(user.email).then(userData => {
     console.log("User Data:", userData);
@@ -34,7 +35,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
     Accommodation_Type: [],
     Principal_type: [],
     Facility_Type_Installation: [],
-    TrailDistance:[],
+    TrailDistance: [],
   });
   
   function viewParkDetails({park}) {
