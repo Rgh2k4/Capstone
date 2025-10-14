@@ -195,9 +195,6 @@ export async function DeleteUser() {
     console.error("DeleteUser error:", error);
     return false;
   }
-};
-
-
 
 export async function addData(userID, reviewData) {
 
