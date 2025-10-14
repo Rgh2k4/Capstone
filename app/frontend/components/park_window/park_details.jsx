@@ -1,18 +1,96 @@
 "use client";
 
 import Reviews from "./review_section";
+import {useState, useEffect} from "react";
+import {doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove} from "firebase/firestore";
+import {database as db, auth} from "../../../backend/databaseIntegration"
+import { ActionIcon } from '@mantine/core';
+import { IconHeart } from '@tabler/icons-react';
 
 export default function ParkDetails({ park, openButtonUpload }) {
+
+  if (!park) return null;
+
+   const handleRouteClick = async () => {
+    if (!computeRoute) return;
+    const route = await computeRoute(park);
+    if (route) {
+      alert(`Distance: ${route.distance} km\nDuration: ${route.duration} min`);
+    }
+  };
+
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    async function checkFavorite() {
+      const user = auth.currentUser;
+      if (!user || !park?.id) return;
+
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const favorites = userSnap.data().favorites || [];
+        setIsFavorite(favorites.includes(park.id));
+      }
+    }
+    checkFavorite();
+  }, [park]);
+
+  async function toggleFavorite() {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("You must be logged in to favorite a park.");
+      return;
+    }
+
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    //This code creates the user doc if the user doesnt have one yet
+    if (!userSnap.exists()) {
+      await setDoc(userRef, { favorites: [] });
+    }
+
+    if (isFavorite) {
+      await updateDoc(userRef, {
+        favorites: arrayRemove(park.id),
+      });
+      setIsFavorite(false);
+    } else {
+      await updateDoc(userRef, {
+        favorites: arrayUnion(park.id),
+      });
+      setIsFavorite(true);
+    }
+  }
+
   let wildlifePhotos = ["image_1.jpeg", "image_2.jpeg"];
   let hasImage = false;
 
   function checkImages(photos) {
-    if (!photos[0] == "" || null) hasImage = true;
+    if (photos && photos[0]) hasImage = true;
   }
 
   function handleData({ user }) {
     alert(`${user.username} has been reported.`);
   }
+  
+  const FavoriteButton = () => (
+  <ActionIcon
+      size={42}
+      variant="default"
+      aria-label="Favorite Location"
+      onClick={toggleFavorite}
+    >
+      <IconHeart
+        size={24}
+        className={`text-xl transition-transform ${
+          isFavorite ? "text-red-500 scale-110" : "text-gray-500"
+        }`}
+      />
+    </ActionIcon>
+  );
 
   checkImages(wildlifePhotos);
 
@@ -21,17 +99,18 @@ export default function ParkDetails({ park, openButtonUpload }) {
       <header className="flex flex-col">
         <img src="https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg" alt="" className="h-75"/>
       </header>
+      
       <section className="my-20 place-self-center">
         <h1 className="font-bold text-2xl">Ratings</h1>
       </section>
       <section className="flex flex-col items-center text-justify mb-20">
-        <h1 className="font-extrabold text-2xl mb-10">
-          {park.name}
-        </h1>
-        <p className="w-3/4">
-          {park.description}
-        </p>
+      <h1 className="font-extrabold text-2xl mb-10 flex items-center gap-2">
+      {park.name}
+      <FavoriteButton />
+      </h1>
+      <p className="w-3/4">{park.description}</p>
       </section>
+
       <section className="flex flex-col items-center">
         <h1 className="font-bold text-xl mb-15">Wildlife</h1>
         <div className="flex gap-5">

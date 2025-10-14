@@ -11,15 +11,17 @@ import { useEffect } from "react";
 import { MultiSelect } from "@mantine/core";
 import { getUniqueTypes } from "../backend/mapFunction";
 import { GetUserData, isAdmin } from "../backend/database";
+import { computeRouteOnMap } from "../backend/mapFunction";
 
 const ParkMap = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
 });
 
-export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
+export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
+
   const [overlay, setOverlay] = useState(false);
   const [uploadOpened, setUploadOpened] = useState(false);
-  const [selectedPark, setSetselectedPark] = useState();
+  const [selectedPark, setSelectedPark] = useState(null);
   const user = auth.currentUser;
   const [userData, setUserData] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -45,9 +47,9 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     Facility_Type_Installation: [],
     TrailDistance: [],
   });
-
-  function viewParkDetails({ park }) {
-    setSetselectedPark({ park });
+  
+  function viewParkDetails({park}) {
+    setSelectedPark({park})
   }
 
   function handleOpenOverlay() {
@@ -58,92 +60,114 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     setOverlay(false);
     setUploadOpened(true);
   }
-
-  function checkUser() {
-    if (!user) {
-      console.log("No user is logged in");
-    } else {
-      console.log("User is logged in:", user.email);
+    
+    useEffect(() => {
+      checkUser();
+    })
+    
+    function checkUser() {
+      if (!user) {
+        console.log("No user is logged in");
+      } else {
+        console.log("User is logged in:", user.email);
+      }
     }
-  }
+    const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
 
-  useEffect(() => {
-    checkUser();
-    setupUser();
-  }, []);
+    //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split
+    function normalizeOption(str) {
+      if (typeof str !== "string") return str;
+      //This removes slashes, duplications and whitespace
+      const parts = [...new Set(str.split('/').map(s => s.trim()).filter(Boolean))];
+      return parts.join(' / ');
+    }
+    
+    //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+    function uniqueCleanArray(arr) {
+      const cleaned = arr
+      .filter(Boolean)
+      .map(v => normalizeOption(v))
+      .map(String);
+      return [...new Set(cleaned)];
+    }
+    
+    function uniqueArray(arr) {
+      return [...new Set(arr.map(normalizeOption))];
+    }
+    
+    //This code ensures each unique subtype is only grabbed once total from all of the API's to prevent Mantine multiselect throwing an error
+    //It was made with the help of gpt after asking it "How can I ensure each uniquesubtype is grabbed only once from all 4 of these apis?"
+    function buildMultiSelectData(uniqueTypes) {
+      const allValues = new Set();
+      return [
+        { 
+      group: "Accommodations", 
+      items: uniqueTypes.Accommodation_Type
+        .map(normalizeOption)
+        .filter(v => v && !allValues.has(v) && allValues.add(v)) 
+      },
+      { 
+        group: "Principal Types", 
+        items: uniqueTypes.Principal_type
+          .map(normalizeOption)
+          .filter(v => v && !allValues.has(v) && allValues.add(v)) 
+      },
+      { 
+        group: "Facilities", 
+        items: uniqueTypes.Facility_Type_Installation
+          .map(normalizeOption)
+          .filter(v => v && !allValues.has(v) && allValues.add(v)) 
+      },
+      { 
+        group: "Trail Distance", 
+        items: uniqueTypes.TrailDistance
+          .map(normalizeOption)
+          .filter(v => v && !allValues.has(v) && allValues.add(v)) 
+        },
+      ];
+    }
 
-  return (
-    <main className="flex flex-col h-screen w-screen relative">
-      <header className="w-screen p-2 flex justify-between items-center bg-blue-300 absolute top-0 z-10 shadow-md shadow-gray-600">
-        <h1 className="w-60 ml-18 text-2xl break-normal font-bold text-white text-shadow-sm text-shadow-black text-center">
-          National Parks Information System
-        </h1>
-        <input
-          type="text"
-          value="Search..."
-          readOnly
-          className="w-3xl pl-6 h-15 rounded-full text-neutral-950 bg-white border-2 border-gray-400"
-        ></input>
-        <div className=" flex flex-row mr-24 space-x-8">
-          {userData ? (
-            <>
-              {isAdmin && (
-                <Button size="lg" onClick={() => onRouteToDashboard(userData)}>
-                  Dashboard
-                </Button>
-              )}
-              <ProfileMenu
-                onRouteToLogin={onRouteToLogin}
-                userData={userData}
-              />
-            </>
-          ) : (
-            <Button size="lg" onClick={onRouteToLogin}>
-              Log in
-            </Button>
-          )}
-        </div>
-      </header>
-      <section className="h-fit w-full">
-        <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
-          <ParkDetails
-            park={selectedPark}
-            openButtonUpload={handleOpenUpload}
-          />
-        </Modal>
-        <Modal isVisible={uploadOpened} onClose={() => setOverlay(false)}>
-          <UploadWindow onClose={() => setUploadOpened(false)} />
-        </Modal>
-      </section>
+    return (
+        <main className="flex flex-col h-screen w-screen relative">
+            <header className="w-screen p-2 flex justify-between items-center bg-blue-300 absolute top-0 z-10 shadow-md shadow-gray-600">
+                <h1 className="w-60 ml-18 text-2xl break-normal font-bold text-white text-shadow-sm text-shadow-black text-center">
+                    National Parks Information System
+                </h1>
+                <div className="p-4">
+                  <MultiSelect
+                  placeholder="Filter and search..."
+                  searchable
+                  className="w-3xl pl-6 h-15 rounded-full text-neutral-950 border-gray-400"
+                  value={selectedFilters}
+                  onChange={setSelectedFilters}
+                  data={buildMultiSelectData(uniqueTypes)}
+                  />
+                </div>
+                <div className=" flex flex-row mr-24 space-x-8">
+                  {user ? (
+                    <>
+                      {isAdmin && <Button size='lg' onClick={onRouteToDashboard}>Dashboard</Button>}
+                      <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
+                    </>
+                    ) : (
+                      <Button size='lg' onClick={onRouteToLogin}>Log in</Button>
+                    )
+                  }
 
-      <section className="w-full">
-        <div className="p-4 z-10 absolute mt-24">
-          <MultiSelect
-            label="Filter Points of Interest"
-            placeholder="Select filters..."
-            searchable
-            value={selectedFilters}
-            onChange={setSelectedFilters}
-            data={[
-              {
-                group: "Accommodations",
-                items: uniqueTypes.Accommodation_Type,
-              },
-              { group: "Principal Types", items: uniqueTypes.Principal_type },
-              {
-                group: "Facilities",
-                items: uniqueTypes.Facility_Type_Installation,
-              },
-              { group: "Trail Distance", items: uniqueTypes.TrailDistance },
-            ]}
-          />
-        </div>
-        <ParkMap
-          filters={selectedFilters}
-          setUniqueTypes={setUniqueTypes}
-          viewParkDetails={viewParkDetails}
-        />
-      </section>
-    </main>
-  );
+                </div>
+            </header>  
+            <section className="h-[700px] w-full">
+              <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
+                <ParkDetails park={selectedPark} openButtonUpload={handleOpenUpload}/>
+              </Modal>
+              <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
+                <UploadWindow onClose={() => setUploadOpened(false)} />
+              </Modal>
+            </section>
+              
+              <section className="h-[700px] w-full">
+                <ParkMap filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />
+              </section>
+        </main>
+    );  
 }
