@@ -31,8 +31,8 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
   }
 
   async function handleDeleteAccount() {
-    const ok = await DeleteUser();
-    if (ok) {
+    const userDeleted = await DeleteUser();
+    if (userDeleted) {
       onRouteToLogin();
     } else {
       alert("Account deletion failed. Please sign in again and retry.");
