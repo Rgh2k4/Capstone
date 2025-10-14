@@ -75,14 +75,19 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
     const [user, currentUser] = useState(null);
     
     useEffect(() => {
-      checkUser();
-    })
+      if (checkUser()) {
+        console.log("User is logged in:", user.email);
+        setupUser();
+      } else {
+        console.log("No user is logged in");
+      }
+    }, []);
     
     function checkUser() {
       if (!user) {
-        console.log("No user is logged in");
+        return false;
       } else {
-        console.log("User is logged in:", user.email);
+        return true;
       }
     }
     
@@ -152,7 +157,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
                 </h1>
                 <input type="text" value="Search..." readOnly className="w-3xl pl-6 h-15 rounded-full text-neutral-950 bg-white border-2 border-gray-400"></input>
                 <div className=" flex flex-row mr-24 space-x-8">
-                  {user ? (
+                  {userData ? (
                     <>
                       {isAdmin && <Button size='lg' onClick={onRouteToDashboard}>Dashboard</Button>}
                       <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
