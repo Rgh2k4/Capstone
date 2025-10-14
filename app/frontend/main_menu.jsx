@@ -11,11 +11,11 @@ import { useEffect } from "react";
 import { MultiSelect } from "@mantine/core";
 import { getUniqueTypes } from "../backend/mapFunction";
 import { GetUserData, isAdmin } from "../backend/database";
+import { computeRouteOnMap } from "../backend/mapFunction";
 
 const ParkMap = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
 });
-
 
 export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
 
@@ -160,7 +160,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
             </section>
               
               <section className="h-[700px] w-full">
-                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />
+                <ParkMap filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />
               </section>
         </main>
     );  

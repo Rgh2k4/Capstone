@@ -11,6 +11,14 @@ export default function ParkDetails({ park, openButtonUpload }) {
 
   if (!park) return null;
 
+   const handleRouteClick = async () => {
+    if (!computeRoute) return;
+    const route = await computeRoute(park);
+    if (route) {
+      alert(`Distance: ${route.distance} km\nDuration: ${route.duration} min`);
+    }
+  };
+
   const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {

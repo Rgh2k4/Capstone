@@ -228,15 +228,33 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
   );
 }
 
-export function computeRoute(routeData) {
-  if (!routeData) return null;
+//https://developers.google.com/maps/documentation/javascript/legacy/directions, https://developers.google.com/maps/documentation/javascript/examples/directions-simple
+export async function computeRoute(mapInstance, userLocation, poi) {
+  const origin = userLocation;
+  const destination = poi.location;
 
-  return (
-    <div>
-      <strong>Route Distance:</strong> {routeData.distance} km<br/>
-      <strong>Duration:</strong> {routeData.duration}
-    </div>
-  );
+  const directionsService = new window.google.maps.DirectionsService();
+
+  const result = await new Promise((resolve, reject) => {
+    directionsService.route(
+      {
+        origin,
+        destination,
+        travelMode: window.google.maps.TravelMode.DRIVING,
+      },
+      (response, status) => {
+        if (status === 'OK') resolve(response.routes[0]);
+        else reject(status);
+      }
+    );
+  });
+
+  if (!result) return null;
+
+  const distance = (result.legs[0].distance.value / 1000).toFixed(2); //This ensure teh distance is mesured in km
+  const duration = Math.ceil(result.legs[0].duration.value / 60); 
+
+  return { distance, duration };
 }
 
-export default MapFunction;
+export default ParkMap;
