@@ -160,7 +160,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
             </section>
               
               <section className="h-[700px] w-full">
-                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />
+                <ParkMap filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />
               </section>
         </main>
     );  
