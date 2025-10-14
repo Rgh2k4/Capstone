@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { MultiSelect } from "@mantine/core";
 import { getUniqueTypes } from "../backend/mapFunction";
 import { GetUserData, isAdmin } from "../backend/database";
+import { computeRouteOnMap } from "../backend/mapFunction";
 
 const MapFunction = dynamic(() =>  import("../backend/mapFunction"), {
   ssr:false
