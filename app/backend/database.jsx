@@ -176,12 +176,13 @@ export async function EditUser(data) {
 
 export async function DeleteUser() {
   try {
-
-    const user = auth.currentUser;
-    user.delete()
-    
+    const user = auth.currentUser; 
+    await deleteDoc(doc(database, "users", user.email))
+    await user.delete()   
+    return true;
   } catch (e) {
         console.error("Auth delete error (re-auth may be required):", e);
+        return false;
       }
   }
 
