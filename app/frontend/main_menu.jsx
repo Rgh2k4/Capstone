@@ -25,7 +25,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [userData, setUserData] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  function setupUser() {
+  async function setupUser() {
     //console.log("Current user:", user);
     const email = auth.currentUser.email;
     GetUserData(email).then((data) => {
