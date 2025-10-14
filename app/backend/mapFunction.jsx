@@ -202,7 +202,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
 
         return (
         <div>
-          <div style={{width:'100%', height:'700px'}}>
+          <div className='h-screen w-full'>
             <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
               <Map
               defaultCenter={userLocation}
@@ -257,4 +257,4 @@ export async function computeRoute(mapInstance, userLocation, poi) {
   return { distance, duration };
 }
 
-export default ParkMap;
+export default MapFunction;
