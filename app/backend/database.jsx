@@ -179,34 +179,11 @@ export async function DeleteUser() {
 
     const user = auth.currentUser;
     user.delete()
-    if (user) {
-      try {
-        //await user.delete()
-      } catch (e) {
+    
+  } catch (e) {
         console.error("Auth delete error (re-auth may be required):", e);
-        alert("Hey");
- 
       }
-    }
-
-    const userRef = doc(database, "users", email);
-
-    // const reviewsSnap = await getDocs(collection(userRef, "review"));
-    // if (!reviewsSnap.empty) {
-    //   const batch = writeBatch(database);
-    //   reviewsSnap.forEach((d) => batch.delete(d.ref));
-    //   await batch.commit();
-    // }
-
-    await deleteDoc(userRef);
-    return true;
-  } catch (error) {
-    console.error("DeleteUser error:", error);
-    return false;
   }
-};
-
-
 
 export async function addData(userID, reviewData) {
 
