@@ -196,32 +196,13 @@ export async function DeleteUser() {
     return false;
   }
 
-export async function addData(userID, reviewData) {
-
+export async function addReview(email, reviewData) {
     try {
-        const refId = await addDoc(collection(database, "users", userID, "review"), reviewData);
+        const refId = await addDoc(collection(database, "users", email, "reviews"), reviewData);
         return refId;
     } catch (error) {
         console.error("Error: ", error);
     }
-    try {
-      await setDoc(doc(db, "users", data.uid), {
-        user_ID: data.uid,
-        email: data.email,
-        password: data.password,
-        dateCreated: Date.now(),
-        role: "Admin",
-        note: "",
-        lastLogin: "",
-      });
-
-      await setDoc(doc(db, "admins", data.uid), {
-      });
-
-      return true;
-  } catch (error) {
-    console.log(error);
-  }
 };
 
 export async function readData(userID) {
