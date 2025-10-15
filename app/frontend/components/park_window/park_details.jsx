@@ -1,7 +1,7 @@
 "use client";
 
 import Reviews from "./review_section";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   doc,
   getDoc,
@@ -13,24 +13,25 @@ import {
 import { database as db, auth } from "../../../backend/databaseIntegration";
 import { ActionIcon, Button } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
+import MapFunction from "@/app/backend/mapFunction";
 
-export default function ParkDetails({ selectedPark, openButtonUpload }) {
+export default function ParkDetails({ selectedPark, openButtonUpload, computeRoute }) {
   console.log("Selected Park:", selectedPark);
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark ? selectedPark : null);
-  
-  
+  const computeRouteRef = useRef(null);
 
   if (!park) return null;
 
   const handleRouteClick = async () => {
-    if (!computeRoute) return;
-    const route = await computeRoute(park);
-    if (route) {
-      alert(`Distance: ${route.distance} km\nDuration: ${route.duration} min`);
-    }
-  };
+    if (!computeRouteRef.current || !park) return;
+    
+    const result = await computeRouteRef.current(park);
+    if (result)
+      alert(`Distance: ${result.distance} km\nDuration: ${result.duration} min`);
+    };
 
+  //https://firebase.google.com/docs/reference/js/firestore_, https://firebase.google.com/docs/firestore/query-data/listen
   const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
@@ -128,6 +129,15 @@ export default function ParkDetails({ selectedPark, openButtonUpload }) {
           <p className="w-3/4">
             {park.description || "No description available."}
           </p>
+           <MapFunction computeRouteRef={computeRouteRef} />
+          <Button
+          variant="gradient"
+          gradient={{ from: 'pink', to: 'grape', deg: 90 }}
+          onClick={handleRouteClick}
+          >
+            Compute Route
+            </Button>
+
         </section>
 
         <section className="flex flex-col items-center">
