@@ -25,6 +25,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [idCounter, setIdCounter] = useState(db.accounts.length + 1);
   const [users, setUsers] = useState([]);
   const [admins, setAdmins] = useState([]);
+  
 
 
   const user = auth.currentUser;
@@ -128,6 +129,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
                 <Button on onClick={() => setPageName("Reviews")}>View More</Button>
               </div>
               <ReviewList
+                showHeader={false}
                 setShowModal={setShowModal}
                 sendUser={setAccount}
                 reviews={db.reviews}
@@ -139,6 +141,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
                 <Button on onClick={() => setPageName("Reports")}>View More</Button>
               </div>
               <ReportList
+                showHeader={false}
                 setShowModal={setShowModal2}
                 sendUser={setAccount}
                 reports={db.reports}
@@ -150,6 +153,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
         {pageName === "Reviews" && (
           <div className="bg-white shadow-md rounded-xl p-6">
             <ReviewList
+              showHeader={true}
               setShowModal={setShowModal}
               sendUser={setAccount}
               reviews={db.reviews}
@@ -160,9 +164,11 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
         {pageName === "Reports" && (
           <div className="bg-white shadow-md rounded-xl p-6">
             <ReportList
+
               setShowModal={setShowModal2}
               sendUser={setAccount}
               reports={db.reports}
+              showHeader={true}
             />
           </div>
         )}
