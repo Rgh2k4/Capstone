@@ -13,7 +13,7 @@ import { getUniqueTypes } from "../backend/mapFunction";
 import { GetUserData, isAdmin } from "../backend/database";
 import { computeRouteOnMap } from "../backend/mapFunction";
 
-const ParkMap = dynamic(() => import("../backend/mapFunction"), {
+const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
 });
 
@@ -48,8 +48,14 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
     TrailDistance: [],
   });
   
-  function viewParkDetails({park}) {
-    setSelectedPark({park})
+  function viewParkDetails(park) {
+    console.log("Viewing Park Details:", park);
+    setSelectedPark(park);
+    handleOpenOverlay();
+  }
+  function swapToParkDetails() {
+    setUploadOpened(false);
+    setOverlay(true);
   }
 
   function handleOpenOverlay() {
@@ -62,14 +68,19 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
   }
     
     useEffect(() => {
-      checkUser();
-    })
+      if (checkUser()) {
+        console.log("User is logged in:", user.email);
+        setupUser();
+      } else {
+        console.log("No user is logged in");
+      }
+    }, []);
     
     function checkUser() {
       if (!user) {
-        console.log("No user is logged in");
+        return false;
       } else {
-        console.log("User is logged in:", user.email);
+        return true;
       }
     }
     const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
@@ -133,18 +144,19 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
                 <h1 className="w-60 ml-18 text-2xl break-normal font-bold text-white text-shadow-sm text-shadow-black text-center">
                     National Parks Information System
                 </h1>
-                <div className="p-4">
+                <div className="">
                   <MultiSelect
+                  size="md"
                   placeholder="Filter and search..."
                   searchable
-                  className="w-3xl pl-6 h-15 rounded-full text-neutral-950 border-gray-400"
+                  className="w-3xl pl-6 rounded-full text-neutral-950 border-gray-400"
                   value={selectedFilters}
                   onChange={setSelectedFilters}
                   data={buildMultiSelectData(uniqueTypes)}
                   />
                 </div>
                 <div className=" flex flex-row mr-24 space-x-8">
-                  {user ? (
+                  {userData ? (
                     <>
                       {isAdmin && <Button size='lg' onClick={onRouteToDashboard}>Dashboard</Button>}
                       <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
@@ -156,17 +168,15 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
 
                 </div>
             </header>  
-            <section className="h-[700px] w-full">
-              <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
-                <ParkDetails park={selectedPark} openButtonUpload={handleOpenUpload}/>
-              </Modal>
-              <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
-                <UploadWindow onClose={() => setUploadOpened(false)} />
-              </Modal>
-            </section>
+            <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
+              <ParkDetails selectedPark={selectedPark} openButtonUpload={handleOpenUpload}/>
+            </Modal>
+            <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
+              <UploadWindow onClose={swapToParkDetails} />
+            </Modal>
               
-              <section className="h-[700px] w-full">
-                <ParkMap filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />
+              <section className="w-full">
+                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />
               </section>
         </main>
     );  

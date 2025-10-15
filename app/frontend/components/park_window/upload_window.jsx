@@ -1,15 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { setupUploadEvents } from "../../../backend/upload(OLD).jsx";
 import { auth, storage } from "../../../backend/databaseIntegration.jsx";
 import { ref, uploadBytes } from "firebase/storage";
 import { uploadImage } from "@/app/backend/UploadStorage.jsx";
+import { Button, Input, Textarea } from "@mantine/core";
 
-export default function Upload_Window() {
+export default function Upload_Window({ onClose }) {
+  const [submited, setSubmitted] = useState(false);
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+
   useEffect(() => {
     window.firebase = { auth: () => ({ currentUser: auth.currentUser }) };
-    window.storage = { ref: (path) => ({ put: (file, meta) => uploadBytes(ref(storage, path), file, meta) }) };
+    window.storage = {
+      ref: (path) => ({
+        put: (file, meta) => uploadBytes(ref(storage, path), file, meta),
+      }),
+    };
     setupUploadEvents();
   }, []);
 
@@ -21,40 +30,77 @@ export default function Upload_Window() {
   }
 
   return (
-    <main className="w-[920px] max-w-[92vw]">
-      <header className="mb-6 flex items-center justify-between">
+    <main className="flex flex-col justify-center items-center space-y-8 p-8">
+      <header className="mb-6 flex items-center">
         <h1 className="text-4xl font-extrabold">Upload</h1>
-        <button id="close-upload" aria-label="Close">✕</button>
       </header>
 
-      <section id="upload-sidebar" className="rounded-2xl bg-[#d6dee6] p-8 transition-transform">
-        <div id="upload-container" className="grid grid-cols-2 gap-10">
+      <section
+        id="upload-sidebar"
+        className="rounded-2xl p-8 drop-shadow-sm bg-white transition-transform"
+      >
+        <div id="upload-container" className="grid grid-cols-2 gap-10 my-12">
           <div className="flex flex-col gap-6">
-            <label htmlFor="upload-file" className="flex h-64 cursor-pointer items-center justify-center rounded-2xl border border-gray-300 bg-white">
-              <img id="file-preview" alt="Preview" className="hidden h-full w-full rounded-2xl object-cover" />
-              <span id="file-label-text" className="text-center font-semibold text-black/80">Upload<br />Image</span>
+            <label
+              htmlFor="upload-file"
+              className="flex h-50 cursor-pointer items-center justify-center rounded-2xl border border-gray-300 bg-white"
+            >
+              <img
+                id="file-preview"
+                alt="Preview"
+                className="hidden h-full w-full rounded-2xl object-cover"
+              />
+              <span
+                id="file-label-text"
+                className="text-center font-semibold text-black/80"
+              >
+                Upload
+                <br />
+                Image
+              </span>
             </label>
-            <input id="upload-file" type="file" accept="image/*" className="hidden" />
-            <div className="rounded-xl bg-[#e2e2e2] px-6 py-5 text-xl font-semibold">Ratings here</div>
+            <input
+              id="upload-file"
+              type="file"
+              accept="image/*"
+              className="hidden"
+            />
+            <div className="rounded-xl bg-[#e2e2e2] px-6 py-5 text-xl font-semibold">
+              Ratings here
+            </div>
           </div>
 
           <div className="flex flex-col gap-6">
-            <input
-              id="photo-location"
-              type="text"
-              placeholder="Title..."
-              className="h-14 w-full rounded-xl bg-white px-4 ring-1 ring-gray-300 outline-none shadow-sm focus:ring-2 focus:ring-sky-400"
+            <Input.Wrapper className="w-full" size="md" label="Title">
+              <Input
+                disabled={submited}
+                size="md"
+                placeholder="Enter title..."
+                value={title}
+                onChange={(event) => setTitle(event.currentTarget.value)}
+              />
+            </Input.Wrapper>
+            <Textarea
+              label="Message"
+              description="Share your experience with this park!"
+              placeholder="Type your message here..."
+              minRows={6}
+              value={message}
+              onChange={(event) => setMessage(event.currentTarget.value)}
             />
-            <textarea
-              placeholder="Description..."
-              className="h-[360px] w-full resize-none rounded-xl bg-white px-4 py-3 ring-1 ring-gray-300 outline-none shadow-sm focus:ring-2 focus:ring-sky-400"
-            />
-            <div className="flex items-center justify-end gap-3">
-              <button id="cancel-upload" className="rounded-xl border px-6 py-3">Cancel</button>
-              <input type="file" onChange={handleImageFile} />
-              <button id="upload-button" className="rounded-xl bg-[#a7d8ff] px-8 py-3 text-xl font-semibold shadow">Submit</button>
-            </div>
           </div>
+        </div>
+        <div className="flex items-center justify-end gap-3">
+          <input type="file" onChange={handleImageFile} />
+          <Button
+            size="lg"
+            variant="filled"
+            loading={submited}
+            id="upload-button"
+            className="rounded-xl bg-[#a7d8ff] px-8 py-3 text-xl font-semibold shadow"
+          >
+            Submit
+          </Button>
         </div>
       </section>
     </main>

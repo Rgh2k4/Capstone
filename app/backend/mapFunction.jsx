@@ -4,7 +4,9 @@ import React, {useState, useEffect, useRef} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 import {decode} from "@googlemaps/polyline-codec"
 
-function ParkMap({filters=[], setUniqueTypes, viewParkDetails}) {
+const uniqueArray = (arr) => [...new Set(arr)];
+
+function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -197,7 +199,7 @@ function ParkMap({filters=[], setUniqueTypes, viewParkDetails}) {
 
         return (
         <div>
-          <div style={{width:'100%', height:'700px'}}>
+          <div className='h-screen w-full'>
             <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
               <Map
               defaultCenter={userLocation}
@@ -266,4 +268,4 @@ export async function computeRoute(mapInstance, userLocation, poi) {
   return { distance, duration };
 }
 
-export default ParkMap;
+export default MapFunction;

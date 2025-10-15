@@ -1,17 +1,29 @@
 "use client";
 
 import Reviews from "./review_section";
-import {useState, useEffect} from "react";
-import {doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove} from "firebase/firestore";
-import {database as db, auth} from "../../../backend/databaseIntegration"
-import { ActionIcon } from '@mantine/core';
-import { IconHeart } from '@tabler/icons-react';
+import { useState, useEffect } from "react";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+} from "firebase/firestore";
+import { database as db, auth } from "../../../backend/databaseIntegration";
+import { ActionIcon, Button } from "@mantine/core";
+import { IconHeart } from "@tabler/icons-react";
 
-export default function ParkDetails({ park, openButtonUpload }) {
+export default function ParkDetails({ selectedPark, openButtonUpload }) {
+  console.log("Selected Park:", selectedPark);
+  const [submited, setSubmitted] = useState(false);
+  const [park, setPark] = useState(selectedPark ? selectedPark : null);
+  
+  
 
   if (!park) return null;
 
-   const handleRouteClick = async () => {
+  const handleRouteClick = async () => {
     if (!computeRoute) return;
     const route = await computeRoute(park);
     if (route) {
@@ -76,9 +88,9 @@ export default function ParkDetails({ park, openButtonUpload }) {
   function handleData({ user }) {
     alert(`${user.username} has been reported.`);
   }
-  
+
   const FavoriteButton = () => (
-  <ActionIcon
+    <ActionIcon
       size={42}
       variant="default"
       aria-label="Favorite Location"
@@ -96,48 +108,63 @@ export default function ParkDetails({ park, openButtonUpload }) {
   checkImages(wildlifePhotos);
 
   return (
-    <main className="flex flex-col">
+    <>
       <header className="flex flex-col">
-        <img src="https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg" alt="" className="h-75"/>
+        <img
+          src="https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg"
+          alt=""
+          className="h-75"
+        />
       </header>
-      
-      <section className="my-20 place-self-center">
-        <h1 className="font-bold text-2xl">Ratings</h1>
-      </section>
-      <section className="flex flex-col items-center text-justify mb-20">
-      <h1 className="font-extrabold text-2xl mb-10 flex items-center gap-2">
-      {park.name}
-      <FavoriteButton />
-      </h1>
-      <p className="w-3/4">{park.description}</p>
-      </section>
+      <main className="flex flex-col w-full px-22 justify-center items-center">
 
-      <section className="flex flex-col items-center">
-        <h1 className="font-bold text-xl mb-15">Wildlife</h1>
-        <div className="flex gap-5">
-          {hasImage && (
-            <div>
-              <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-4 space-x-8 overflow-x-auto max-h-[500px]">
-                {wildlifePhotos.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={img}
-                    className="w-50 h-50 bg-gray-400 rounded"
-                  />
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </section>
-      <section className="mt-30 place-self-center">
-        <button onClick={openButtonUpload}>Write a review</button>
-      </section>
-      <section className="flex flex-col mt-30 items-center">
-        <h1 className="font-bold text-2xl mb-10">Reviews</h1>
-        <div className="rounded-md p-6 w-3/4">
-          {park.reviews?.length > 0 ? (
+        <section className="my-20 place-self-center">
+          <h1 className="font-bold text-2xl">Ratings</h1>
+        </section>
+        <section className="flex flex-col items-center text-justify mb-20">
+          <h1 className="font-extrabold text-2xl mb-10 flex items-center gap-2">
+            {park.name}
+            <FavoriteButton />
+          </h1>
+          <p className="w-3/4">
+            {park.description || "No description available."}
+          </p>
+        </section>
+
+        <section className="flex flex-col items-center">
+          <h1 className="font-bold text-xl mb-15">Wildlife</h1>
+          <div className="flex">
+            {hasImage && (
+              <div>
+                <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-4 space-x-8 overflow-x-auto max-h-[500px]">
+                  {wildlifePhotos.map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={img}
+                      className="w-50 h-50 bg-gray-400 rounded"
+                    />
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+        <section className="mt-30 place-self-center">
+          <Button
+            className="w-full"
+            size="lg"
+            loading={submited}
+            variant="filled"
+            onClick={openButtonUpload}
+          >
+            Write a review
+          </Button>
+        </section>
+        <section className="flex flex-col mt-30 items-center">
+          <h1 className="font-bold text-2xl mb-10">Reviews</h1>
+          <div className="rounded-md p-6 w-3/4">
+            {park.reviews?.length > 0 ? (
               <ul>
                 {park.reviews.map((user, index) => (
                   <div key={index} className="">
@@ -150,7 +177,9 @@ export default function ParkDetails({ park, openButtonUpload }) {
                       </div>
                       <div className="space-y-2">
                         <div className=" flex flex-row space-x-2 items-center">
-                          <p className=" font-semibold text-1xl">{user.username}</p>
+                          <p className=" font-semibold text-1xl">
+                            {user.displayName || "Anonymous"}
+                          </p>
                           <p className=" text-1xl italic">- {user.date}</p>
                         </div>
                         {user.images && user.images.length > 0 && (
@@ -184,12 +213,12 @@ export default function ParkDetails({ park, openButtonUpload }) {
             ) : (
               <p>No reviews yet</p>
             )}
-        </div>
-      </section>
-      <footer className="mt-30 mb-20 place-self-center">
-        <button>Back to top</button>
-      </footer>
-    </main>
+          </div>
+        </section>
+        <footer className="mt-30 mb-20 place-self-center">
+          <button>Back to top</button>
+        </footer>
+      </main>
+    </>
   );
 }
-
