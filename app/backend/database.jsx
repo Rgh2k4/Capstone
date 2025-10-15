@@ -1,6 +1,6 @@
 import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
-import { updateEmail, updatePassword } from "firebase/auth";
+import { fetchSignInMethodsForEmail, updateEmail, updatePassword } from "firebase/auth";
 
 export async function CreateUserAccount(data) {
   try {
@@ -138,38 +138,47 @@ export async function AdminEditUser({ oldData, newData }) {
   }
 };
 
-export async function EditUser(data) {
+export async function EditUser(type, value) {
   try {
     const user = auth.currentUser;
-    if (!user) return false;
+    if (!user) throw new Error("No authenticated user");
 
-    const currentEmail = data?.currentEmail || user.email;
-    const newEmail = data?.newEmail?.trim();
-    const newPassword = data?.newPassword?.trim();
+    if (type === "email"){
+      const currentEmail = user.email;
+      const newEmail = value?.trim();
 
-    if (newEmail && newEmail !== user.email) {
-      await updateEmail(user, newEmail);
+      const methods = await fetchSignInMethodsForEmail(auth, newEmail);
+      if (methods.length > 0) {
+        throw new Error("Email already in use");
+      }
+
 
       const oldRef = doc(database, "users", currentEmail);
       const snap = await getDoc(oldRef);
       const newRef = doc(database, "users", newEmail);
 
-      if (snap.exists()) {
-        await setDoc(newRef, { ...snap.data(), email: newEmail }, { merge: true });
-        await deleteDoc(oldRef);
-      } else {
-        await setDoc(newRef, { user_ID: user.uid, email: newEmail }, { merge: true });
-      }
+      if (!snap.exists()) throw new Error("User document does not exist");
+
+      await setDoc(newRef, snap.data());
+      await deleteDoc(oldRef);
+      await updateEmail(user, newEmail);
+      return true;
+
+
+    } else if (type === "password") {
+      const newPassword = value?.trim();
+
+      if (newPassword) {
+        await updatePassword(user, newPassword);
+    }
+      return true;
+  } else {
+      return false;
     }
 
-    if (newPassword) {
-      await updatePassword(user, newPassword);
-    }
-
-    return true;
   } catch (err) {
     console.error("EditUser error:", err);
-    return false;
+    return err.message || false;
   }
 };
 

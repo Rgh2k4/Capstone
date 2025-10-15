@@ -1,9 +1,9 @@
-import { Button, Input } from "@mantine/core";
+import { Alert, Button, Input } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconAt, IconInfoCircle } from "@tabler/icons-react";
 import React, { useState } from "react";
 
-export default function ChangeCredential({ type, onSubmit }) {
+export default function ChangeCredential({ type, onSubmit, onClose }) {
   const [newValue, setNewValue] = useState("");
   const [confirmValue, setConfirmValue] = useState("");
   const [visible, { toggle }] = useDisclosure(false);
@@ -29,6 +29,20 @@ export default function ChangeCredential({ type, onSubmit }) {
       return;
     }
 
+    try {
+      onSubmit(newValue).then((success) => {
+        if (success) {
+          onClose();
+        } else {
+      
+          setErrorMessage(`Failed to change ${label}. Please try again.`);
+          setShowError(true);
+        }
+      });
+    } catch (error) {
+      setErrorMessage(`Error: ${error.message || "An unexpected error occurred."}`);
+      setShowError(true);
+    }
   };
 
   return (
@@ -95,7 +109,7 @@ export default function ChangeCredential({ type, onSubmit }) {
             variant="filled"
             color="red"
             withCloseButton
-            title="Login failed"
+            title="Edit failed"
             icon={icon}
             onClick={() => setShowError(false)}
           >
