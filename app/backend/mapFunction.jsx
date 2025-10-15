@@ -4,7 +4,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 import {decode} from "@googlemaps/polyline-codec"
 
-function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
+function ParkMap({filters=[], setUniqueTypes, viewParkDetails}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -208,6 +208,20 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
               defaultCenter={userLocation}
               defaultZoom={10}
               mapId='456dc2bedf64a06c67cc63ea'>
+              
+              {/*https://visgl.github.io/react-google-maps/docs/api-reference/components/advanced-marker, https://developers.google.com/maps/documentation/javascript/geolocation#maps_map_geolocation-javascript*/}
+              <AdvancedMarker
+              position={userLocation}
+              title="Your Location">
+                <div
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  backgroundColor: 'blue',
+                  border: '2px solid white',
+                }}/>
+              </AdvancedMarker>
                 
                 {filteredPois
                 .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
