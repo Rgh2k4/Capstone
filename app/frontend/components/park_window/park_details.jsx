@@ -28,7 +28,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
     
     const result = await computeRouteRef.current(park);
     if (result)
-      alert(`Distance: ${result.distance} km\nDuration: ${result.duration} min`);
+      alert(`Distance: ${result.distance} km\nDuration: ${result.duration}`);
     };
 
   //https://firebase.google.com/docs/reference/js/firestore_, https://firebase.google.com/docs/firestore/query-data/listen

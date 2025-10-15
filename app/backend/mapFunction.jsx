@@ -205,12 +205,12 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
     setRouteData({
       polyline: route.polyline.encodedPolyline,
       distance: (route.distanceMeters / 1000).toFixed(2),
-      duration: route.duration,
+      duration: route.duration
     });
     
     return {
       distance: (route.distanceMeters / 1000).toFixed(2),
-      duration: route.duration,
+      duration: route.duration
     };
   }
 
@@ -249,14 +249,14 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
                 }}/>
               </AdvancedMarker>
               
-              {routeData && (
+              {/*{routeData && (
                 <Polyline
                 path={decode(routeData.polyline, 6).map(([lat, lng]) => ({ lat, lng }))}
                 strokeColor="blue"
                 strokeOpacity={0.8}
                 strokeWeight={4}
                 />
-              )}
+              )}*/}
                 
                 {filteredPois
                 .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
