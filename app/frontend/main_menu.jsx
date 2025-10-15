@@ -23,12 +23,22 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
   const [uploadOpened, setUploadOpened] = useState(false);
   const [selectedPark, setSelectedPark] = useState(null);
   const user = auth.currentUser;
-  const userData = GetUserData(user.email).then(userData => {
-    console.log("User Data:", userData);
-    console.log("Is Admin:", userData.role === "Admin");
-    if (userData.role === "Admin") {
-      setIsAdmin(true)}
-  });
+  const [userData, setUserData] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  async function setupUser() {
+    //console.log("Current user:", user);
+    const email = auth.currentUser.email;
+    GetUserData(email).then((data) => {
+      console.log("User Data:", data);
+      console.log("Is Admin:", data.role === "Admin");
+      if (data.role === "Admin") {
+        setIsAdmin(true);
+      }
+      setUserData(data);
+    });
+  }
+
   const [upload, setUpload] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [uniqueTypes, setUniqueTypes] = useState({
