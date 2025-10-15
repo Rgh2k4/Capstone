@@ -19,6 +19,7 @@ export default function ParkDetails({ park, openButtonUpload }) {
     }
   };
 
+  //https://firebase.google.com/docs/reference/js/firestore_, https://firebase.google.com/docs/firestore/query-data/listen
   const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {

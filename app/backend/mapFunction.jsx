@@ -56,43 +56,48 @@ function ParkMap({filters=[], setUniqueTypes, viewParkDetails}) {
         "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
         "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
       ];
-      
-      try {
-        const responses = await Promise.all(urls.map(url => fetch(url)));
-        const datasets = await Promise.all(responses.map((r) => {
-          if (!r.ok) throw new Error(`Failed to load ${r.url}: ${r.status}`);
-          return r.json();
-        }));
-        datasets.forEach((data, i) => {
-          console.log(`Dataset ${i}:`, data.features?.length, "features");
-          data.features?.slice(0,5).forEach(f => {
-            console.log(
-              `[RAW POI] Name: ${f.properties?.Name_e || f.properties?.Nom_f}, Label5k: ${f.properties?.Label_e_5k_less}`
-            );
-          });
-        });
 
-        const allPois = datasets.flatMap((data, datasetIndex) =>
-          (data.features || [])
-          .filter(f => f.geometry?.coordinates?.length === 2 &&
-            //This line filters out any POIs without either english or french names and only shows 5k_less trails by default
-            (f.properties?.Name_e || f.properties?.Nom_f) ||
-            (f.properties?.Label_e_5k_less))
-          .map((f, idx) => ({
-            //${} inserts the value of a variable/expression into the string
-            id: f.id || `${datasetIndex}-${idx}`,
-            name: f.properties?.Name_e || f.properties?.Nom_f || "Unnamed POI",
-            description: f.properties?.Description || f.properties?.description || "No description",
-            location: {
-              lat: parseFloat(f.geometry.coordinates[1]),
-              lng: parseFloat(f.geometry.coordinates[0])
-            },
-            properties: f.properties,
-            reviews: []
-          }))
-        );
+      //https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of
+      //https://developers.google.com/maps/documentation/javascript/best-practices#optimize-performance
+      const allPois = [];
 
-        setPois(allPois);
+      for (const [i, url] of urls.entries()) {
+        try {
+          console.log(`Fetching dataset ${i + 1}/${urls.length}...`);
+          const response = await fetch(url, { signal: AbortSignal.timeout(25000) }); //This will cause any pull longer than 25 seconds to abort
+          if (!response.ok) throw new Error(`Failed to load ${url}: ${response.status}`);
+
+          const data = await response.json();
+          console.log(`Succesfully loaded dataset ${i + 1}: ${data.features?.length || 0} features`);
+
+          const pois = (data.features || [])
+            .filter(f => f.geometry?.coordinates?.length === 2 &&
+              (f.properties?.Name_e || f.properties?.Nom_f || f.properties?.Label_e_5k_less))
+            .map((f, idx) => ({
+              id: f.id || `${i}-${idx}`,
+              name: f.properties?.Name_e || f.properties?.Nom_f || "Unnamed POI",
+              description: f.properties?.Description || f.properties?.description || "No description",
+              location: {
+                lat: parseFloat(f.geometry.coordinates[1]),
+                lng: parseFloat(f.geometry.coordinates[0])
+              },
+              properties: f.properties,
+              reviews: []
+            }));
+
+          allPois.push(...pois);
+
+          //Progressively update markers so the map doesn't wait for all datasets
+          setPois([...allPois]);
+
+          //This adds a small delay to the site to avoid overloading it
+          await new Promise(res => setTimeout(res, 1500));
+        } catch (err) {
+          console.error(`There was an error loading dataset ${i + 1}:`, err);
+        }
+      }
+
+      console.log(`All datasets loaded: ${allPois.length} POIs`);
 
       //The following code extracts the unique sub-types for use in the front-end filter and was made with the help of https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set,
       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter, and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
@@ -105,24 +110,14 @@ function ParkMap({filters=[], setUniqueTypes, viewParkDetails}) {
         trailDistanceFields.flatMap(field => getUniqueSubTypes(allPois, field))
       );
 
-      // This code converts strings to catch duplicates like 'Marina//Marina' from raising errors
-      //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
-      function uniqueArray(arr) { 
-        return [...new Set(arr.map(String))];
-        }
-      
       setUniqueTypes({
         Accommodation_Type: uniqueArray(accommodationTypes),
         Principal_type: uniqueArray(principalTypes),
         Facility_Type_Installation: uniqueArray(facilityTypes),
-        TrailDistance: uniqueArray(trailDistance)
+        TrailDistance: trailDistance
       });
-    
-    } catch (err) {
-      console.error("Error loading datasets:", err);
     }
-  }
-   
+
     loadData();
   }, [setUniqueTypes]);
 
