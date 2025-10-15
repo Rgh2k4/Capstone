@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { logIn } from "../backend/databaseIntegration.jsx";
-import { Alert, Button, Input, LoadingOverlay, PasswordInput } from "@mantine/core";
+import { Alert, Button, Input, PasswordInput } from "@mantine/core";
 import { IconAt, IconInfoCircle } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 
@@ -9,7 +9,6 @@ export default function Login({ handleLogin, handleSignUp }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [visible, { toggle }] = useDisclosure(false);
-  const [visible_2, { toggle: toggle_2 }] = useDisclosure(false);
   const [submited, setSubmitted] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -17,7 +16,6 @@ export default function Login({ handleLogin, handleSignUp }) {
 
   function authentication(e) {
     setSubmitted(true);
-    toggle_2();
     e.preventDefault();
     logIn(email, password).then((authenticated) => {
       if (authenticated) {
@@ -26,7 +24,6 @@ export default function Login({ handleLogin, handleSignUp }) {
       else {
       setErrorMessage("User does not exist or password is incorrect.");
       setSubmitted(false);
-      toggle_2();
       setShowError(true);
       }
     });
@@ -39,7 +36,6 @@ export default function Login({ handleLogin, handleSignUp }) {
           National Parks Information System
         </h1>
       </section>
-      <LoadingOverlay visible={visible_2} zIndex={1000} overlayProps={{ radius: "lg", blur: 2 }} />
       <section className="border-2 border-hidden w-124 h-1/2 bg-white rounded-md drop-shadow-2xl drop-shadow-blue-400">
         <form
           onSubmit={authentication}
@@ -71,6 +67,7 @@ export default function Login({ handleLogin, handleSignUp }) {
                 className="w-full"
                 size="lg"
                 type="submit"
+                loading={submited}
                 variant="filled"
               >
                 Log in
@@ -79,6 +76,7 @@ export default function Login({ handleLogin, handleSignUp }) {
                 className="w-full"
                 size="lg"
                 onClick={handleSignUp}
+                loading={submited}
                 variant="filled"
               >
                 Sign up
@@ -88,6 +86,7 @@ export default function Login({ handleLogin, handleSignUp }) {
               size="lg"
               onClick={handleLogin}
               variant="filled"
+              loading={submited}
             >
               Continue as guest
             </Button>
