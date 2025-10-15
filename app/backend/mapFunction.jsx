@@ -4,7 +4,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
 import {decode} from "@googlemaps/polyline-codec"
 
-function ParkMap({filters=[]}, viewParkDetails) {
+function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -50,17 +50,11 @@ function ParkMap({filters=[]}, viewParkDetails) {
     async function loadData() {
       const urls = [
         //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
-        ];
-        */
-       useEffect(() => {
-         async function loadData() {
-           const urls = [
-             //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
-             "https://opendata.arcgis.com/datasets/dff0acc0f20c4666a253860f6444bb43_0.geojson",
-             "https://opendata.arcgis.com/datasets/1769ca13cd044206ba59aa1b0bc84356_0.geojson",
-             "https://opendata.arcgis.com/datasets/28b55decfac848c782819b1706e58aa1_0.geojson",
-             "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
-             "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
+        "https://opendata.arcgis.com/datasets/dff0acc0f20c4666a253860f6444bb43_0.geojson",
+        "https://opendata.arcgis.com/datasets/1769ca13cd044206ba59aa1b0bc84356_0.geojson",
+        "https://opendata.arcgis.com/datasets/28b55decfac848c782819b1706e58aa1_0.geojson",
+        "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
+        "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
       ];
       
       try {
@@ -146,9 +140,7 @@ function ParkMap({filters=[]}, viewParkDetails) {
   :pois;
 
     //https://developers.google.com/maps/documentation/routes/compute-route-directions
-    async function computeRoute({origin, destination, travelMode = "DRIVE"}) {
-      let response, data;
-
+    async function computeRoute() {
        try {
         if (filteredPois.length < 2) {
           alert("Please select at least 2 points on the map to compute a route");
@@ -172,8 +164,9 @@ function ParkMap({filters=[]}, viewParkDetails) {
               "X-Goog-FieldMask":"routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline",
             },
             body: JSON.stringify({
-              origin: {location:{ latLng: origin}},
-              destination: {location: { latLng: destination}},
+              origin,
+              destination,
+              intermediates,
               travelMode: "DRIVE",
             }),
           }
@@ -193,7 +186,7 @@ function ParkMap({filters=[]}, viewParkDetails) {
           const duration = route.duration;
           routeData = {polyline, distance, duration};
 
-          return routeData;
+          return {polyline, distance, duration};
         } catch (error) {
           console.error("There was an error when computing a route:", error);
           return null;
@@ -222,7 +215,9 @@ function ParkMap({filters=[]}, viewParkDetails) {
                 <AdvancedMarker
                 key={poi.id}
                 position={poi.location}
-                onClick={() => setSelectedPOI(poi)}
+                onClick={() => {setSelectedPOI(poi);
+                  viewParkDetails?.(poi);
+                }}
                 />
               ))}
           </Map>

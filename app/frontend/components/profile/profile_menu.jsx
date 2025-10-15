@@ -7,7 +7,7 @@ import Modal from "../Modal";
 import ChangeCredential from "./change_credential";
 import { Button } from "@mantine/core";
 import { auth } from "../../../backend/databaseIntegration.jsx";
-import { DeleteUser } from "../../../backend/functions/database.jsx";
+import { DeleteUser } from "../../../backend/database.jsx";
 import { SetDisplayName } from "@/app/backend/database";
 import ContactWindow from "./contact_window";
 

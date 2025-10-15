@@ -13,14 +13,15 @@ import { getUniqueTypes } from "../backend/mapFunction";
 import { GetUserData, isAdmin } from "../backend/database";
 import { computeRouteOnMap } from "../backend/mapFunction";
 
-const MapFunction = dynamic(() =>  import("../backend/mapFunction"), {
-  ssr:false
+const MapFunction = dynamic(() => import("../backend/mapFunction"), {
+  ssr: false,
 });
 
-export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
+export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
+
   const [overlay, setOverlay] = useState(false);
   const [uploadOpened, setUploadOpened] = useState(false);
-  const [selectedPark, setSetselectedPark] = useState();
+  const [selectedPark, setSelectedPark] = useState(null);
   const user = auth.currentUser;
   const [userData, setUserData] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -46,9 +47,15 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     Facility_Type_Installation: [],
     TrailDistance: [],
   });
-
-  function viewParkDetails({ park }) {
-    setSetselectedPark({ park });
+  
+  function viewParkDetails(park) {
+    console.log("Viewing Park Details:", park);
+    setSelectedPark(park);
+    handleOpenOverlay();
+  }
+  function swapToParkDetails() {
+    setUploadOpened(false);
+    setOverlay(true);
   }
 
   function handleOpenOverlay() {
@@ -59,20 +66,6 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     setOverlay(false);
     setUploadOpened(true);
   }
-
-export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
-    const [upload, setUpload] = useState(false);
-    const [selectedFilters, setSelectedFilters] = useState([]);
-    const [overlay, setOverlay] = useState(false);
-    const [uploadOpened, setUploadOpened] = useState(false);
-    const [selectedPark, setSetselectedPark] = useState(null);
-    const [uniqueTypes, setUniqueTypes] = useState({
-      Accommodation_Type: [],
-      Principal_type: [],
-      Facility_Type_Installation: [],
-      TrailDistance:[],
-    });
-    const [user, currentUser] = useState(null);
     
     useEffect(() => {
       if (checkUser()) {
@@ -90,11 +83,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
         return true;
       }
     }
-    
-    function viewParkDetails(park) {
-    const user = auth.currentUser;
     const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
-    const isAdmin = user && adminEmails.includes(user.email);
 
     //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split
     function normalizeOption(str) {
@@ -155,7 +144,17 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
                 <h1 className="w-60 ml-18 text-2xl break-normal font-bold text-white text-shadow-sm text-shadow-black text-center">
                     National Parks Information System
                 </h1>
-                <input type="text" value="Search..." readOnly className="w-3xl pl-6 h-15 rounded-full text-neutral-950 bg-white border-2 border-gray-400"></input>
+                <div className="">
+                  <MultiSelect
+                  size="md"
+                  placeholder="Filter and search..."
+                  searchable
+                  className="w-3xl pl-6 rounded-full text-neutral-950 border-gray-400"
+                  value={selectedFilters}
+                  onChange={setSelectedFilters}
+                  data={buildMultiSelectData(uniqueTypes)}
+                  />
+                </div>
                 <div className=" flex flex-row mr-24 space-x-8">
                   {userData ? (
                     <>
@@ -169,32 +168,15 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard } ) {
 
                 </div>
             </header>  
-            <section className="h-fit w-full">
-              <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
-                <ParkDetails park={selectedPark} openButtonUpload={handleOpenUpload}/>
-              </Modal>
-              <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
-                <UploadWindow onClose={() => setUploadOpened(false)} />
-              </Modal>
-            </section>
-            
+            <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
+              <ParkDetails selectedPark={selectedPark} openButtonUpload={handleOpenUpload}/>
+            </Modal>
+            <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
+              <UploadWindow onClose={swapToParkDetails} />
+            </Modal>
               
               <section className="w-full">
-                <div className="p-4 z-10 absolute mt-24">
-                  <MultiSelect
-                  label="Filter Points of Interest"
-                  placeholder="Select filters..."
-                  searchable
-                  value={selectedFilters}
-                  onChange={setSelectedFilters}
-                  data={[
-                    {group: "Accommodations", items: uniqueTypes.Accommodation_Type},
-                    {group: "Principal Types", items: uniqueTypes.Principal_type},
-                    {group: "Facilities", items: uniqueTypes.Facility_Type_Installation },
-                    {group: "Trail Distance", items: uniqueTypes.TrailDistance},
-                  ]}/>
-                </div>
-                <ParkMap filters={selectedFilters} setUniqueTypes={setUniqueTypes} viewParkDetails={viewParkDetails} />
+                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />
               </section>
         </main>
     );  
