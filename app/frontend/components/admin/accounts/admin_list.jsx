@@ -4,10 +4,20 @@ export default function AdminList({ handleEdit, data }) {
   const accounts = data;
 
   function handleData({ admin }) {
-    console.log("Data:");
-    console.log(admin);
+    const selectedUser = {
+      displayName: admin.displayName,
+      email: admin.email,
+      user_ID: admin.user_ID,
+      dateCreated: admin.dateCreated
+        ? new Date(admin.dateCreated.seconds * 1000).toLocaleDateString()
+        : "Unknown",
+      lastLogin: admin.lastLogin
+        ? new Date(admin.lastLogin.seconds * 1000).toLocaleDateString()
+        : "Never",
+      note: admin.note ? admin.note : "",
+    };
 
-    handleEdit(admin);
+    handleEdit(selectedUser);
   }
 
   return (
