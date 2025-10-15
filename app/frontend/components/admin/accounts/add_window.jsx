@@ -1,19 +1,26 @@
+import { Button, PasswordInput } from "@mantine/core";
+import { Input } from "postcss";
 import { useState } from "react";
 
-function Add({ onClose, role, setRole, onAddAccount}) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+function Add({ onClose, role, setRole, onAddAccount }) {
+  const [submited, setSubmitted] = useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [visible, setVisible] = u(false);
 
   function handleAdd() {
-    if (!username.trim() || !password.trim() || !email.trim()) {
+    if (!email.trim() || !password.trim() || !confirm.trim()) {
       alert("All fields are required!");
       return;
     }
-    
+    if (password !== confirm) {
+      alert("Passwords do not match!");
+      return;
+    }
+
     alert("Account Created!");
     setRole("");
-    onAddAccount({ username, password, email, role, dateCreated: new Date().toLocaleDateString() });
     onClose();
   }
 
@@ -23,30 +30,57 @@ function Add({ onClose, role, setRole, onAddAccount}) {
         <p>Add {role}</p>
       </div>
       <div className="flex flex-col space-y-6">
-        <input
-          value={username}
-          onChange={() => setUsername(event.target.value)}
-          type="text"
-          placeholder="Enter Username..."
-          className="input"
-        />
-        <input
-          value={password}
-          onChange={() => setPassword(event.target.value)}
-          type="text"
-          placeholder="Enter Password..."
-          className="input"
-        />
-        <input
-          value={email}
-          onChange={() => setEmail(event.target.value)}
-          type="text"
-          placeholder="Enter Email..."
-          className="input"
-        />
+        <Input.Wrapper className="w-full" size="md" label="Enter Email">
+          <Input
+            disabled={submited}
+            size="md"
+            name="email"
+            type="email"
+            placeholder="Enter Email..."
+            value={form.email}
+            onChange={onChange}
+            leftSection={<IconAt size={16} />}
+            required
+          />
+        </Input.Wrapper>
+        <Input.Wrapper className="w-full" size="md" label="Enter Password">
+          <PasswordInput
+            disabled={submited}
+            size="md"
+            name="password"
+            type="password"
+            placeholder="Enter Password..."
+            value={form.password}
+            onChange={onChange}
+            visible={visible}
+            onVisibilityChange={toggle}
+            required
+          />
+        </Input.Wrapper>
+        <Input.Wrapper className="w-full" size="md" label="Enter Password">
+          <PasswordInput
+            disabled={submited}
+            size="md"
+            name="confirm"
+            type="password"
+            placeholder="Confirm Password..."
+            value={form.confirm}
+            onChange={onChange}
+            visible={visible}
+            onVisibilityChange={toggle}
+            required
+          />
+        </Input.Wrapper>
       </div>
       <div>
-        <button onClick={handleAdd}>Add</button>
+        <Button
+          className="w-full"
+          size="lg"
+          variant="filled"
+          onClick={handleAdd}
+        >
+          Add
+        </Button>
       </div>
     </div>
   );

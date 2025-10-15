@@ -1,5 +1,7 @@
-import { EditUser } from "@/app/backend/database";
+import { AdminEditUser, EditUser } from "@/app/backend/database";
 import { auth } from "@/app/backend/databaseIntegration";
+import { Button, Input, Textarea } from "@mantine/core";
+import { IconInfoCircle } from "@tabler/icons-react";
 import { useState } from "react";
 
 function Edit({ account, onClose, onDeleteAccount }) {
@@ -8,6 +10,8 @@ function Edit({ account, onClose, onDeleteAccount }) {
   const [note, setNote] = useState(account.note);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [submited, setSubmitted] = useState(false);
+  const icon = <IconInfoCircle />;
   const user = auth.currentUser;
 
   function handleDelete() {
@@ -32,20 +36,20 @@ function Edit({ account, onClose, onDeleteAccount }) {
     newAccountData.displayName = displayName;
     newAccountData.email = email;
     newAccountData.note = note;
-    
+
     try {
-      EditUser();
+      AdminEditUser(account, newAccountData);
+      alert("Account Edited!");
+      onClose();
     } catch (error) {
       setErrorMessage("Failed to edit user: " + error.message);
       setShowError(true);
       return;
-    } 
-    alert("Account Edited!");
-    onClose();
+    }
   }
 
   return (
-    <div className=" p-12 rounded flex flex-col justify-center text-center space-y-24">
+    <div className=" p-24 rounded flex flex-col justify-center text-center space-y-24">
       <div className="flex justify-center text-center">
         <img
           className="w-50 h-50 bg-gray-400 rounded-full"
@@ -53,46 +57,75 @@ function Edit({ account, onClose, onDeleteAccount }) {
         />
       </div>
       <div className="flex flex-col space-y-6">
-        <input
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          type="text"
-          placeholder="Enter Email..."
-          className="input"
-        />
-        <input
-          value={displayName}
-          onChange={e => setDisplayName(e.target.value)}
-          type="text"
-          placeholder="Enter Display Name..."
-          className="input"
-        />
-        <textarea
-          value={note}
-          onChange={e => setNote(e.target.value)}
+        <Input.Wrapper className="w-full" size="md" label="Email">
+          <Input
+            disabled={submited}
+            size="md"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="Enter Email..."
+          />
+        </Input.Wrapper>
+        <Input.Wrapper className="w-full" size="md" label="Display Name">
+          <Input
+            disabled={submited}
+            size="md"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            type="text"
+            placeholder="Enter Display Name..."
+          />
+        </Input.Wrapper>
+        <Textarea
+          label="Note"
+          description="Internal note about the user"
           placeholder="Enter Note..."
-          className="input h-32 resize-none"
+          minRows={6}
+          value={note}
+          onChange={(event) => setNote(event.currentTarget.value)}
         />
       </div>
-      <p className=" mt-6 text-1xl">Account Created: {account.dateCreated}</p>
-      <p className=" mt-6 text-1xl">Last Login: {account.lastLogin}</p>
-      <div>
-        <button onClick={handleDelete} className="red-button">
-          Delete
-        </button>
-        <button onClick={handleEdit}>Edit</button>
+      <div className="flex flex-col space-y-6">
+        <p className=" italic font-light text-gray-500">
+          Account Created: {account.dateCreated}
+        </p>
+        <p className="italic font-light text-gray-500">
+          Last Login: {account.lastLogin}
+        </p>
       </div>
-      <div className=" flex justify-end items-center mt-10">
-        {showError && (<Alert
+      <div className=" flex flex-row justify-between items-center space-x-6">
+        <Button
+          className="w-full"
+          size="lg"
           variant="filled"
           color="red"
-          withCloseButton
-          title="Edit failed"
-          icon={icon}
-          onClick={() => setShowError(false)}
+          onClick={handleDelete}
         >
-          {errorMessage}
-        </Alert>)}
+          Delete
+        </Button>
+        <Button
+          className="w-full"
+          size="lg"
+          variant="filled"
+          onClick={handleEdit}
+        >
+          Edit
+        </Button>
+      </div>
+      <div className=" flex justify-end items-center mt-10">
+        {showError && (
+          <Alert
+            variant="filled"
+            color="red"
+            withCloseButton
+            title="Edit failed"
+            icon={icon}
+            onClick={() => setShowError(false)}
+          >
+            {errorMessage}
+          </Alert>
+        )}
       </div>
     </div>
   );
