@@ -1,12 +1,12 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
 import React, {useState, useEffect, useRef} from 'react';
-import {APIProvider, Map, AdvancedMarker} from '@vis.gl/react-google-maps';
+import {APIProvider, Map, AdvancedMarker, Polyline} from '@vis.gl/react-google-maps';
 import {decode} from "@googlemaps/polyline-codec"
 
 const uniqueArray = (arr) => [...new Set(arr)];
 
-function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
+function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -137,58 +137,58 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
   :pois;
 
     //https://developers.google.com/maps/documentation/routes/compute-route-directions
-    async function computeRoute() {
-       try {
-        if (filteredPois.length < 2) {
-          alert("Please select at least 2 points on the map to compute a route");
-          return
-        }
-
-        const origin = {latlng: userLocation};
-        const destination = {latLng: filteredPois[filteredPois.length - 1].location};
-        const intermediates = filteredPois
-          .slice(0, filteredPois.length - 1)
-          .map(p => ({location: {latLng: p.location}}));
-
-        const response = await fetch(
-          "https://routes.googleapis.com/directions/v2:computeRoutes",
-          {
-            method: "POST",
-            headers: {
-              //https://cloud.google.com/docs/authentication/api-keys-use#node.js
-              "Content-Type": "application/json",
-              "X-Goog-Api-Key":"AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI",
-              "X-Goog-FieldMask":"routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline",
-            },
-            body: JSON.stringify({
-              origin,
-              destination,
-              intermediates,
-              travelMode: "DRIVE",
-            }),
+    async function computeRoute(poi) {
+      const origin = {
+          location: {
+            latLng: {
+              latitude: userLocation.lat,
+              longitude: userLocation.lng
           }
-        );
-        
-        const data = await response.json();
-        
-        if (!response.ok){
-          throw new Error(data.error?.message || "Failed to fetch route");}
-          
-          const route = data.routes[0];
+      }
+    };
 
-          const polyline = route.polyline.encodedPolyline;
-          //As seen here https://developers.google.com/maps/documentation/routes/compute_route_directions google maps api uses meters for distance
-          //this ensures the distance is instead mesured in kilometers to 2 decimal places
-          const distance = (route.distanceMeters / 1000).toFixed(2);
-          const duration = route.duration;
-          routeData = {polyline, distance, duration};
+    const destination = {
+        location: {
+          latLng: {
+            latitude: poi.location.lat,
+            longitude: poi.location.lng
+          }
+      }
+    };
+    
+    const response = await fetch(
+      "https://routes.googleapis.com/directions/v2:computeRoutes",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": "AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI",
+         "X-Goog-FieldMask": "routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline",
+        },
+        body: JSON.stringify({
+          origin,
+          destination,
+          travelMode: "DRIVE"
+        }),
+      }
+    );
+    
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error?.message || "Failed to fetch route");
+    
+    const route = data.routes[0];
+    setRouteData({
+      polyline: route.polyline.encodedPolyline,
+      distance: (route.distanceMeters / 1000).toFixed(2),
+      duration: route.duration,
+    });
+    
+    return {
+      distance: (route.distanceMeters / 1000).toFixed(2),
+      duration: route.duration,
+    };
+  }
 
-          return {polyline, distance, duration};
-        } catch (error) {
-          console.error("There was an error when computing a route:", error);
-          return null;
-        }}
-        
         console.log("=== Rendering POIs ===");
         console.log("Filtered POIs:", filteredPois);
         filteredPois.forEach(poi => {
@@ -196,6 +196,10 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
             `[POI] id=${poi.id}, lat=${poi.location?.lat}, lng=${poi.location?.lng}`
           );
         });
+
+         useEffect(() => {
+          if (computeRouteRef) computeRouteRef.current = computeRoute;
+        }, [computeRouteRef, pois, userLocation]);
 
         return (
         <div>
@@ -219,6 +223,15 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
                   border: '2px solid white',
                 }}/>
               </AdvancedMarker>
+              
+              {routeData && (
+                <Polyline
+                path={decode(routeData.polyline, 6).map(([lat, lng]) => ({ lat, lng }))}
+                strokeColor="blue"
+                strokeOpacity={0.8}
+                strokeWeight={4}
+                />
+              )}
                 
                 {filteredPois
                 .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
@@ -237,35 +250,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails}) {
       
       </div>
   );
-}
-
-//https://developers.google.com/maps/documentation/javascript/legacy/directions, https://developers.google.com/maps/documentation/javascript/examples/directions-simple
-export async function computeRoute(mapInstance, userLocation, poi) {
-  const origin = userLocation;
-  const destination = poi.location;
-
-  const directionsService = new window.google.maps.DirectionsService();
-
-  const result = await new Promise((resolve, reject) => {
-    directionsService.route(
-      {
-        origin,
-        destination,
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      },
-      (response, status) => {
-        if (status === 'OK') resolve(response.routes[0]);
-        else reject(status);
-      }
-    );
-  });
-
-  if (!result) return null;
-
-  const distance = (result.legs[0].distance.value / 1000).toFixed(2); //This ensure teh distance is mesured in km
-  const duration = Math.ceil(result.legs[0].duration.value / 60); 
-
-  return { distance, duration };
 }
 
 export default MapFunction;
