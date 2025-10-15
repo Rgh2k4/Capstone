@@ -10,7 +10,7 @@ function ReportList({ setShowModal, sendUser, reports, showHeader }) {
   };
 
   return (
-    <section className=" bg-gray-100 drop-shadow-md drop-shadow-gray-400">
+    <section className=" drop-shadow-md drop-shadow-gray-400">
       {showHeader && (
         <div className="flex justify-center text-4xl font-bold bg-gray-300 p-4 space-y-4 overflow-y-auto drop-shadow-sm drop-shadow-gray-400">
           <p>Reports</p>
