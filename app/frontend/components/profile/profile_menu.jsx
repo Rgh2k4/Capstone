@@ -7,7 +7,7 @@ import Modal from "../Modal";
 import ChangeCredential from "./change_credential";
 import { Button } from "@mantine/core";
 import { auth } from "../../../backend/databaseIntegration.jsx";
-import { DeleteUser } from "../../../backend/database.jsx";
+import { DeleteUser, EditUser } from "../../../backend/database.jsx";
 import { SetDisplayName } from "@/app/backend/database";
 import ContactWindow from "./contact_window";
 
@@ -27,6 +27,7 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
 
   function handleChangeDisplayName(newName) {
     SetDisplayName(userData, newName);
+    userData.displayName = newName;
     setShowModal(false);
   }
 
@@ -55,7 +56,8 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
   }
 
   function handleSubmitCredential(value) {
-    setShowModal3(false);
+    console.log("New Credential:", value);
+    return EditUser(credentialType, value);
   }
 
   return (
@@ -110,6 +112,7 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
       </Modal>
       <Modal isVisible={showModal3} onClose={() => setShowModal3(false)}>
         <ChangeCredential
+          onClose={() => setShowModal3(false)}
           type={credentialType}
           onSubmit={handleSubmitCredential}
         />
