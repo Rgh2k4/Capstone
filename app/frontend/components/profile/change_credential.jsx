@@ -17,7 +17,7 @@ export default function ChangeCredential({ type, onSubmit }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
-    showError(false);
+    setShowError(false);
     if (!newValue.trim() || !confirmValue.trim()) {
       setErrorMessage(`Both ${label} fields are required.`);
       setShowError(true);
@@ -28,9 +28,7 @@ export default function ChangeCredential({ type, onSubmit }) {
       setShowError(true);
       return;
     }
-    if (onSubmit) {
-      onSubmit(newValue);
-    }
+
   };
 
   return (
