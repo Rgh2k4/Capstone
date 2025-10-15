@@ -50,6 +50,24 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
   useEffect(() => {
     async function loadData() {
+      //https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
+      const CACHE_KEY = "cachedPois_v1";
+      const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7; // 7 days
+      
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { timestamp, data } = JSON.parse(cached);
+        const isFresh = Date.now() - timestamp < CACHE_DURATION;
+        if (isFresh) {
+          console.log("Using cached POIs");
+          setPois(data.allPois);
+          setUniqueTypes(data.uniqueTypes);
+          return;
+        } else {
+          console.log("Cache expired — refetching...");
+        }
+      }
+
       const urls = [
         //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
         "https://opendata.arcgis.com/datasets/dff0acc0f20c4666a253860f6444bb43_0.geojson",
@@ -118,6 +136,13 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         Facility_Type_Installation: uniqueArray(facilityTypes),
         TrailDistance: trailDistance
       });
+
+       localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({
+        timestamp: Date.now(),
+        data: { allPois, uniqueTypes }
+      }));
     }
 
     loadData();
