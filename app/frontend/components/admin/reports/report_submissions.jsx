@@ -1,6 +1,6 @@
+import { Button } from "@mantine/core";
 
 function ReportSubmissions({ handleReport, reports }) {
-
   function handleData({ rep }) {
     console.log("Data:");
     console.log(rep);
@@ -14,7 +14,14 @@ function ReportSubmissions({ handleReport, reports }) {
           <div className="grid grid-cols-3 gap-4 m-4">
             <p className=" mt-6 mr-8 font-semibold text-2xl">{rep.username}</p>
             <p className=" mt-6 mr-8 text-1xl">Submited: {rep.date}</p>
-            <button onClick={() => handleData({ rep })}>Review</button>
+            <Button
+              className="w-full"
+              size="lg"
+              variant="filled"
+              onClick={() => handleData({ rep })}
+            >
+              Review
+            </Button>
           </div>
         </div>
       ))}
