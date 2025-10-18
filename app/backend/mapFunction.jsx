@@ -2,6 +2,7 @@
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
 import React, {useState, useEffect, useRef} from 'react';
 import {APIProvider, Map, AdvancedMarker, Polyline} from '@vis.gl/react-google-maps';
+import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import {decode} from "@googlemaps/polyline-codec"
 
 const uniqueArray = (arr) => [...new Set(arr)];
@@ -45,6 +46,18 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       const values = data.map(f => f.properties?.[property]).filter(Boolean);
       return [...new Set(values)];
     };
+
+    //This code ensures each location grabbed has a unique name to help avaiod overcrowding of markers
+    const getUniquePOINames = (data) => {
+      const seen = new Map();
+      for (const poi of data) {
+        const name = poi.name?.trim().toLowerCase();
+        if (!seen.has(name)) {
+          seen.set(name, poi);
+        }
+      }
+      return Array.from(seen.values());
+    }
 
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
   //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
