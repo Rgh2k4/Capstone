@@ -1,17 +1,20 @@
+"use client";
+
 import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
-import { fetchSignInMethodsForEmail, updateEmail, updatePassword } from "firebase/auth";
+import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
 
 export async function CreateUserAccount(data) {
   try {
-    console.log("Adding user to Firestore with ID:", data.uid);
+    //console.log("Adding user to Firestore with ID:", data.uid);
     
-    await setDoc(doc(database, "users", data.email), {
+    await setDoc(doc(database, "users", data.uid), {
       user_ID: data.uid,
       email: data.email,
       dateCreated: serverTimestamp(),
       role: "User",
       note: "",
+      displayName: data.displayName || "",
       lastLogin: serverTimestamp(),
     });
     return true;
@@ -62,7 +65,7 @@ export async function LoadAdminList() {
 
 export async function UpdateLastLogin(user) {
   try {
-    await updateDoc(doc(database, "users", user.email), {
+    await updateDoc(doc(database, "users", user.uid), {
       lastLogin: serverTimestamp(),
     });
     console.log("Updated last login for", user.email);
@@ -71,9 +74,9 @@ export async function UpdateLastLogin(user) {
   }
 }
 
-export async function GetUserData(userEmail) {
+export async function GetUserData(uid) {
   try {
-    const userDoc = await getDoc(doc(database, "users", userEmail));
+    const userDoc = await getDoc(doc(database, "users", uid));
     if (userDoc.exists()) {     
       return userDoc.data();
     } else {
@@ -86,12 +89,13 @@ export async function GetUserData(userEmail) {
   }
 };
 
-export async function SetDisplayName(user, displayName) {
+export async function SetDisplayName( displayName) {
+  const user = auth.currentUser;
   try {
-    await updateDoc(doc(database, "users", user.email), {
+    await updateDoc(doc(database, "users", user.uid), {
       displayName: displayName,
     });
-    console.log("Updated display name for", user.email);
+    console.log("Updated display name for", user.uid);
   } catch (error) {
     console.error("Error updating display name:", error);
   }
@@ -142,31 +146,29 @@ export async function EditUser(type, value) {
   try {
     const user = auth.currentUser;
     if (!user) throw new Error("No authenticated user");
+    const currentPassword = value?.currentPassword?.trim();
+    console.log("Current Password:", currentPassword);
+    const currentEmail = user.email;
 
+
+    
     if (type === "email"){
-      const currentEmail = user.email;
-      const newEmail = value?.trim();
-
+      const newEmail = value?.newValue?.trim();
+      console.log("New Email:", newEmail);
+      
       const methods = await fetchSignInMethodsForEmail(auth, newEmail);
       if (methods.length > 0) {
         throw new Error("Email already in use");
       }
-
-
-      const oldRef = doc(database, "users", currentEmail);
-      const snap = await getDoc(oldRef);
-      const newRef = doc(database, "users", newEmail);
-
-      if (!snap.exists()) throw new Error("User document does not exist");
-
-      await setDoc(newRef, snap.data());
-      await deleteDoc(oldRef);
+      
+      const ref = doc(database, "users", user.uid);
+      await updateDoc(ref, { email: newEmail });
       await updateEmail(user, newEmail);
       return true;
 
 
     } else if (type === "password") {
-      const newPassword = value?.trim();
+      const newPassword = value?.newValue?.trim();
 
       if (newPassword) {
         await updatePassword(user, newPassword);
@@ -186,7 +188,7 @@ export async function EditUser(type, value) {
 export async function DeleteUser() {
   try {
     const user = auth.currentUser; 
-    await deleteDoc(doc(database, "users", user.email))
+    await deleteDoc(doc(database, "users", user.uid))
     await user.delete()   
     return true;
   } catch (e) {
@@ -195,9 +197,9 @@ export async function DeleteUser() {
       }
   }
 
-export async function addReview(email, reviewData) {
+export async function addReview(uid, reviewData) {
     try {
-        const refId = await addDoc(collection(database, "users", email, "reviews"), reviewData);
+        const refId = await addDoc(collection(database, "users", uid, "reviews"), reviewData);
         return refId;
     } catch (error) {
         console.error("Error: ", error);
