@@ -1,6 +1,6 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useMemo} from 'react';
 import {APIProvider, Map, AdvancedMarker, Polyline} from '@vis.gl/react-google-maps';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import {decode} from "@googlemaps/polyline-codec"
@@ -63,7 +63,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
     async function loadData() {
       //https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
       const CACHE_KEY = "cachedPois_v1";
-      const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7; // 7 days
+      const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7;
       
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
@@ -95,7 +95,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       for (const [i, url] of urls.entries()) {
         try {
           console.log(`Fetching dataset ${i + 1}/${urls.length}...`);
-          const response = await fetch(url, { signal: AbortSignal.timeout(25000) }); //This will cause any pull longer than 25 seconds to abort
+          const response = await fetch(url);
           if (!response.ok) throw new Error(`Failed to load ${url}: ${response.status}`);
 
           const data = await response.json();
@@ -118,8 +118,8 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
 
           allPois.push(...pois);
 
-          //Progressively update markers so the map doesn't wait for all datasets
-          setPois([...allPois]);
+          //Only update the state once with all unique POIs
+          setPois(getUniquePOINames(allPois));
 
           //This adds a small delay to the site to avoid overloading it
           await new Promise(res => setTimeout(res, 1500));
@@ -164,16 +164,19 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
 
   //This code was made with help from gpt 
   // after having gpt check the code for bugs and having it ask if I wanted to have the markers place dynamicaly based on the filter settings and me responding "Doesn't it already do that?"
-  const filteredPois = filters.length
-  ? pois.filter(poi =>
-    filters.some(f =>
+  //Addendum: This code was changed after asking gpt "Why, even after all of the POIs are called, is the performance so slow on the site, with INP being ususally above 1000 ms"
+  const filteredPois = useMemo(() => {
+    if (!filters.length) return pois;
+    return pois.filter(poi => 
+      filters.some(f =>
       [poi.properties?.Accommodation_Type, poi.properties?.Principal_type, poi.properties?.Facility_Type_Installation]
         .some(val => String(val).trim() === String(f).trim()) ||
       ['Label_e_5k_less', 'Label_e_20k_5k', 'Label_e_100k_20k', 'Label_e_100k_plus']
         .some(label => String(poi.properties?.[label]).trim() === String(f).trim())
-    )
-  )
-  :pois;
+    ));
+  }, [pois, filters]);
+
+  pois;
 
     //https://developers.google.com/maps/documentation/routes/compute-route-directions
     async function computeRoute(poi) {
