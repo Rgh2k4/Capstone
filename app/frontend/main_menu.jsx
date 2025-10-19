@@ -29,7 +29,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
   async function setupUser() {
     //console.log("Current user:", user);
     const email = auth.currentUser.email;
-    GetUserData(email).then((data) => {
+    GetUserData(user.uid).then((data) => {
       console.log("User Data:", data);
       console.log("Is Admin:", data.role === "Admin");
       if (data.role === "Admin") {

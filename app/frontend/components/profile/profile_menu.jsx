@@ -26,7 +26,7 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
   }
 
   function handleChangeDisplayName(newName) {
-    SetDisplayName(userData, newName);
+    SetDisplayName(newName);
     userData.displayName = newName;
     setShowModal(false);
   }
@@ -42,12 +42,9 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
 
   function handleChangeCredential(type) {
     setCredentialType(type);
-    //console.log(type);
-
     setShowModal2(false);
-    //console.log(showModal2);
-
     setShowModal3(true);
+
   }
 
   function handleContactSupport() {

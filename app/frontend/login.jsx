@@ -60,6 +60,7 @@ export default function Login({ handleLogin, handleSignUp }) {
               visible={visible}
               onVisibilityChange={toggle}
             />
+            <p className=" mt-2 text-sm text-gray-500 hover:underline cursor-pointer"> Forgot password? </p>
           </Input.Wrapper>
           <div className=" flex flex-col justify-center items-center space-y-8">
             <div className=" flex flex-row justify-center space-x-8">

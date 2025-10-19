@@ -1,14 +1,17 @@
+import { auth } from "@/app/backend/databaseIntegration";
 import { Button, Input } from "@mantine/core";
+import { sendEmailVerification } from "firebase/auth";
 import { useState } from "react";
 
 function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated }) {
   const [name, setName] = useState(displayName);
   const [submited, setSubmitted] = useState(false);
   const [status, setStatus] = useState("");
-  console.log(displayName);
-  console.log(email);
-  console.log(dateCreated);
+  //console.log(displayName);
+  //console.log(email);
+  //console.log(dateCreated);
   
+  const user = auth.currentUser;
 
   function handleChangeDisplayName(e) {
     e.preventDefault();
@@ -29,6 +32,12 @@ function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated })
       setStatus("Failed to change display name.");
     }
   }
+
+    async function handleVerifyEmail() {
+    await sendEmailVerification(user);
+    setStatus("Verification email sent.");
+  }
+
 
   return (
     <div className=" w-full p-24 rounded flex flex-col justify-center text-center space-y-24">
@@ -72,6 +81,11 @@ function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated })
           />
         </Input.Wrapper>
         <p className=" mt-6 text-1xl font-semibold italic">Acoount Created: {dateCreated}</p>
+        {!user.emailVerified && (
+          <Button onClick={handleVerifyEmail} variant="outline" className="mt-4">
+            Verify Email
+          </Button>
+        )}
       </div>
     </div>
   );

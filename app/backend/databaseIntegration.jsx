@@ -3,7 +3,7 @@
 import { initializeApp } from "firebase/app";
 import {getStorage} from "firebase/storage"
 import { getFirestore } from "firebase/firestore";
-import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth";
+import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification} from "firebase/auth";
 import { CreateUserAccount, UpdateLastLogin } from "./database";
 
 
@@ -24,20 +24,21 @@ const firebaseConfig = {
 
 // This code allows new users to sign up
 // It was made with help from https://firebase.google.com/docs/auth/web/start
-export function signUp(email, password) {
-  createUserWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      // Signed in
-      const user = userCredential.user;
-      CreateUserAccount(user);
-      //console.log('User signed up:', user);
-      return true;
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.error('Error signing up:', errorCode, errorMessage);
-    });
+export async function signUp(email, password) {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    await CreateUserAccount(user);
+    await sendEmailVerification(user);
+    console.log('Verification email sent to:', email);
+  } catch (error) {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    console.error('Error signing up:', errorCode, errorMessage);
+    return false;
+  }
+  //console.log('User signed up:', user);
+  return true;
 }
 
 // This code allows existing users to log in
