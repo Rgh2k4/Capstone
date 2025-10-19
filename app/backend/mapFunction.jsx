@@ -48,16 +48,14 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
     };
 
     //This code ensures each location grabbed has a unique name to help avaiod overcrowding of markers
-    const getUniquePOINames = (data) => {
-      const seen = new Map();
-      for (const poi of data) {
-        const name = poi.name?.trim().toLowerCase();
-        if (!seen.has(name)) {
-          seen.set(name, poi);
-        }
-      }
-      return Array.from(seen.values());
-    }
+    const getUniquePOINames = (pois) => {
+      const seen = new Set();
+      return pois.filter(poi => {
+        if (seen.has(poi.name)) return false;
+        seen.add(poi.name);                   
+        return true;
+      });
+    };
 
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
   //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
@@ -131,6 +129,9 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       }
 
       console.log(`All datasets loaded: ${allPois.length} POIs`);
+      const uniquePois = getUniquePOINames(allPois);
+      
+      setPois(uniquePois);
 
       //The following code extracts the unique sub-types for use in the front-end filter and was made with the help of https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set,
       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter, and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
