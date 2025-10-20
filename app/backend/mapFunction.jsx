@@ -19,6 +19,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   //https://developers.google.com/maps/documentation/utilities/polylineutility & https://developers.google.com/maps/documentation/javascript/reference/polygon#Polyline
   const mapRef = useRef(null);
   const polylineRef = useRef(null);
+  const clustererRef = useRef(null);
 
   //This code gets the users location with permission on load and was made with help from https://developers.google.com/maps/documentation/javascript/geolocation, https://developers.google.com/maps/documentation/geolocation/overview
   //and the code snippets provided by VS code"
@@ -155,7 +156,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         CACHE_KEY,
         JSON.stringify({
         timestamp: Date.now(),
-        data: { allPois, uniqueTypes }
+        data: { allPois, setUniqueTypes }
       }));
     }
 
@@ -175,6 +176,40 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         .some(label => String(poi.properties?.[label]).trim() === String(f).trim())
     ));
   }, [pois, filters]);
+
+  //https://developers.google.com/maps/documentation/javascript/marker-clustering
+  useEffect(() => {
+  if (!mapRef.current || !window.google) return;
+
+  const map = mapRef.current;
+
+  if (clustererRef.current) {
+    clustererRef.current.clearMarkers();
+  }
+
+  const markers = filteredPois
+    .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
+    .map(poi => {
+      const marker = new google.maps.Marker({
+        position: poi.location,
+        title: poi.name,
+      });
+
+      marker.addListener("click", () => {
+        setSelectedPOI(poi);
+        viewParkDetails?.(poi);
+      });
+
+      return marker;
+    });
+
+  const { MarkerClusterer } = require("@googlemaps/markerclusterer");
+  clustererRef.current = new MarkerClusterer({ map, markers });
+
+  return () => {
+    clustererRef.current?.clearMarkers();
+  };
+}, [filteredPois]);
 
   pois;
 
@@ -251,6 +286,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
               defaultCenter={userLocation}
               defaultZoom={10}
               mapId='456dc2bedf64a06c67cc63ea'>
+              onLoad={(map) => {mapRef.current = map;}}
               
               {/*https://visgl.github.io/react-google-maps/docs/api-reference/components/advanced-marker, https://developers.google.com/maps/documentation/javascript/geolocation#maps_map_geolocation-javascript*/}
               <AdvancedMarker
@@ -274,23 +310,24 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
                 strokeWeight={4}
                 />
               )}*/}
-                
-                {filteredPois
-                .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
-                .map(poi => (
-                <AdvancedMarker
-                key={poi.id}
-                position={poi.location}
-                onClick={() => {setSelectedPOI(poi);
-                  viewParkDetails?.(poi);
-                }}
+
+
+                {/*{filteredPois
+                    .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
+                    .map(poi => (
+                  <AdvancedMarker
+                    key={poi.id}
+                    position={poi.location}
+                    onClick={() => {setSelectedPOI(poi);
+                    viewParkDetails?.(poi);
+                  }}
                 />
-              ))}
+              ))}*/}
           </Map>
         </APIProvider>
       </div>
-      
       </div>
+      
   );
 }
 
