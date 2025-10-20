@@ -73,7 +73,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         if (isFresh) {
           console.log("Using cached POIs");
           setPois(data.allPois);
-          setUniqueTypes(data.uniqueTypes);
           return;
         } else {
           console.log("Cache expired — refetching...");
@@ -156,7 +155,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         CACHE_KEY,
         JSON.stringify({
         timestamp: Date.now(),
-        data: { allPois, setUniqueTypes }
+        data: { allPois, uniqueArray }
       }));
     }
 
@@ -179,39 +178,27 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
 
   //https://developers.google.com/maps/documentation/javascript/marker-clustering
   useEffect(() => {
-  if (!mapRef.current || !window.google) return;
+  if (!mapRef.current || !window.google || !filteredPois.length) return;
 
-  const map = mapRef.current;
+  clustererRef.current?.clearMarkers();
 
-  if (clustererRef.current) {
-    clustererRef.current.clearMarkers();
-  }
-
-  const markers = filteredPois
-    .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
-    .map(poi => {
-      const marker = new google.maps.Marker({
-        position: poi.location,
-        title: poi.name,
-      });
-
-      marker.addListener("click", () => {
-        setSelectedPOI(poi);
-        viewParkDetails?.(poi);
-      });
-
-      return marker;
+  const markers = filteredPois.map(poi => {
+    const marker = new window.google.maps.Marker({
+      position: poi.location,
+      title: poi.name,
     });
 
-  const { MarkerClusterer } = require("@googlemaps/markerclusterer");
-  clustererRef.current = new MarkerClusterer({ map, markers });
+    marker.addListener("click", () => {
+      setSelectedPOI(poi);
+      viewParkDetails?.(poi);
+    });
 
-  return () => {
-    clustererRef.current?.clearMarkers();
-  };
+    return marker;
+  });
+
+  clustererRef.current = new MarkerClusterer({ map: mapRef.current, markers });
+
 }, [filteredPois]);
-
-  pois;
 
     //https://developers.google.com/maps/documentation/routes/compute-route-directions
     async function computeRoute(poi) {
@@ -285,9 +272,10 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
               <Map
               defaultCenter={userLocation}
               defaultZoom={10}
-              mapId='456dc2bedf64a06c67cc63ea'>
+              mapId='456dc2bedf64a06c67cc63ea'
               onLoad={(map) => {mapRef.current = map;}}
-              
+              >
+
               {/*https://visgl.github.io/react-google-maps/docs/api-reference/components/advanced-marker, https://developers.google.com/maps/documentation/javascript/geolocation#maps_map_geolocation-javascript*/}
               <AdvancedMarker
               position={userLocation}
