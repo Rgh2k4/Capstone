@@ -1,8 +1,8 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
 import React, {useState, useEffect, useRef, useMemo} from 'react';
-import {APIProvider, Map, AdvancedMarker, Polyline} from '@vis.gl/react-google-maps';
-import { MarkerClusterer } from '@googlemaps/markerclusterer';
+//https://developers.google.com/maps/documentation/javascript/reference/marker, https://developers.google.com/maps/documentation/javascript/marker-clustering#using_markerclusterer
+import { GoogleMap, Marker, MarkerClusterer } from '@googlemaps/markerclusterer';
 import {decode} from "@googlemaps/polyline-codec"
 
 const uniqueArray = (arr) => [...new Set(arr)];
@@ -177,28 +177,29 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   }, [pois, filters]);
 
   //https://developers.google.com/maps/documentation/javascript/marker-clustering
-  useEffect(() => {
-  if (!mapRef.current || !window.google || !filteredPois.length) return;
-
-  clustererRef.current?.clearMarkers();
-
-  const markers = filteredPois.map(poi => {
-    const marker = new window.google.maps.Marker({
-      position: poi.location,
-      title: poi.name,
-    });
-
-    marker.addListener("click", () => {
-      setSelectedPOI(poi);
-      viewParkDetails?.(poi);
-    });
-
-    return marker;
-  });
-
-  clustererRef.current = new MarkerClusterer({ map: mapRef.current, markers });
-
-}, [filteredPois]);
+    useEffect(() => {
+      if (!mapRef.current || !window.google || !filteredPois.length) return;
+      
+      clustererRef.current?.clearMarkers();
+      
+      const markers = filteredPois.map(poi => {
+        const marker = new window.google.maps.Marker({
+          position: poi.location,
+          title: poi.name,
+          map: mapRef.current,
+        });
+        
+        marker.addListener("click", () => {
+          setSelectedPOI(poi);
+          viewParkDetails?.(poi);
+        });
+        
+        return marker;
+      });
+      
+      clustererRef.current = new MarkerClusterer({ map: mapRef.current, markers });
+    
+    }, [mapRef.current, filteredPois, viewParkDetails]);
 
     //https://developers.google.com/maps/documentation/routes/compute-route-directions
     async function computeRoute(poi) {
@@ -269,26 +270,26 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         <div>
           <div className='h-screen w-full'>
             <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
-              <Map
+              <GoogleMap
               defaultCenter={userLocation}
               defaultZoom={10}
               mapId='456dc2bedf64a06c67cc63ea'
               onLoad={(map) => {mapRef.current = map;}}
               >
 
-              {/*https://visgl.github.io/react-google-maps/docs/api-reference/components/advanced-marker, https://developers.google.com/maps/documentation/javascript/geolocation#maps_map_geolocation-javascript*/}
-              <AdvancedMarker
+              {/*https://developers.google.com/maps/documentation/javascript/symbols#simple_symbols,  */}
+              <Marker
               position={userLocation}
               title="Your Location">
-                <div
-                style={{
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  backgroundColor: 'blue',
-                  border: '2px solid white',
-                }}/>
-              </AdvancedMarker>
+                icon={{
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 8,
+                  fillColor: 'blue',
+                  fillOpacity: 1,
+                  strokeWeight: 2,
+                  strokeColor: 'white',
+                  }}
+              </Marker>
               
               {/*{routeData && (
                 <Polyline
@@ -298,24 +299,10 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
                 strokeWeight={4}
                 />
               )}*/}
-
-
-                {/*{filteredPois
-                    .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
-                    .map(poi => (
-                  <AdvancedMarker
-                    key={poi.id}
-                    position={poi.location}
-                    onClick={() => {setSelectedPOI(poi);
-                    viewParkDetails?.(poi);
-                  }}
-                />
-              ))}*/}
-          </Map>
+          </GoogleMap>
         </APIProvider>
       </div>
-      </div>
-      
+    </div>  
   );
 }
 
