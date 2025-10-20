@@ -6,7 +6,7 @@
   https://chat.openai.com/share/1f3f3e5e-1dcb-4f0a-8f7b-1c8e4e3b8f6e  
 */
 import { useState } from "react";
-import { signUp } from "../backend/databaseIntegration.jsx";
+import { auth, signUp } from "../backend/databaseIntegration.jsx";
 import { Alert, Button, Input, PasswordInput, Checkbox } from "@mantine/core";
 import { IconAt, IconInfoCircle } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
@@ -29,7 +29,7 @@ export default function SignupPage({ handleNewAccount }) {
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   };
 
-  const onSubmit = async (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
     setShowError(false);
@@ -40,13 +40,11 @@ export default function SignupPage({ handleNewAccount }) {
         setShowError(true);
         throw new Error("Passwords do not match");
       }
-      await signUp(form.email, form.password).then((success) => {
-        if (success) {
-          handleNewAccount();
-        } else {
-          throw new Error("Sign up failed. Please try again.");
-        }
-      });
+      if (signUp(form.email, form.password)) {
+        handleNewAccount();
+      } else {
+        throw new Error("Sign up failed. Please try again.");
+      }
     } catch (error) {
       console.error("Error during sign up:", error);
       setErrorMessage(error.message);

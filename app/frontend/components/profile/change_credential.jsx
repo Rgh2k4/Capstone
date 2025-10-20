@@ -1,9 +1,10 @@
-import { Alert, Button, Input } from "@mantine/core";
+import { Alert, Button, Input, PasswordInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconAt, IconInfoCircle } from "@tabler/icons-react";
 import React, { useState } from "react";
 
 export default function ChangeCredential({ type, onSubmit, onClose }) {
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newValue, setNewValue] = useState("");
   const [confirmValue, setConfirmValue] = useState("");
   const [visible, { toggle }] = useDisclosure(false);
@@ -14,10 +15,14 @@ export default function ChangeCredential({ type, onSubmit, onClose }) {
 
   const label = type === "email" ? "Email" : "Password";
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setSubmitted(true);
     setShowError(false);
+    if (!currentPassword.trim()) {
+      setErrorMessage("Current password is required.");
+      setShowError(true);
+      return;
+    }
     if (!newValue.trim() || !confirmValue.trim()) {
       setErrorMessage(`Both ${label} fields are required.`);
       setShowError(true);
@@ -30,17 +35,10 @@ export default function ChangeCredential({ type, onSubmit, onClose }) {
     }
 
     try {
-      onSubmit(newValue).then((success) => {
-        if (success) {
-          onClose();
-        } else {
-      
-          setErrorMessage(`Failed to change ${label}. Please try again.`);
-          setShowError(true);
-        }
-      });
+      await onSubmit({ currentPassword, newValue });
+      onClose();
     } catch (error) {
-      setErrorMessage(`Error: ${error.message || "An unexpected error occurred."}`);
+      setErrorMessage(`${error.message || "An unexpected error occurred."}`);
       setShowError(true);
     }
   };
@@ -50,54 +48,76 @@ export default function ChangeCredential({ type, onSubmit, onClose }) {
       <h2 className=" text-3xl font-semibold mb-6">Change {label}</h2>
       <div style={{ marginBottom: 16 }}>
         {type === "email" ? (
-          <Input.Wrapper className="w-full" size="md" label="Enter Email">
-            <Input
-              disabled={submited}
-              size="md"
-              placeholder={`New ${label}`}
-              value={newValue}
-              onChange={(event) => setNewValue(event.currentTarget.value)}
-              leftSection={<IconAt size={16} />}
-            />
-          </Input.Wrapper>
+          <>            
+            <Input.Wrapper className="w-full" size="md" label="Enter Email">
+              <Input
+                disabled={submited}
+                size="md"
+                placeholder={`New ${label}`}
+                value={newValue}
+                onChange={(event) => setNewValue(event.currentTarget.value)}
+                leftSection={<IconAt size={16} />}
+              />
+            </Input.Wrapper>
+            <Input.Wrapper className="w-full" size="md" label="Confirm Email">
+              <Input
+                disabled={submited}
+                size="md"
+                placeholder={`Confirm New ${label}`}
+                value={confirmValue}
+                onChange={(event) => setConfirmValue(event.currentTarget.value)}
+                leftSection={<IconAt size={16} />}
+              />
+            </Input.Wrapper>
+            <Input.Wrapper className="w-full" size="md" label="Password">
+              <PasswordInput
+                disabled={submited}
+                size="md"
+                placeholder={`Enter Current Password`}
+                value={currentPassword}
+                onChange={(event) => setCurrentPassword(event.currentTarget.value)}
+                visible={visible}
+                onVisibilityChange={{ toggle }}
+              />
+            </Input.Wrapper>
+          </>
         ) : (
-          <Input.Wrapper className="w-full" size="md" label="Enter Password">
-            <Input
-              disabled={submited}
-              size="md"
-              placeholder={`New ${label}`}
-              value={newValue}
-              onChange={(event) => setNewValue(event.currentTarget.value)}
-              visible={visible}
-              onVisibilityChange={{ toggle }}
-            />
-          </Input.Wrapper>
-        )}
-      </div>
-      <div style={{ marginBottom: 16 }}>
-        {type === "email" ? (
-          <Input.Wrapper className="w-full" size="md" label="Confirm Email">
-            <Input
-              disabled={submited}
-              size="md"
-              placeholder={`Confirm New ${label}`}
-              value={confirmValue}
-              onChange={(event) => setConfirmValue(event.currentTarget.value)}
-              leftSection={<IconAt size={16} />}
-            />
-          </Input.Wrapper>
-        ) : (
-          <Input.Wrapper className="w-full" size="md" label="Confirm Password">
-            <Input
-              disabled={submited}
-              size="md"
-              placeholder={`Confirm New ${label}`}
-              value={confirmValue}
-              onChange={(event) => setConfirmValue(event.currentTarget.value)}
-              visible={visible}
-              onVisibilityChange={{ toggle }}
-            />
-          </Input.Wrapper>
+          <>
+            <Input.Wrapper className="w-full" size="md" label="Current Password">
+                <PasswordInput
+                  disabled={submited}
+                  size="md"
+                  placeholder={`Current ${label}`}
+                  value={currentPassword}
+                  onChange={(event) => setCurrentPassword(event.currentTarget.value)}
+                  visible={visible}
+                  onVisibilityChange={{ toggle }}
+                />
+              </Input.Wrapper>
+              <Input.Wrapper className="w-full" size="md" label="New Password">
+                <PasswordInput
+                  disabled={submited}
+                  size="md"
+                  placeholder={`New ${label}`}
+                  value={newValue}
+                  onChange={(event) => setNewValue(event.currentTarget.value)}
+                  visible={visible}
+                  onVisibilityChange={{ toggle }}
+                />
+              </Input.Wrapper>
+            <Input.Wrapper className="w-full" size="md" label="Confirm Password">
+              <PasswordInput
+                disabled={submited}
+                size="md"
+                placeholder={`Confirm New ${label}`}
+                value={confirmValue}
+                onChange={(event) => setConfirmValue(event.currentTarget.value)}
+                visible={visible}
+                onVisibilityChange={{ toggle }}
+              />
+            </Input.Wrapper>
+          </>
+            
         )}
       </div>
       <Button size="lg" variant="filled" loading={submited} type="submit">

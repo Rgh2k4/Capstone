@@ -1,19 +1,34 @@
+import { auth } from "@/app/backend/databaseIntegration";
 import { Button } from "@mantine/core";
 import React, { useState } from "react";
 
-function SettingsMenu({ onRouteToLogin, onChangeCredential, onDeleteAccount, onContactSupport }) {
+function SettingsMenu({
+  onRouteToLogin,
+  onChangeCredential,
+  onDeleteAccount,
+  onContactSupport,
+}) {
   const [submited1, setSubmitted1] = useState(false);
   const [submited2, setSubmitted2] = useState(false);
   const [submited3, setSubmitted3] = useState(false);
   const [submited4, setSubmitted4] = useState(false);
+  const user = auth.currentUser;
 
   function handleChangeEmail() {
-    setSubmitted1(true);
-    onChangeCredential("email");
+    if (user.emailVerified) {
+      setSubmitted1(true);
+      onChangeCredential("email");
+    } else {
+      alert("Please verify your email before changing credentials.");
+    }
   }
   function handleChangePassword() {
-    setSubmitted2(true);
-    onChangeCredential("password");
+    if (user.emailVerified) {
+      setSubmitted2(true);
+      onChangeCredential("password");
+    } else {
+      alert("Please verify your email before changing credentials.");
+    }
   }
   function handleContact() {
     setSubmitted3(true);
@@ -27,9 +42,7 @@ function SettingsMenu({ onRouteToLogin, onChangeCredential, onDeleteAccount, onC
   return (
     <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center space-y-6 p-12 bg-white/5 backdrop-blur-md rounded-2xl shadow-lg border border-white/10">
       <h1 className="text-4xl font-bold text-center mb-4">Settings</h1>
-      <p className="text-center mb-6">
-        Manage your account preferences below.
-      </p>
+      <p className="text-center mb-6">Manage your account preferences below.</p>
 
       <div className="w-full flex flex-col space-y-4">
         <Button
