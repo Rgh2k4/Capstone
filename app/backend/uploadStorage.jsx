@@ -3,11 +3,11 @@ import { ref, uploadBytes, listAll, getDownloadURL } from 'firebase/storage';
 import { storage } from './databaseIntegration';
 import { useState, useEffect } from 'react';
 
-export async function uploadImage(file, park) {
+export async function uploadImage(file, location) {
   try {
-    const storagePath = ref(storage, `National/${park}/${file.name}`);
+    const storagePath = ref(storage, `National/${location}/${file.name}`);
     await uploadBytes(storagePath, file);
-    alert(park);
+    alert(location);
   } catch (error) {
     console.error('Error:', error);
   }

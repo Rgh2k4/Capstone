@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { uploadImage } from "@/app/backend/UploadStorage.jsx";
 import { Button, Input, Textarea, TextInput } from "@mantine/core";
+import { auth } from "@/app/backend/databaseIntegration";
+import { addReview } from "@/app/backend/database";
 
 export default function Upload_Window({ onClose, parkInfo }) {
   const [submited, setSubmitted] = useState(false);
@@ -12,11 +14,14 @@ export default function Upload_Window({ onClose, parkInfo }) {
   const [preview, setPreview] = useState(null);
   const [image, setImage] = useState(null);
   const park = parkInfo ? parkInfo : null;
+  const user = auth.currentUser;
 
   function handleSubmit(e) {
     e.preventDefault();
+    const location = park.name.split(' ').join('');
+    addReview(user.uid, {title: title, message: message, rating: rating}, location)
     if (image && park != null) {
-      uploadImage(image, park.name);
+      //uploadImage(image, location);    
     }
   }
 
@@ -33,8 +38,10 @@ export default function Upload_Window({ onClose, parkInfo }) {
     const rateInput = e.currentTarget.value;
 
     if (rateInput === '' || /^\d+$/.test(rateInput)) {
-      if (rateInput > 0 || rateInput < 11) {
-        setRating(rateInput);
+
+      const intRate = parseInt(rateInput);
+      if (intRate > 0 || intRate < 11) {
+        setRating(intRate);
       }    
     }
   }

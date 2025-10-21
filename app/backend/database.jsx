@@ -197,10 +197,10 @@ export async function DeleteUser() {
       }
   }
 
-export async function addReview(uid, reviewData) {
+export async function addReview(uid, reviewData, location) {
     try {
-        const refId = await addDoc(collection(database, "users", uid, "reviews"), reviewData);
-        return refId;
+        await setDoc(doc(database, "users", uid, "reviews", location), reviewData)
+        alert("Success");
     } catch (error) {
         console.error("Error: ", error);
     }
