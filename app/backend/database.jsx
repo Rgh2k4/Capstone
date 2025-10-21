@@ -206,11 +206,11 @@ export async function addReview(uid, reviewData, location) {
     }
 };
 
-export async function readData(userID) {
+export async function readData(uid, location) {
     const review = []; 
 
     try {
-        const reviewData = await getDocs(query(collection(database, "users", userID, "review")));
+        const reviewData = await getDocs(query(collection(database, "users", uid, "reviews", location)));
         reviewData.forEach((review) => {
             review.push({
                 ...review.data()
