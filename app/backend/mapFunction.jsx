@@ -1,10 +1,44 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
 import React, {useState, useEffect, useRef} from 'react';
-import {APIProvider, Map, AdvancedMarker, Polyline} from '@vis.gl/react-google-maps';
+import {APIProvider, Map, AdvancedMarker, Polyline, useMap} from '@vis.gl/react-google-maps';
 import {decode} from "@googlemaps/polyline-codec"
 
 const uniqueArray = (arr) => [...new Set(arr)];
+
+//This code was made with help from https://developers.google.com/maps/documentation/javascript/events#map_events
+//https://developers-dot-devsite-v2-prod.appspot.com/maps/documentation/javascript/reference/coordinates#LatLngBounds
+//and asking GPT to help me debug my code
+function MapContent({filteredPois, setVisiblePois, viewParkDetails}) {
+  const map = useMap();
+  const [visiblePoisLocal, setVisiblePoisLocal] = useState([]);
+
+  useEffect(() => {
+    const updateVisiblePois = () => {
+      if (!map) return;
+      const bounds = map.getBounds();
+      const visible = filteredPois.filter(poi =>
+        bounds.contains(new google.maps.LatLng(poi.location.lat, poi.location.lng))
+      );
+      setVisiblePoisLocal(visible);
+    };
+
+    updateVisiblePois();
+    const listener = map.addListener('idle', updateVisiblePois);
+    return () => google.maps.event.removeListener(listener);
+  }, [map, filteredPois, setVisiblePois]);
+
+  return (
+    <>
+      {visiblePoisLocal.map(poi => (
+        <AdvancedMarker
+        key={poi.id}
+        position={poi.location}
+        onClick={() => viewParkDetails?.(poi)} />
+      ))}
+    </>
+  );
+}
 
 function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
@@ -18,10 +52,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   //https://developers.google.com/maps/documentation/utilities/polylineutility & https://developers.google.com/maps/documentation/javascript/reference/polygon#Polyline
   const mapRef = useRef(null);
   const polylineRef = useRef(null);
-
-  //The view marker rendering was made with help from https://developers.google.com/maps/documentation/javascript/events & https://developers.google.com/maps/documentation/javascript/reference/map#Map.getBounds
-  const map = useMap();
-  const [visiblePois, setVisiblePois] = useState([]);
 
   //This code gets the users location with permission on load and was made with help from https://developers.google.com/maps/documentation/javascript/geolocation, https://developers.google.com/maps/documentation/geolocation/overview
   //and the code snippets provided by VS code"
@@ -54,23 +84,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
   useEffect(() => {
     async function loadData() {
-      //https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
-      const CACHE_KEY = "cachedPois_v1";
-      const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7; // 7 days
-      
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const { timestamp, data } = JSON.parse(cached);
-        const isFresh = Date.now() - timestamp < CACHE_DURATION;
-        if (isFresh) {
-          console.log("Using cached POIs");
-          setPois(data.allPois);
-          setUniqueTypes(data.uniqueTypes);
-          return;
-        } else {
-          console.log("Cache expired — refetching...");
-        }
-      }
 
       const urls = [
         //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
@@ -140,13 +153,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         Facility_Type_Installation: uniqueArray(facilityTypes),
         TrailDistance: trailDistance
       });
-
-       localStorage.setItem(
-        CACHE_KEY,
-        JSON.stringify({
-        timestamp: Date.now(),
-        data: { allPois, uniqueTypes }
-      }));
     }
 
     loadData();
@@ -226,33 +232,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           );
         });
 
-        function updateVisiblePois() {
-          if (!map) return;
-          const bounds = map.getBounds();
-          if (!bounds) return;
-          
-          const visible = filteredPois.filter(poi => {
-            const pos = new google.maps.LatLng(poi.location.lat, poi.location.lng);
-            return bounds.contains(pos);
-          });
-          
-          setVisiblePois(visible);
-        }
-
-         useEffect(() => {
-          if (computeRouteRef) computeRouteRef.current = computeRoute;
-        }, [computeRouteRef, pois, userLocation]);
-
-        useEffect(() => {
-          if (!map) return;
-          
-          updateVisiblePois();
-          
-          const listener = map.addListener('idle', updateVisiblePois);
-          
-          return () => google.maps.event.removeListener(listener);
-        }, [map, filteredPois]);
-
         return (
         <div>
           <div className='h-screen w-full'>
@@ -261,6 +240,11 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
               defaultCenter={userLocation}
               defaultZoom={10}
               mapId='456dc2bedf64a06c67cc63ea'>
+
+              <MapContent
+                filteredPois={filteredPois}
+                viewParkDetails={viewParkDetails}
+              />
               
               {/*https://visgl.github.io/react-google-maps/docs/api-reference/components/advanced-marker, https://developers.google.com/maps/documentation/javascript/geolocation#maps_map_geolocation-javascript*/}
               <AdvancedMarker
@@ -284,18 +268,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
                 strokeWeight={4}
                 />
               )}*/}
-                
-                {visiblePois
-                .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
-                .map(poi => (
-                <AdvancedMarker
-                key={poi.id}
-                position={poi.location}
-                onClick={() => {setSelectedPOI(poi);
-                  viewParkDetails?.(poi);
-                }}
-                />
-              ))}
           </Map>
         </APIProvider>
       </div>

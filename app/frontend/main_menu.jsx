@@ -25,6 +25,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
   const user = auth.currentUser;
   const [userData, setUserData] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState([]);
 
   async function setupUser() {
     //console.log("Current user:", user);
@@ -40,6 +41,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
   }
 
   const [upload, setUpload] = useState(false);
+
   const [uniqueTypes, setUniqueTypes] = useState({
     Accommodation_Type: [],
     Principal_type: [],
@@ -49,7 +51,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
 
   useEffect(() => {
     if (selectedFilters.length === 0 && uniqueTypes.Principal_type.length > 0) {
-      const defaultFilter = uniqueTypes.Principal_type_type[0];
+      const defaultFilter = uniqueTypes.Principal_type[0];
       setSelectedFilters([defaultFilter])
     }
   }, [uniqueTypes]);
@@ -188,7 +190,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
             </Modal>
               
               <section className="w-full">
-                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />
+                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes} viewParkDetails={viewParkDetails} />
               </section>
         </main>
     );  
