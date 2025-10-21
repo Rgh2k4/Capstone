@@ -1,24 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { setupUploadEvents } from "../../../backend/upload(OLD).jsx";
-import { auth, storage } from "../../../backend/databaseIntegration.jsx";
-import { ref, uploadBytes } from "firebase/storage";
+import { useState } from "react";
 import { uploadImage } from "@/app/backend/UploadStorage.jsx";
 import { Button, Input, Textarea, TextInput } from "@mantine/core";
 
-export default function Upload_Window({ onClose }) {
+export default function Upload_Window({ onClose, parkInfo }) {
   const [submited, setSubmitted] = useState(false);
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [rating, setRating] = useState("");
   const [preview, setPreview] = useState(null);
   const [image, setImage] = useState(null);
+  const park = parkInfo ? parkInfo : null;
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (image) {
-      uploadImage(image);
+    if (image && park != null) {
+      uploadImage(image, park.name);
     }
   }
 

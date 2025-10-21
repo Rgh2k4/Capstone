@@ -172,7 +172,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
               <ParkDetails selectedPark={selectedPark} openButtonUpload={handleOpenUpload}/>
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
-              <UploadWindow onClose={swapToParkDetails} />
+              <UploadWindow onClose={swapToParkDetails} parkInfo={selectedPark} />
             </Modal>
               
               <section className="w-full">
