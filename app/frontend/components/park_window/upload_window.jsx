@@ -19,9 +19,10 @@ export default function Upload_Window({ onClose, parkInfo }) {
   function handleSubmit(e) {
     e.preventDefault();
     const location = park.name.split(' ').join('');
-    addReview(user.uid, {title: title, message: message, rating: rating}, location)
+    
     if (image && park != null) {
-      //uploadImage(image, location);    
+      addReview(user.uid, {title: title, message: message, rating: rating, location_name: park.name}, location)
+      uploadImage(image, location);    
     }
   }
 

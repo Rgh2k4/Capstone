@@ -200,14 +200,14 @@ export async function DeleteUser() {
 export async function addReview(uid, reviewData, location) {
     try {
         await setDoc(doc(database, "users", uid, "reviews", location), reviewData)
-        alert("Success");
+        //alert("Reviews Added");
     } catch (error) {
         console.error("Error: ", error);
     }
 };
 
 export async function readData(userID) {
-    const review = [];
+    const review = []; 
 
     try {
         const reviewData = await getDocs(query(collection(database, "users", userID, "review")));

@@ -7,7 +7,7 @@ export async function uploadImage(file, location) {
   try {
     const storagePath = ref(storage, `National/${location}/${file.name}`);
     await uploadBytes(storagePath, file);
-    alert(location);
+    alert("Success!");
   } catch (error) {
     console.error('Error:', error);
   }
