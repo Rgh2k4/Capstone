@@ -83,7 +83,6 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
         return true;
       }
     }
-    const adminEmails = ["amanibera@gmail.com", "marksteeve67@yahoo.com", "evinthomas67@gmail.com", "testaccount@email.com", "dasdasdasdas@gmai.com"];
 
     //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split
     function normalizeOption(str) {
