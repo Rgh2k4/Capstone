@@ -19,6 +19,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   const mapRef = useRef(null);
   const polylineRef = useRef(null);
 
+  //The view marker rendering was made with help from https://developers.google.com/maps/documentation/javascript/events & https://developers.google.com/maps/documentation/javascript/reference/map#Map.getBounds
   const map = useMap();
   const [visiblePois, setVisiblePois] = useState([]);
 
@@ -238,10 +239,19 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           setVisiblePois(visible);
         }
 
-
          useEffect(() => {
           if (computeRouteRef) computeRouteRef.current = computeRoute;
         }, [computeRouteRef, pois, userLocation]);
+
+        useEffect(() => {
+          if (!map) return;
+          
+          updateVisiblePois();
+          
+          const listener = map.addListener('idle', updateVisiblePois);
+          
+          return () => google.maps.event.removeListener(listener);
+        }, [map, filteredPois]);
 
         return (
         <div>
@@ -275,7 +285,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
                 />
               )}*/}
                 
-                {filteredPois
+                {visiblePois
                 .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
                 .map(poi => (
                 <AdvancedMarker
