@@ -40,13 +40,19 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
   }
 
   const [upload, setUpload] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState([]);
   const [uniqueTypes, setUniqueTypes] = useState({
     Accommodation_Type: [],
     Principal_type: [],
     Facility_Type_Installation: [],
     TrailDistance: [],
   });
+
+  useEffect(() => {
+    if (selectedFilters.length === 0 && uniqueTypes.Principal_type.length > 0) {
+      const defaultFilter = uniqueTypes.Principal_type_type[0];
+      setSelectedFilters([defaultFilter])
+    }
+  }, [uniqueTypes]);
   
   function viewParkDetails(park) {
     console.log("Viewing Park Details:", park);
@@ -151,7 +157,13 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
                   searchable
                   className="w-3xl pl-6 rounded-full text-neutral-950 border-gray-400"
                   value={selectedFilters}
-                  onChange={setSelectedFilters}
+                  onChange={(newValue) =>{
+                    if (newValue.length === 0) {
+                      console.warn("At least one filter must remain active, this ensures a timely resonse from the site.");
+                      return;
+                    }
+                    setSelectedFilters(newValue);
+                  }}
                   data={buildMultiSelectData(uniqueTypes)}
                   />
                 </div>
