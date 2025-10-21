@@ -14,6 +14,7 @@ import { database as db, auth } from "../../../backend/databaseIntegration";
 import { ActionIcon, Button } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import MapFunction from "@/app/backend/mapFunction";
+import { PullImage } from "@/app/backend/uploadStorage";
 
 export default function ParkDetails({ selectedPark, openButtonUpload, computeRoute }) {
   console.log("Selected Park:", selectedPark);
@@ -146,14 +147,15 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
             {hasImage && (
               <div>
                 <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-4 space-x-8 overflow-x-auto max-h-[500px]">
-                  {wildlifePhotos.map((img, index) => (
+                  {/*{wildlifePhotos.map((img, index) => (
                     <img
                       key={index}
                       src={img}
                       alt={img}
                       className="w-50 h-50 bg-gray-400 rounded"
                     />
-                  ))}
+                  ))}*/}
+                  <PullImage location={park.name.split(' ').join('')}/>
                 </ul>
               </div>
             )}
