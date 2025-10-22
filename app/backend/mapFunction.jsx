@@ -1,7 +1,7 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
 import React, {useState, useEffect, useRef} from 'react';
-import {APIProvider, Map, AdvancedMarker, Polyline, useMap} from '@vis.gl/react-google-maps';
+import {APIProvider, Map, AdvancedMarker, useMap} from '@vis.gl/react-google-maps';
 import {decode} from "@googlemaps/polyline-codec"
 
 const uniqueArray = (arr) => [...new Set(arr)];
@@ -80,6 +80,26 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       return [...new Set(values)];
     };
 
+    console.log("MapFunction props:", {filters, setUniqueTypes, viewParkDetails});
+        
+        const directionsServiceRef = useRef(null);
+        const directionsRendererRef = useRef(null);
+        
+        useEffect(() => {
+          if (!mapRef.current?.map) return;
+          
+          const googleMap = mapRef.current.map;
+          
+          const directionsService = new window.google.maps.DirectionsService();
+          const directionsRenderer = new window.google.maps.DirectionsRenderer({
+            map: googleMap
+          });
+          
+          directionsServiceRef.current = directionsService;
+          directionsRendererRef.current = directionsRenderer;
+        }, [mapRef.current?.map]);
+
+
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
   //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
   useEffect(() => {
@@ -147,13 +167,14 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         trailDistanceFields.flatMap(field => getUniqueSubTypes(allPois, field))
       );
 
-      setUniqueTypes({
-        Accommodation_Type: uniqueArray(accommodationTypes),
-        Principal_type: uniqueArray(principalTypes),
-        Facility_Type_Installation: uniqueArray(facilityTypes),
-        TrailDistance: trailDistance
-      });
-    }
+      if (typeof setUniqueTypes === "function"){
+        setUniqueTypes({
+          Accommodation_Type: uniqueArray(accommodationTypes),
+          Principal_type: uniqueArray(principalTypes),
+          Facility_Type_Installation: uniqueArray(facilityTypes),
+          TrailDistance: trailDistance
+        });
+      }}
 
     loadData();
   }, [setUniqueTypes]);
@@ -171,58 +192,31 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   )
   :pois;
 
-    //https://developers.google.com/maps/documentation/routes/compute-route-directions
-    async function computeRoute(poi) {
-      const origin = {
-          location: {
-            latLng: {
-              latitude: userLocation.lat,
-              longitude: userLocation.lng
-          }
-      }
-    };
-
-    const destination = {
-        location: {
-          latLng: {
-            latitude: poi.location.lat,
-            longitude: poi.location.lng
-          }
-      }
-    };
-    
-    const response = await fetch(
-      "https://routes.googleapis.com/directions/v2:computeRoutes",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": "AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI",
-         "X-Goog-FieldMask": "routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline",
+    //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js
+    function computeRoute(poi) {
+      if (!mapRef.current?.map || !window.google) return;
+      
+      const directionsService = new window.google.maps.DirectionsService();
+      const directionsRenderer = new window.google.maps.DirectionsRenderer({
+        map: mapRef.current.map
+      });
+      
+      directionsService.route(
+        {
+          origin: { lat: userLocation.lat, lng: userLocation.lng },
+          destination: { lat: poi.location.lat, lng: poi.location.lng },
+          travelMode: window.google.maps.TravelMode.DRIVING,
         },
-        body: JSON.stringify({
-          origin,
-          destination,
-          travelMode: "DRIVE"
-        }),
-      }
-    );
-    
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || "Failed to fetch route");
-    
-    const route = data.routes[0];
-    setRouteData({
-      polyline: route.polyline.encodedPolyline,
-      distance: (route.distanceMeters / 1000).toFixed(2),
-      duration: route.duration
-    });
-    
-    return {
-      distance: (route.distanceMeters / 1000).toFixed(2),
-      duration: route.duration
-    };
-  }
+        (result, status) => {
+          if (status === "OK") directionsRenderer.setDirections(result);
+          else window.alert("Directions request failed: " + status);
+        }
+      );
+    }
+  
+  useEffect(() => {
+    if (computeRouteRef) computeRouteRef.current = computeRoute;
+  }, [computeRouteRef, userLocation]);
 
         console.log("=== Rendering POIs ===");
         console.log("Filtered POIs:", filteredPois);
@@ -237,6 +231,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           <div className='h-screen w-full'>
             <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
               <Map
+              ref={mapRef}
               defaultCenter={userLocation}
               defaultZoom={10}
               mapId='456dc2bedf64a06c67cc63ea'>
