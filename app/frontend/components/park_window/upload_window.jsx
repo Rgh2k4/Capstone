@@ -1,31 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { setupUploadEvents } from "../../../backend/upload(OLD).jsx";
-import { auth, storage } from "../../../backend/databaseIntegration.jsx";
-import { ref, uploadBytes } from "firebase/storage";
+import { useState } from "react";
 import { uploadImage } from "@/app/backend/UploadStorage.jsx";
-import { Button, Input, Textarea } from "@mantine/core";
+import { Button, Input, Textarea, TextInput } from "@mantine/core";
+import { auth } from "@/app/backend/databaseIntegration";
+import { addReview } from "@/app/backend/database";
 
-export default function Upload_Window({ onClose }) {
+export default function Upload_Window({ onClose, parkInfo }) {
   const [submited, setSubmitted] = useState(false);
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
+  const [rating, setRating] = useState("");
+  const [preview, setPreview] = useState(null);
+  const [image, setImage] = useState(null);
+  const park = parkInfo ? parkInfo : null;
+  const user = auth.currentUser;
 
-  useEffect(() => {
-    window.firebase = { auth: () => ({ currentUser: auth.currentUser }) };
-    window.storage = {
-      ref: (path) => ({
-        put: (file, meta) => uploadBytes(ref(storage, path), file, meta),
-      }),
-    };
-    setupUploadEvents();
-  }, []);
+  function handleSubmit(e) {
+    e.preventDefault();
+    const location = park.name.split(' ').join('');
+    
+    if (image && park != null) {
+      addReview(user.uid, {title: title, message: message, rating: rating, location_name: park.name}, location)
+      uploadImage(image, location);    
+    }
+  }
 
-  function handleImageFile(e) {
+  function previewImage(e) {
     const file = e.target.files[0];
+    setImage(file);
     if (file) {
-      uploadImage(file);
+      const img = URL.createObjectURL(file);
+      setPreview(img);
+    }
+  }
+
+  function handleRating(e) {
+    const rateInput = e.currentTarget.value;
+
+    if (rateInput === '' || /^\d+$/.test(rateInput)) {
+
+      const intRate = parseInt(rateInput);
+      if (intRate > 0 || intRate < 11) {
+        setRating(intRate);
+      }    
     }
   }
 
@@ -39,69 +57,56 @@ export default function Upload_Window({ onClose }) {
         id="upload-sidebar"
         className="rounded-2xl p-8 drop-shadow-sm bg-white transition-transform"
       >
-        <div id="upload-container" className="grid grid-cols-2 gap-10 my-12">
-          <div className="flex flex-col gap-6">
-            <label
-              htmlFor="upload-file"
-              className="flex h-50 cursor-pointer items-center justify-center rounded-2xl border border-gray-300 bg-white"
-            >
-              <img
-                id="file-preview"
-                alt="Preview"
-                className="hidden h-full w-full rounded-2xl object-cover"
-              />
-              <span
-                id="file-label-text"
-                className="text-center font-semibold text-black/80"
-              >
-                Upload
-                <br />
-                Image
-              </span>
-            </label>
-            <input
-              id="upload-file"
-              type="file"
-              accept="image/*"
-              className="hidden"
-            />
-            <div className="rounded-xl bg-[#e2e2e2] px-6 py-5 text-xl font-semibold">
-              Ratings here
+        <form onSubmit={handleSubmit}>
+          <div id="upload-container" className="grid grid-cols-2 gap-10 my-12">
+            <div className="flex flex-col gap-6">
+              {preview && (
+                <img src={preview} alt="Image" className="w-100" />
+              )}
+              <input type="file" name="image" accept="image/*" onChange={previewImage} className="border-2" />
+              <div className="rounded-xl bg-[#e2e2e2] px-6 py-5 text-xl font-semibold">
+                <TextInput 
+                  size="md"
+                  placeholder="Rating Here"
+                  value={rating}
+                  onChange={handleRating}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-6">
+              <Input.Wrapper className="w-full" size="md" label="Title">
+                <TextInput
+                  disabled={submited}
+                  size="md"
+                  placeholder="Enter title..."
+                  value={title}
+                  onChange={(event) => setTitle(event.currentTarget.value)}
+                />
+              </Input.Wrapper>
+                <Textarea
+                  label="Message"
+                  description="Share your experience with this park!"
+                  placeholder="Type your message here..."
+                  minRows={6}
+                  value={message}
+                  onChange={(event) => setMessage(event.currentTarget.value)}
+                />
             </div>
           </div>
-
-          <div className="flex flex-col gap-6">
-            <Input.Wrapper className="w-full" size="md" label="Title">
-              <Input
-                disabled={submited}
-                size="md"
-                placeholder="Enter title..."
-                value={title}
-                onChange={(event) => setTitle(event.currentTarget.value)}
-              />
-            </Input.Wrapper>
-            <Textarea
-              label="Message"
-              description="Share your experience with this park!"
-              placeholder="Type your message here..."
-              minRows={6}
-              value={message}
-              onChange={(event) => setMessage(event.currentTarget.value)}
-            />
+          <div className="flex items-center justify-end gap-3">
+            <Button
+              size="lg"
+              variant="filled"
+              loading={submited}
+              type="submit"
+              className="rounded-xl bg-[#a7d8ff] px-8 py-3 text-xl font-semibold shadow"
+            >
+              Submit
+            </Button>
           </div>
-        </div>
-        <div className="flex items-center justify-end gap-3">
-          <input type="file" onChange={handleImageFile} />
-          <Button
-            size="lg"
-            variant="filled"
-            loading={submited}
-            id="upload-button"
-            className="rounded-xl bg-[#a7d8ff] px-8 py-3 text-xl font-semibold shadow"
-          >
-            Submit
-          </Button>
-        </div>
+        </form>
+        
       </section>
     </main>
   );
