@@ -2,7 +2,6 @@
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
 import React, {useState, useEffect, useRef} from 'react';
 import {APIProvider, Map, AdvancedMarker, useMap} from '@vis.gl/react-google-maps';
-import {decode} from "@googlemaps/polyline-codec"
 
 const uniqueArray = (arr) => [...new Set(arr)];
 
@@ -194,29 +193,46 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
 
     //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js
     function computeRoute(poi) {
-      if (!mapRef.current?.map || !window.google) return;
-      
-      const directionsService = new window.google.maps.DirectionsService();
-      const directionsRenderer = new window.google.maps.DirectionsRenderer({
-        map: mapRef.current.map
+      return new Promise((resolve, reject) => {
+        if (!directionsServiceRef.current || !directionsRendererRef.current) return reject("Directions not ready");
+        
+        directionsServiceRef.current.route(
+          {
+            origin: { lat: userLocation.lat, lng: userLocation.lng },
+            destination: { lat: poi.location.lat, lng: poi.location.lng },
+            travelMode: window.google.maps.TravelMode.DRIVING,
+          },
+          (result, status) => {
+            if (status === "OK") {
+              directionsRendererRef.current.setDirections(result);
+              setRoutedPOI(poi);
+              
+              const leg = result.routes[0].legs[0];
+              resolve({
+                distance: leg.distance.value / 1000,
+                duration: leg.duration.value / 3600,
+              });
+            } else {
+              reject(status);
+            }
+          }
+        );
       });
-      
-      directionsService.route(
-        {
-          origin: { lat: userLocation.lat, lng: userLocation.lng },
-          destination: { lat: poi.location.lat, lng: poi.location.lng },
-          travelMode: window.google.maps.TravelMode.DRIVING,
-        },
-        (result, status) => {
-          if (status === "OK") directionsRenderer.setDirections(result);
-          else window.alert("Directions request failed: " + status);
-        }
-      );
     }
+
+    const [routedPOI, setRoutedPOI] = useState(null);
   
   useEffect(() => {
     if (computeRouteRef) computeRouteRef.current = computeRoute;
   }, [computeRouteRef, userLocation]);
+
+  //This code drops the current route if it is to a location that gets filtered out
+  useEffect(() => {
+    if (routedPOI && !filteredPois.some(p => p.id === routedPOI.id)) {
+      directionsRendererRef.current?.setDirections({ routes: [] });
+      setRoutedPOI(null);
+    }
+  }, [filteredPois, routedPOI]);
 
         console.log("=== Rendering POIs ===");
         console.log("Filtered POIs:", filteredPois);
@@ -254,15 +270,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
                   border: '2px solid white',
                 }}/>
               </AdvancedMarker>
-              
-              {/*{routeData && (
-                <Polyline
-                path={decode(routeData.polyline, 6).map(([lat, lng]) => ({ lat, lng }))}
-                strokeColor="blue"
-                strokeOpacity={0.8}
-                strokeWeight={4}
-                />
-              )}*/}
           </Map>
         </APIProvider>
       </div>

@@ -26,10 +26,14 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
   const handleRouteClick = async () => {
     if (!computeRouteRef.current || !park) return;
     
-    const result = await computeRouteRef.current(park);
-    if (result)
-      alert(`Distance: ${result.distance} km\nDuration: ${result.duration}`);
-    };
+    try{
+      const result = await computeRouteRef.current(park);
+      alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
+    } catch {
+    console.error();
+    alert("Error: could not compute route, try again later");
+    }
+  };
 
   //https://firebase.google.com/docs/reference/js/firestore_, https://firebase.google.com/docs/firestore/query-data/listen
   const [isFavorite, setIsFavorite] = useState(false);
