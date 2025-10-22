@@ -26,10 +26,14 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
   const handleRouteClick = async () => {
     if (!computeRouteRef.current || !park) return;
     
-    const result = await computeRouteRef.current(park);
-    if (result)
-      alert(`Distance: ${result.distance} km\nDuration: ${result.duration}`);
-    };
+    try{
+      const result = await computeRouteRef.current(park);
+      alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
+    } catch {
+    console.error();
+    alert("Error: could not compute route, try again later");
+    }
+  };
 
   //https://firebase.google.com/docs/reference/js/firestore_, https://firebase.google.com/docs/firestore/query-data/listen
   const [isFavorite, setIsFavorite] = useState(false);
@@ -39,7 +43,8 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
       const user = auth.currentUser;
       if (!user || !park?.id) return;
 
-      const userRef = doc(db, "users", user.uid);
+      const safeEmail = user.email.replace(/\./g, ",");
+      const userRef = doc(db, "users", safeEmail);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
@@ -48,7 +53,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
       }
     }
     checkFavorite();
-  }, [park]);
+  }, [park, auth.currentUser]);
 
   async function toggleFavorite() {
     const user = auth.currentUser;
@@ -63,6 +68,11 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
     //This code creates the user doc if the user doesnt have one yet
     if (!userSnap.exists()) {
       await setDoc(userRef, { favorites: [] });
+    }
+
+    //If the user has a doc, but it doesn't contain a favorite field, it creates one
+    if (!userData.favorites) {
+      await updateDoc(userRef, { favorites: [] });
     }
 
     if (isFavorite) {
@@ -136,7 +146,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
           onClick={handleRouteClick}
           >
             Compute Route
-            </Button>
+          </Button>
 
         </section>
 

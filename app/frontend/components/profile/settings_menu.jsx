@@ -1,6 +1,7 @@
 import { auth } from "@/app/backend/databaseIntegration";
-import { Button } from "@mantine/core";
+import { Button, Alert } from "@mantine/core";
 import React, { useState } from "react";
+import { AdminEditUser, GetUserData } from "@/app/backend/database";
 
 function SettingsMenu({
   onRouteToLogin,
@@ -37,6 +38,43 @@ function SettingsMenu({
   function handleDelete() {
     setSubmitted4(true);
     onDeleteAccount();
+  }
+
+  const [promoting, setPromoting] = useState(false);
+  const [promoteError, setPromoteError] = useState("");
+  const [promoteDone, setPromoteDone] = useState(false);
+
+  async function handlePromoteToAdmin() {
+    try {
+      setPromoteError("");
+      setPromoting(true);
+
+      const uid = auth.currentUser?.uid;
+      const email = auth.currentUser?.email;
+
+      if (!uid || !email) {
+        setPromoteError("No signed-in user found.");
+        return;
+      }
+
+      const ok = await AdminEditUser({
+        oldData: { user_ID: uid, email },
+        newData: { role: "Admin", note: "Self-promoted via Settings" },
+      });
+
+      if (!ok) {
+        setPromoteError("Failed to update role.");
+        return;
+      }
+
+      await GetUserData(uid);
+      setPromoteDone(true);
+    } catch (e) {
+      console.error(e);
+      setPromoteError("Something went wrong.");
+    } finally {
+      setPromoting(false);
+    }
   }
 
   return (
@@ -76,6 +114,28 @@ function SettingsMenu({
           onClick={handleContact}
         >
           Contact Support
+        </Button>
+
+        {promoteError && (
+          <Alert color="red" variant="light">
+            {promoteError}
+          </Alert>
+        )}
+        {promoteDone && (
+          <Alert color="green" variant="light">
+            Role updated. You’re now an Admin.
+          </Alert>
+        )}
+        <Button
+          fullWidth
+          size="md"
+          variant="outline"
+          color="green"
+          loading={promoting}
+          onClick={handlePromoteToAdmin}
+          disabled={promoting || promoteDone}
+        >
+          Promote to Admin
         </Button>
 
         <div className="pt-2 border-t border-gray-700 mt-4">

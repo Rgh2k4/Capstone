@@ -112,35 +112,45 @@ export function isAdmin(data) {
 
 export async function AdminEditUser({ oldData, newData }) {
   try {
-    const oldEmail = oldData?.email?.trim();
-    const newEmail = newData?.email?.trim();
-    if (!oldEmail || !newEmail) return false;
+    const uid =
+      oldData?.user_ID ||
+      oldData?.uid ||
+      newData?.user_ID ||
+      newData?.uid ||
+      null;
 
-    const oldRef = doc(database, "users", oldEmail);
-    const snap = await getDoc(oldRef);
-    const base = snap.exists() ? snap.data() : {};
-    const role = newData.role ?? base.role ?? "User";
-    const note = newData.note ?? base.note ?? "";
-
-    if (newEmail !== oldEmail) {
-      const newRef = doc(database, "users", newEmail);
-      const moved = {
-        ...base, 
-        email: newEmail,
-        role,
-        note,
-      };
-      await setDoc(newRef, moved);
-      await deleteDoc(oldRef);
-    } else {
-      await updateDoc(oldRef, { role, note });
+    const oldEmail = (oldData?.email || "").trim();
+    const docId = uid || oldEmail;
+    if (!docId) {
+      console.error("AdminEditUser: missing uid/email identifier");
+      return false;
     }
 
+    const ref = doc(database, "users", docId);
+    const snap = await getDoc(ref);
+    const base = snap.exists() ? snap.data() : { user_ID: uid ?? base?.user_ID };
+
+    const updates = {};
+
+    if (newData?.email !== undefined) updates.email = String(newData.email).trim();
+    if (newData?.displayName !== undefined) updates.displayName = newData.displayName;
+    if (newData?.photoURL !== undefined) updates.photoURL = newData.photoURL;
+    if (newData?.phoneNumber !== undefined) updates.phoneNumber = newData.phoneNumber;
+
+    if (newData?.role !== undefined) updates.role = newData.role;
+    if (newData?.note !== undefined) updates.note = newData.note;
+
+    if (uid && base?.user_ID !== uid) updates.user_ID = uid;
+
+    await setDoc(ref, { ...base, ...updates }, { merge: true });
+
     return true;
-  } catch {
+  } catch (err) {
+    console.error("AdminEditUser (Firestore-only) error:", err);
     return false;
   }
-};
+}
+
 
 export async function EditUser(type, value) {
   try {

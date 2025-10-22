@@ -1,10 +1,43 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
 import React, {useState, useEffect, useRef} from 'react';
-import {APIProvider, Map, AdvancedMarker, Polyline} from '@vis.gl/react-google-maps';
-import {decode} from "@googlemaps/polyline-codec"
+import {APIProvider, Map, AdvancedMarker, useMap} from '@vis.gl/react-google-maps';
 
 const uniqueArray = (arr) => [...new Set(arr)];
+
+//This code was made with help from https://developers.google.com/maps/documentation/javascript/events#map_events
+//https://developers-dot-devsite-v2-prod.appspot.com/maps/documentation/javascript/reference/coordinates#LatLngBounds
+//and asking GPT to help me debug my code
+function MapContent({filteredPois, setVisiblePois, viewParkDetails}) {
+  const map = useMap();
+  const [visiblePoisLocal, setVisiblePoisLocal] = useState([]);
+
+  useEffect(() => {
+    const updateVisiblePois = () => {
+      if (!map) return;
+      const bounds = map.getBounds();
+      const visible = filteredPois.filter(poi =>
+        bounds.contains(new google.maps.LatLng(poi.location.lat, poi.location.lng))
+      );
+      setVisiblePoisLocal(visible);
+    };
+
+    updateVisiblePois();
+    const listener = map.addListener('idle', updateVisiblePois);
+    return () => google.maps.event.removeListener(listener);
+  }, [map, filteredPois, setVisiblePois]);
+
+  return (
+    <>
+      {visiblePoisLocal.map(poi => (
+        <AdvancedMarker
+        key={poi.id}
+        position={poi.location}
+        onClick={() => viewParkDetails?.(poi)} />
+      ))}
+    </>
+  );
+}
 
 function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
@@ -46,27 +79,30 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       return [...new Set(values)];
     };
 
+    console.log("MapFunction props:", {filters, setUniqueTypes, viewParkDetails});
+        
+        const directionsServiceRef = useRef(null);
+        const directionsRendererRef = useRef(null);
+        
+        useEffect(() => {
+          if (!mapRef.current?.map) return;
+          
+          const googleMap = mapRef.current.map;
+          
+          const directionsService = new window.google.maps.DirectionsService();
+          const directionsRenderer = new window.google.maps.DirectionsRenderer({
+            map: googleMap
+          });
+          
+          directionsServiceRef.current = directionsService;
+          directionsRendererRef.current = directionsRenderer;
+        }, [mapRef.current?.map]);
+
+
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
   //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
   useEffect(() => {
     async function loadData() {
-      //https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
-      const CACHE_KEY = "cachedPois_v1";
-      const CACHE_DURATION = 1000 * 60 * 60 * 24 * 7; // 7 days
-      
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const { timestamp, data } = JSON.parse(cached);
-        const isFresh = Date.now() - timestamp < CACHE_DURATION;
-        if (isFresh) {
-          console.log("Using cached POIs");
-          setPois(data.allPois);
-          setUniqueTypes(data.uniqueTypes);
-          return;
-        } else {
-          console.log("Cache expired — refetching...");
-        }
-      }
 
       const urls = [
         //National park urls in order - POI - Place name - Facilities - Trails - Accommodations
@@ -130,20 +166,14 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         trailDistanceFields.flatMap(field => getUniqueSubTypes(allPois, field))
       );
 
-      setUniqueTypes({
-        Accommodation_Type: uniqueArray(accommodationTypes),
-        Principal_type: uniqueArray(principalTypes),
-        Facility_Type_Installation: uniqueArray(facilityTypes),
-        TrailDistance: trailDistance
-      });
-
-       localStorage.setItem(
-        CACHE_KEY,
-        JSON.stringify({
-        timestamp: Date.now(),
-        data: { allPois, uniqueTypes }
-      }));
-    }
+      if (typeof setUniqueTypes === "function"){
+        setUniqueTypes({
+          Accommodation_Type: uniqueArray(accommodationTypes),
+          Principal_type: uniqueArray(principalTypes),
+          Facility_Type_Installation: uniqueArray(facilityTypes),
+          TrailDistance: trailDistance
+        });
+      }}
 
     loadData();
   }, [setUniqueTypes]);
@@ -161,58 +191,48 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   )
   :pois;
 
-    //https://developers.google.com/maps/documentation/routes/compute-route-directions
-    async function computeRoute(poi) {
-      const origin = {
-          location: {
-            latLng: {
-              latitude: userLocation.lat,
-              longitude: userLocation.lng
+    //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js
+    function computeRoute(poi) {
+      return new Promise((resolve, reject) => {
+        if (!directionsServiceRef.current || !directionsRendererRef.current) return reject("Directions not ready");
+        
+        directionsServiceRef.current.route(
+          {
+            origin: { lat: userLocation.lat, lng: userLocation.lng },
+            destination: { lat: poi.location.lat, lng: poi.location.lng },
+            travelMode: window.google.maps.TravelMode.DRIVING,
+          },
+          (result, status) => {
+            if (status === "OK") {
+              directionsRendererRef.current.setDirections(result);
+              setRoutedPOI(poi);
+              
+              const leg = result.routes[0].legs[0];
+              resolve({
+                distance: leg.distance.value / 1000,
+                duration: leg.duration.value / 3600,
+              });
+            } else {
+              reject(status);
+            }
           }
-      }
-    };
+        );
+      });
+    }
 
-    const destination = {
-        location: {
-          latLng: {
-            latitude: poi.location.lat,
-            longitude: poi.location.lng
-          }
-      }
-    };
-    
-    const response = await fetch(
-      "https://routes.googleapis.com/directions/v2:computeRoutes",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": "AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI",
-         "X-Goog-FieldMask": "routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline",
-        },
-        body: JSON.stringify({
-          origin,
-          destination,
-          travelMode: "DRIVE"
-        }),
-      }
-    );
-    
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || "Failed to fetch route");
-    
-    const route = data.routes[0];
-    setRouteData({
-      polyline: route.polyline.encodedPolyline,
-      distance: (route.distanceMeters / 1000).toFixed(2),
-      duration: route.duration
-    });
-    
-    return {
-      distance: (route.distanceMeters / 1000).toFixed(2),
-      duration: route.duration
-    };
-  }
+    const [routedPOI, setRoutedPOI] = useState(null);
+  
+  useEffect(() => {
+    if (computeRouteRef) computeRouteRef.current = computeRoute;
+  }, [computeRouteRef, userLocation]);
+
+  //This code drops the current route if it is to a location that gets filtered out
+  useEffect(() => {
+    if (routedPOI && !filteredPois.some(p => p.id === routedPOI.id)) {
+      directionsRendererRef.current?.setDirections({ routes: [] });
+      setRoutedPOI(null);
+    }
+  }, [filteredPois, routedPOI]);
 
         console.log("=== Rendering POIs ===");
         console.log("Filtered POIs:", filteredPois);
@@ -222,18 +242,20 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           );
         });
 
-         useEffect(() => {
-          if (computeRouteRef) computeRouteRef.current = computeRoute;
-        }, [computeRouteRef, pois, userLocation]);
-
         return (
         <div>
           <div className='h-screen w-full'>
             <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
               <Map
+              ref={mapRef}
               defaultCenter={userLocation}
               defaultZoom={10}
               mapId='456dc2bedf64a06c67cc63ea'>
+
+              <MapContent
+                filteredPois={filteredPois}
+                viewParkDetails={viewParkDetails}
+              />
               
               {/*https://visgl.github.io/react-google-maps/docs/api-reference/components/advanced-marker, https://developers.google.com/maps/documentation/javascript/geolocation#maps_map_geolocation-javascript*/}
               <AdvancedMarker
@@ -248,27 +270,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
                   border: '2px solid white',
                 }}/>
               </AdvancedMarker>
-              
-              {/*{routeData && (
-                <Polyline
-                path={decode(routeData.polyline, 6).map(([lat, lng]) => ({ lat, lng }))}
-                strokeColor="blue"
-                strokeOpacity={0.8}
-                strokeWeight={4}
-                />
-              )}*/}
-                
-                {filteredPois
-                .filter(poi => !isNaN(poi.location.lat) && !isNaN(poi.location.lng))
-                .map(poi => (
-                <AdvancedMarker
-                key={poi.id}
-                position={poi.location}
-                onClick={() => {setSelectedPOI(poi);
-                  viewParkDetails?.(poi);
-                }}
-                />
-              ))}
           </Map>
         </APIProvider>
       </div>
