@@ -1,4 +1,5 @@
 import { Button } from "@mantine/core";
+import { AdminEditUser } from "@/app/backend/database";
 
 export default function AdminList({ handleEdit, data }) {
   const accounts = data;

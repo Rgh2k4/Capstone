@@ -1,8 +1,10 @@
 "use client";
 
 import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch } from "firebase/firestore";
-import { database, auth } from "./databaseIntegration";
+import { database, auth, app} from "./databaseIntegration";
 import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
+
 
 export async function CreateUserAccount(data) {
   try {
@@ -112,41 +114,23 @@ export function isAdmin(data) {
 
 export async function AdminEditUser({ oldData, newData }) {
   try {
-    const uid =
-      oldData?.user_ID ||
-      oldData?.uid ||
-      newData?.user_ID ||
-      newData?.uid ||
-      null;
+    const uid = oldData?.user_ID;
+    if (!uid) return false;
 
-    const oldEmail = (oldData?.email || "").trim();
-    const docId = uid || oldEmail;
-    if (!docId) {
-      console.error("AdminEditUser: missing uid/email identifier");
-      return false;
-    }
+    const fn = httpsCallable(getFunctions(), "adminEditUser");
 
-    const ref = doc(database, "users", docId);
-    const snap = await getDoc(ref);
-    const base = snap.exists() ? snap.data() : { user_ID: uid ?? base?.user_ID };
+    const payload = {
+      uid,
+      ...(newData?.newEmail ? { newEmail: newData.newEmail } : {}),
+      ...(newData?.newPassword ? { newPassword: newData.newPassword } : {}),
+      ...(newData?.role ? { role: newData.role } : {}),
+      ...(newData?.note !== undefined ? { note: newData.note } : {}),
+    };
 
-    const updates = {};
-
-    if (newData?.email !== undefined) updates.email = String(newData.email).trim();
-    if (newData?.displayName !== undefined) updates.displayName = newData.displayName;
-    if (newData?.photoURL !== undefined) updates.photoURL = newData.photoURL;
-    if (newData?.phoneNumber !== undefined) updates.phoneNumber = newData.phoneNumber;
-
-    if (newData?.role !== undefined) updates.role = newData.role;
-    if (newData?.note !== undefined) updates.note = newData.note;
-
-    if (uid && base?.user_ID !== uid) updates.user_ID = uid;
-
-    await setDoc(ref, { ...base, ...updates }, { merge: true });
-
-    return true;
-  } catch (err) {
-    console.error("AdminEditUser (Firestore-only) error:", err);
+    const res = await fn(payload);
+    return !!res?.data?.ok;
+  } catch (e) {
+    console.error("AdminEditUser error:", e);
     return false;
   }
 }
@@ -207,17 +191,17 @@ export async function DeleteUser() {
       }
   }
 
-export async function addReview(uid, reviewData, location) {
+export async function addReview(uid, reviewData) {
     try {
-        await setDoc(doc(database, "users", uid, "reviews", location), reviewData)
-        //alert("Reviews Added");
+        const refId = await addDoc(collection(database, "users", uid, "reviews"), reviewData);
+        return refId;
     } catch (error) {
         console.error("Error: ", error);
     }
 };
 
 export async function readData(userID) {
-    const review = []; 
+    const review = [];
 
     try {
         const reviewData = await getDocs(query(collection(database, "users", userID, "review")));

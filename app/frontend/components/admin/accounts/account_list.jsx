@@ -2,6 +2,7 @@ import AdminList from "./admin_list";
 import UserList from "./user_list";
 import { AdminEditUser } from "@/app/backend/database";
 import { Modal, Select, Button } from "@mantine/core";
+import React, { useState } from "react";
 
 function AccountList({ setShowModalEdit, setShowModalAdd, setRole, sendUser, users, admins }) {
   const handleAdd = (role) => {
@@ -16,22 +17,21 @@ function AccountList({ setShowModalEdit, setShowModalAdd, setRole, sendUser, use
     setShowModalEdit(true);
   };
 
-const [promoteOpen, setPromoteOpen] = useState(false);
-const [promoteTargetUid, setPromoteTargetUid] = useState(null);
+  const [promoteOpen, setPromoteOpen] = useState(false);
+  const [promoteTargetUid, setPromoteTargetUid] = useState(null);
 
-async function handlePromoteConfirm() {
-  const target = userAccounts.find(u => u.user_ID === promoteTargetUid);
-  if (!target) return;
+  async function handlePromoteConfirm() {
+    const target = (users || []).find(u => u.user_ID === promoteTargetUid);
+    if (!target) return;
 
-  await AdminEditUser({
-    oldData: { user_ID: target.user_ID, email: target.email },
-    newData: { role: "Admin" },
-  });
+    await AdminEditUser({
+      oldData: { user_ID: target.user_ID, email: target.email },
+      newData: { role: "Admin" },
+    });
 
-  setPromoteOpen(false);
-  setPromoteTargetUid(null);
-}
-
+    setPromoteOpen(false);
+    setPromoteTargetUid(null);
+  }
 
   return (
     <>
@@ -44,7 +44,7 @@ async function handlePromoteConfirm() {
             </button>
           </div>
           <div className="rounded-b-lg p-4 overflow-y-auto">
-            <UserList handleEdit={handleEdit} data={users}  />
+            <UserList handleEdit={handleEdit} data={users} />
           </div>
         </section>
 
@@ -59,26 +59,27 @@ async function handlePromoteConfirm() {
             <AdminList handleEdit={handleEdit} data={admins} />
           </div>
         </section>
+
         <Modal
-        opened={promoteOpen}
-        onClose={() => setPromoteOpen(false)}
-        title="Promote user to Admin"
-        centered
-      >
-        <Select
-          label="Choose a user"
-          placeholder="Select a user to promote"
-          data={userAccounts.map(u => ({ value: u.user_ID, label: u.email }))}
-          value={promoteTargetUid}
-          onChange={setPromoteTargetUid}
-          searchable
-          nothingFoundMessage="No users found"
-        />
-        <div className="mt-4 flex gap-2 justify-end">
-          <Button variant="default" onClick={() => setPromoteOpen(false)}>Cancel</Button>
-          <Button disabled={!promoteTargetUid} onClick={handlePromoteConfirm}>Promote</Button>
-        </div>
-      </Modal>
+          opened={promoteOpen}
+          onClose={() => setPromoteOpen(false)}
+          title="Promote user to Admin"
+          centered
+        >
+          <Select
+            label="Choose a user"
+            placeholder="Select a user to promote"
+            data={(users || []).map(u => ({ value: u.user_ID, label: u.email }))}
+            value={promoteTargetUid}
+            onChange={setPromoteTargetUid}
+            searchable
+            nothingFoundMessage="No users found"
+          />
+          <div className="mt-4 flex gap-2 justify-end">
+            <Button variant="default" onClick={() => setPromoteOpen(false)}>Cancel</Button>
+            <Button disabled={!promoteTargetUid} onClick={handlePromoteConfirm}>Promote</Button>
+          </div>
+        </Modal>
       </div>
     </>
   );

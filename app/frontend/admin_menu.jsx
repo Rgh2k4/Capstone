@@ -126,7 +126,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
             <div className="bg-white shadow-md rounded-xl p-6">
               <div className=" flex flex-row justify-between">
                 <h2 className="text-xl font-semibold mb-4">Recent Reviews</h2>
-                <Button on onClick={() => setPageName("Reviews")}>View More</Button>
+                <Button onClick={() => setPageName("Reviews")}>View More</Button>
               </div>
               <ReviewList
                 showHeader={false}
@@ -138,7 +138,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
             <div className="bg-white shadow-md rounded-xl p-6">
               <div className=" flex flex-row justify-between">
                 <h2 className="text-xl font-semibold mb-4">Recent Reports</h2>
-                <Button on onClick={() => setPageName("Reports")}>View More</Button>
+                <Button onClick={() => setPageName("Reports")}>View More</Button>
               </div>
               <ReportList
                 showHeader={false}

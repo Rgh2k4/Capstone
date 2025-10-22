@@ -1,13 +1,13 @@
 import { Button, PasswordInput } from "@mantine/core";
 import { Input } from "postcss";
-import { useState } from "react";
+import React, { useState } from "react";
 
 function Add({ onClose, role, setRole, onAddAccount }) {
   const [submited, setSubmitted] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [visible, setVisible] = u(false);
+  const [visible, setVisible] = useState(false);
 
   function handleAdd() {
     if (!email.trim() || !password.trim() || !confirm.trim()) {

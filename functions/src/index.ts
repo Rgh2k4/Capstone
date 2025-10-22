@@ -27,29 +27,20 @@ export const setAdminClaim = onCall(async (req) => {
 
 //Payload type
 type AdminEditUserPayload = {
-  uid: string;
+  uid?: string;
   newEmail?: string;
   newPassword?: string;
   role?: "Admin" | "User";
   note?: string;
-  prevEmail?: string;
 };
 
-//Update Auth and keep Firestore users/{email} in sync
 export const adminEditUser = onCall(async (req) => {
   assertIsAdmin(req);
 
   const { uid, newEmail, newPassword, role, note } =
-    (req.data || {}) as {
-      uid?: string;
-      newEmail?: string;
-      newPassword?: string;
-      role?: "Admin" | "User";
-      note?: string;
-    };
+    ((req.data as AdminEditUserPayload) ?? {});
 
   if (!uid) throw new HttpsError("invalid-argument", "uid required.");
-
   const update: UpdateRequest = {};
   if (newEmail) update.email = newEmail;
   if (newPassword) update.password = newPassword;
