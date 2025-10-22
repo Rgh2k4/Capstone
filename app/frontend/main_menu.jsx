@@ -11,7 +11,6 @@ import { useEffect } from "react";
 import { MultiSelect } from "@mantine/core";
 import { getUniqueTypes } from "../backend/mapFunction";
 import { GetUserData, isAdmin } from "../backend/database";
-import { computeRouteOnMap } from "../backend/mapFunction";
 
 const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
@@ -25,6 +24,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
   const user = auth.currentUser;
   const [userData, setUserData] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState([]);
 
   async function setupUser() {
     //console.log("Current user:", user);
@@ -40,13 +40,20 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
   }
 
   const [upload, setUpload] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState([]);
+
   const [uniqueTypes, setUniqueTypes] = useState({
     Accommodation_Type: [],
     Principal_type: [],
     Facility_Type_Installation: [],
     TrailDistance: [],
   });
+
+  useEffect(() => {
+    if (selectedFilters.length === 0 && uniqueTypes.Principal_type.length > 0) {
+      const defaultFilter = uniqueTypes.Principal_type[0];
+      setSelectedFilters([defaultFilter])
+    }
+  }, [uniqueTypes]);
   
   function viewParkDetails(park) {
     console.log("Viewing Park Details:", park);
@@ -151,7 +158,13 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
                   searchable
                   className="w-3xl pl-6 rounded-full text-neutral-950 border-gray-400"
                   value={selectedFilters}
-                  onChange={setSelectedFilters}
+                  onChange={(newValue) =>{
+                    if (newValue.length === 0) {
+                      console.warn("At least one filter must remain active, this ensures a timely resonse from the site.");
+                      return;
+                    }
+                    setSelectedFilters(newValue);
+                  }}
                   data={buildMultiSelectData(uniqueTypes)}
                   />
                 </div>
@@ -176,7 +189,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
             </Modal>
               
               <section className="w-full">
-                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes}  viewParkDetails={viewParkDetails} />
+                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes} viewParkDetails={viewParkDetails} />
               </section>
         </main>
     );  
