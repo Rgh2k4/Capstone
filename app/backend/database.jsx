@@ -1,6 +1,6 @@
 "use client";
 
-import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch } from "firebase/firestore";
+import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch, query } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
 import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
 
@@ -208,9 +208,9 @@ export async function addReview(uid, reviewData, location) {
 
 export async function readData(uid, location) {
     const review = []; 
-
+    
     try {
-        const reviewData = await getDocs(query(collection(database, "users", uid, "reviews", location)));
+        const reviewData = await getDoc(doc(database, "users", uid, "reviews", location.split(' ').join('')));
         reviewData.forEach((review) => {
             review.push({
                 ...review.data()

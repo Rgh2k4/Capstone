@@ -15,12 +15,15 @@ import { ActionIcon, Button } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import MapFunction from "@/app/backend/mapFunction";
 import { PullImage } from "@/app/backend/uploadStorage";
+import { readData } from "@/app/backend/database";
 
 export default function ParkDetails({ selectedPark, openButtonUpload, computeRoute }) {
   console.log("Selected Park:", selectedPark);
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark ? selectedPark : null);
   const computeRouteRef = useRef(null);
+  const [review, setReview] = useState([]);
+  const user = auth.currentUser;
 
   if (!park) return null;
 
@@ -105,6 +108,21 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
       />
     </ActionIcon>
   );
+
+  async function loadReviews() {
+    try {
+      const pullReview = await readData(user.uid, park.name);
+      setReview(pullReview);
+      alert(review.length);
+    } catch(error) {
+      console.error("Error: ", error);
+    }
+    
+  }
+
+  useEffect(() => {
+    loadReviews();
+  }, [park])
 
   checkImages(wildlifePhotos);
 
