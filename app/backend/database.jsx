@@ -207,9 +207,16 @@ export async function addReview(uid, reviewData, location) {
 };
 
 export async function readData(uid, location) {
+  
+    const review = []
     
     try {
-        const reviewData = await getDoc(doc(database, "users", uid, "reviews", location.split(' ').join('')));
+        const reviewData = await getDocs(query(collection(database, "users", uid, "reviews", location.split(' ').join(''))));
+        reviewData.forEach((review) => {
+            review.push({
+                ...review.data()
+            });
+        });
         
     } catch (error) {
         console.error("Error: ", error);
