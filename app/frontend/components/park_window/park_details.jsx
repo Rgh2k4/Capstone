@@ -15,11 +15,12 @@ import { ActionIcon, Button } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import MapFunction from "@/app/backend/mapFunction";
 
-export default function ParkDetails({ selectedPark, openButtonUpload, computeRoute }) {
+export default function ParkDetails({ selectedPark, openButtonUpload, computeRouteRef }) {
   console.log("Selected Park:", selectedPark);
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark ? selectedPark : null);
-  const computeRouteRef = useRef(null);
+  console.log("---computeRouteRef in ParkDetails:", computeRouteRef);
+  console.log("---computeRouteRef.current:", computeRouteRef?.current);
 
   if (!park) return null;
 
@@ -27,6 +28,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
     if (!computeRouteRef.current || !park) return;
     
     try{
+      console.log("---Before route: ", computeRouteRef.current);
       const result = await computeRouteRef.current(park);
       alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
     } catch {
@@ -88,7 +90,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
     }
   }
 
-  let wildlifePhotos = ["image_1.jpeg", "image_2.jpeg"];
+  let wildlifePhotos = [];
   let hasImage = false;
 
   function checkImages(photos) {
@@ -139,11 +141,13 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
           <p className="w-3/4">
             {park.description || "No description available."}
           </p>
-           <MapFunction computeRouteRef={computeRouteRef} />
           <Button
+          
           variant="gradient"
           gradient={{ from: 'pink', to: 'grape', deg: 90 }}
-          onClick={handleRouteClick}
+          onClick={()=>{
+            console.log("Button clicked!");
+          handleRouteClick();}}
           >
             Compute Route
           </Button>

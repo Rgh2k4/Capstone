@@ -86,17 +86,21 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         
         useEffect(() => {
           if (!mapRef.current?.map) return;
+
+          if (!directionsServiceRef.current) {
+            directionsServiceRef.current = new window.google.maps.DirectionsService();
+          }
           
-          const googleMap = mapRef.current.map;
-          
-          const directionsService = new window.google.maps.DirectionsService();
-          const directionsRenderer = new window.google.maps.DirectionsRenderer({
-            map: googleMap
-          });
-          
-          directionsServiceRef.current = directionsService;
-          directionsRendererRef.current = directionsRenderer;
-        }, [mapRef.current?.map]);
+          if (!directionsRendererRef.current) {
+            directionsRendererRef.current = new window.google.maps.DirectionsRenderer({
+              map: mapRef.current.map
+            });
+          }
+
+          if (computeRouteRef){
+            computeRouteRef.current = computeRoute;
+          }
+        }, [mapRef.current?.map, computeRouteRef, userLocation]);
 
 
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
@@ -176,7 +180,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       }}
 
     loadData();
-  }, [setUniqueTypes]);
+  }, []);
 
   //This code was made with help from gpt 
   // after having gpt check the code for bugs and having it ask if I wanted to have the markers place dynamicaly based on the filter settings and me responding "Doesn't it already do that?"
@@ -194,37 +198,44 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
     //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js
     function computeRoute(poi) {
       return new Promise((resolve, reject) => {
-        if (!directionsServiceRef.current || !directionsRendererRef.current) return reject("Directions not ready");
+        if (!window.google || !window.google.maps) {
+          return reject("Google Maps API not loaded");
+        }
         
-        directionsServiceRef.current.route(
+        const directionsService = new google.maps.DirectionsService();
+        
+        directionsService.route(
           {
             origin: { lat: userLocation.lat, lng: userLocation.lng },
             destination: { lat: poi.location.lat, lng: poi.location.lng },
-            travelMode: window.google.maps.TravelMode.DRIVING,
+            travelMode: google.maps.TravelMode.DRIVING,
           },
           (result, status) => {
             if (status === "OK") {
-              directionsRendererRef.current.setDirections(result);
-              setRoutedPOI(poi);
+              directionsRendererRef.current?.setDirections(result);
+            setRoutedPOI(poi);
               
-              const leg = result.routes[0].legs[0];
-              resolve({
-                distance: leg.distance.value / 1000,
-                duration: leg.duration.value / 3600,
-              });
-            } else {
-              reject(status);
-            }
-          }
-        );
-      });
+        const leg = result.routes[0].legs[0];
+        resolve({
+          distance: leg.distance.value / 1000,
+          duration: leg.duration.value / 60,
+        });
+      } else {
+        reject(status);
+      }
     }
+  );
+});
+}
 
     const [routedPOI, setRoutedPOI] = useState(null);
   
   useEffect(() => {
-    if (computeRouteRef) computeRouteRef.current = computeRoute;
-  }, [computeRouteRef, userLocation]);
+    if (computeRouteRef){
+      computeRouteRef.current =  computeRoute;
+      console.log("ComputeRouteRef successfully assigned in MapFunction")
+    }
+  }, [directionsServiceRef]);
 
   //This code drops the current route if it is to a location that gets filtered out
   useEffect(() => {

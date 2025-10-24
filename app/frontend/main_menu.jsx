@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@mantine/core";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import ParkDetails from "./components/park_window/park_details";
 import ProfileMenu from "./components/profile/profile_menu";
 import dynamic from "next/dynamic";
@@ -25,6 +25,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
   const [userData, setUserData] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
+  const computeRouteRef = useRef(null);
 
   async function setupUser() {
     //console.log("Current user:", user);
@@ -182,14 +183,14 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
                 </div>
             </header>  
             <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
-              <ParkDetails selectedPark={selectedPark} openButtonUpload={handleOpenUpload}/>
+              <ParkDetails selectedPark={selectedPark} openButtonUpload={handleOpenUpload} computeRouteRef={computeRouteRef}/>
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
               <UploadWindow onClose={swapToParkDetails} />
             </Modal>
               
               <section className="w-full">
-                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes} viewParkDetails={viewParkDetails} />
+                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes} viewParkDetails={viewParkDetails} computeRouteRef={computeRouteRef} />
               </section>
         </main>
     );  
