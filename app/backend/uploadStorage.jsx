@@ -13,12 +13,12 @@ export async function uploadImage(file, location) {
   }
 }
 
-export function PullImage() {
+export function PullImage({ location }) {
     const [images, setImages] = useState([]);
 
     async function generateImage() {
         try {
-            const imagesPath = ref(storage, 'National');
+            const imagesPath = ref(storage, `National/${location}/`);
             const imageList = await listAll(imagesPath);
             const imageURL = await Promise.all(
                 imageList.items.map((item) => getDownloadURL(item))
@@ -36,7 +36,7 @@ export function PullImage() {
     return (
         <main>
             {images.map((image, keys) => (
-                <img key={keys} src={image} alt={image.name} />
+                <img key={keys} src={image} alt={image.name} className='w-50 h-50 bg-gray-400 rounded'/>
             ))}
         </main>
     );
