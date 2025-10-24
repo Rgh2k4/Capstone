@@ -113,7 +113,6 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
     try {
       const pullReview = await readData(user.uid, park.name);
       setReview(pullReview);
-      alert(review.length);
     } catch(error) {
       console.error("Error: ", error);
     }

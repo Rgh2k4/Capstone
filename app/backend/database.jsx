@@ -199,7 +199,7 @@ export async function DeleteUser() {
 
 export async function addReview(uid, reviewData, location) {
     try {
-        await setDoc(doc(database, "users", uid, "reviews", location), reviewData)
+        await addDoc(collection(database, "users", uid, "reviews", location, "reviewData"), reviewData)
         //alert("Reviews Added");
     } catch (error) {
         console.error("Error: ", error);
@@ -207,18 +207,13 @@ export async function addReview(uid, reviewData, location) {
 };
 
 export async function readData(uid, location) {
-    const review = []; 
     
     try {
         const reviewData = await getDoc(doc(database, "users", uid, "reviews", location.split(' ').join('')));
-        reviewData.forEach((review) => {
-            review.push({
-                ...review.data()
-            });
-        });
+        
     } catch (error) {
         console.error("Error: ", error);
     }
 
-    return review;
+    return null;
 };
