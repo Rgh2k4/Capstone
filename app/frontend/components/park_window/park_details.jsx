@@ -111,12 +111,11 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
 
   async function loadReviews() {
     try {
-      const pullReview = await readData(user.uid, park.name);
+      const pullReview = await readData(park.name);
       setReview(pullReview);
     } catch(error) {
       console.error("Error: ", error);
-    }
-    
+    }  
   }
 
   useEffect(() => {
