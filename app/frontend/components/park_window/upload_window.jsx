@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { uploadImage } from "@/app/backend/UploadStorage.jsx";
 import { Button, Input, Textarea, TextInput } from "@mantine/core";
-import { auth } from "@/app/backend/databaseIntegration";
+import { auth, database } from "@/app/backend/databaseIntegration";
 import { addReview } from "@/app/backend/database";
-import { collection, getDoc } from "firebase/firestore";
+import { getDoc, doc } from "firebase/firestore";
 
 export default function Upload_Window({ onClose, parkInfo }) {
   const [submited, setSubmitted] = useState(false);
@@ -19,12 +19,12 @@ export default function Upload_Window({ onClose, parkInfo }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const userData = await getDoc(doc(collection(database, "users", user.uid)));
+    const userData = await getDoc(doc(database, "users", user.uid));
     const date = new Date().toISOString().split('T')[0];
     const location = park.name.split(' ').join('');
     
     if (image && park != null) {
-      addReview(user.uid, {title: title, message: message, rating: rating, location_name: park.name, displayName: userData.displayName, date: date}, location)
+      addReview(user.uid, {title: title, message: message, rating: rating, location_name: park.name, displayName: userData.data().displayName, date: date}, location)
       uploadImage(image, location);    
     }
   }
