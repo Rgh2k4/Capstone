@@ -201,9 +201,9 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
         <section className="flex flex-col mt-30 items-center">
           <h1 className="font-bold text-2xl mb-10">Reviews</h1>
           <div className="rounded-md p-6 w-3/4">
-            {park.reviews?.length > 0 ? (
+            {review?.length > 0 ? (
               <ul>
-                {park.reviews.map((user, index) => (
+                {review.map((user, index) => (
                   <div key={index} className="">
                     <div className="flex flex-row gap-0 mx-4 my-18 space-x-6">
                       <div className="">
@@ -234,7 +234,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
                           </ul>
                         )}
                         <div className="grid grid-cols-3">
-                          <p className=" col-span-2">{user.comment}</p>
+                          <p className=" col-span-2">{user.message}</p>
                           <p
                             className="hover:underline italic flex justify-end items-end"
                             onClick={() => handleData({ user })}
