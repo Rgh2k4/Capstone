@@ -135,7 +135,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
   checkImages(wildlifePhotos);
 
   return (
-    <>
+    <div className=" ">
       <header className="flex flex-col">
         <img
           src="https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg"
@@ -148,15 +148,15 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
         <section className="my-20 place-self-center">
           <h1 className="font-bold text-2xl">Ratings</h1>
         </section>
-        <section className="flex flex-col items-center text-justify mb-20">
-          <h1 className="font-extrabold text-2xl mb-10 flex items-center gap-2">
+        <section className="flex flex-col items-center text-justify mb-8">
+          <h1 className="font-extrabold text-2xl mb-22 flex items-center gap-2">
             {park.name}
             <FavoriteButton />
           </h1>
-          <p className="w-3/4">
+          <p className="w-3/4 mb-22">
             {park.description || "No description available."}
           </p>
-           <MapFunction computeRouteRef={computeRouteRef} />
+           {/* <MapFunction computeRouteRef={computeRouteRef} /> */}
           <Button
           variant="gradient"
           gradient={{ from: 'pink', to: 'grape', deg: 90 }}
@@ -181,7 +181,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
                       className="w-50 h-50 bg-gray-400 rounded"
                     />
                   ))}*/}
-                  <PullImage location={park.name.split(' ').join('')}/>
+                  
                 </ul>
               </div>
             )}
@@ -200,7 +200,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
         </section>
         <section className="flex flex-col mt-30 items-center">
           <h1 className="font-bold text-2xl mb-10">Reviews</h1>
-          <div className="rounded-md p-6 w-3/4">
+          <div className="rounded-md p-6 w-full bg-gray-100 shadow-inner max-h-96 overflow-y-auto">
             {review?.length > 0 ? (
               <ul>
                 {review.map((user, index) => (
@@ -219,18 +219,10 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
                           </p>
                           <p className=" text-1xl italic">- {user.date}</p>
                         </div>
-                        {user.images && user.images.length > 0 && (
+                        <p className=" text-1xl">{user.title}</p>
+                        {user.image && (
                           <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-2 space-x-8 overflow-x-auto">
-                            {user.images.map((img, index) => (
-                              <>
-                                <img
-                                  key={index}
-                                  src={img}
-                                  alt={img}
-                                  className="w-30 h-30 bg-gray-400 rounded"
-                                />
-                              </>
-                            ))}
+                            <PullImage location={park.name.split(' ').join('')} url={user.image} />
                           </ul>
                         )}
                         <div className="grid grid-cols-3">
@@ -256,6 +248,6 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
           <button>Back to top</button>
         </footer>
       </main>
-    </>
+    </div>
   );
 }
