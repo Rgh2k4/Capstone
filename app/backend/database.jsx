@@ -1,6 +1,6 @@
 "use client";
 
-import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch } from "firebase/firestore";
+import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch, query } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
 import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
 
@@ -112,35 +112,45 @@ export function isAdmin(data) {
 
 export async function AdminEditUser({ oldData, newData }) {
   try {
-    const oldEmail = oldData?.email?.trim();
-    const newEmail = newData?.email?.trim();
-    if (!oldEmail || !newEmail) return false;
+    const uid =
+      oldData?.user_ID ||
+      oldData?.uid ||
+      newData?.user_ID ||
+      newData?.uid ||
+      null;
 
-    const oldRef = doc(database, "users", oldEmail);
-    const snap = await getDoc(oldRef);
-    const base = snap.exists() ? snap.data() : {};
-    const role = newData.role ?? base.role ?? "User";
-    const note = newData.note ?? base.note ?? "";
-
-    if (newEmail !== oldEmail) {
-      const newRef = doc(database, "users", newEmail);
-      const moved = {
-        ...base, 
-        email: newEmail,
-        role,
-        note,
-      };
-      await setDoc(newRef, moved);
-      await deleteDoc(oldRef);
-    } else {
-      await updateDoc(oldRef, { role, note });
+    const oldEmail = (oldData?.email || "").trim();
+    const docId = uid || oldEmail;
+    if (!docId) {
+      console.error("AdminEditUser: missing uid/email identifier");
+      return false;
     }
 
+    const ref = doc(database, "users", docId);
+    const snap = await getDoc(ref);
+    const base = snap.exists() ? snap.data() : { user_ID: uid ?? base?.user_ID };
+
+    const updates = {};
+
+    if (newData?.email !== undefined) updates.email = String(newData.email).trim();
+    if (newData?.displayName !== undefined) updates.displayName = newData.displayName;
+    if (newData?.photoURL !== undefined) updates.photoURL = newData.photoURL;
+    if (newData?.phoneNumber !== undefined) updates.phoneNumber = newData.phoneNumber;
+
+    if (newData?.role !== undefined) updates.role = newData.role;
+    if (newData?.note !== undefined) updates.note = newData.note;
+
+    if (uid && base?.user_ID !== uid) updates.user_ID = uid;
+
+    await setDoc(ref, { ...base, ...updates }, { merge: true });
+
     return true;
-  } catch {
+  } catch (err) {
+    console.error("AdminEditUser (Firestore-only) error:", err);
     return false;
   }
-};
+}
+
 
 export async function EditUser(type, value) {
   try {
@@ -197,28 +207,34 @@ export async function DeleteUser() {
       }
   }
 
-export async function addReview(uid, reviewData) {
+export async function addReview(uid, reviewData, location) {
     try {
-        const refId = await addDoc(collection(database, "users", uid, "reviews"), reviewData);
-        return refId;
+        await addDoc(collection(database, "users", uid, "reviews", location, "reviewData"), reviewData)
+        //alert("Reviews Added");
     } catch (error) {
         console.error("Error: ", error);
     }
 };
 
-export async function readData(userID) {
-    const review = [];
-
+export async function readData(location) {
+    
     try {
-        const reviewData = await getDocs(query(collection(database, "users", userID, "review")));
-        reviewData.forEach((review) => {
-            review.push({
-                ...review.data()
-            });
-        });
+        const userData = await getDocs(query(collection(database, "users")));
+        const reviews = [];
+        for (const user of userData.docs) {
+          const reviewData = await getDocs(query(collection(database, "users", user.id, "reviews", location.split(' ').join(''), "reviewData")));
+            if (!reviewData.empty) {
+              reviewData.forEach((review) => {
+                reviews.push({
+                  ...review.data()
+                })
+              });
+            }
+        }
+        return reviews;
     } catch (error) {
         console.error("Error: ", error);
     }
 
-    return review;
+    return null;
 };

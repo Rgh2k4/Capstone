@@ -3,22 +3,22 @@ import { ref, uploadBytes, listAll, getDownloadURL } from 'firebase/storage';
 import { storage } from './databaseIntegration';
 import { useState, useEffect } from 'react';
 
-export async function uploadImage(file) {
+export async function uploadImage(file, location) {
   try {
-    const storagePath = ref(storage, `National/${file.name}`);
+    const storagePath = ref(storage, `National/${location}/${file.name}`);
     await uploadBytes(storagePath, file);
-    alert("Image uploaded");
+    alert("Success!");
   } catch (error) {
     console.error('Error:', error);
   }
 }
 
-export function PullImage() {
+export function PullImage({ location }) {
     const [images, setImages] = useState([]);
 
     async function generateImage() {
         try {
-            const imagesPath = ref(storage, 'National');
+            const imagesPath = ref(storage, `National/${location}/`);
             const imageList = await listAll(imagesPath);
             const imageURL = await Promise.all(
                 imageList.items.map((item) => getDownloadURL(item))
@@ -36,7 +36,7 @@ export function PullImage() {
     return (
         <main>
             {images.map((image, keys) => (
-                <img key={keys} src={image} alt={image.name} />
+                <img key={keys} src={image} alt={image.name} className='w-50 h-50 bg-gray-400 rounded'/>
             ))}
         </main>
     );

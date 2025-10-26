@@ -39,12 +39,17 @@ type AdminEditUserPayload = {
 export const adminEditUser = onCall(async (req) => {
   assertIsAdmin(req);
 
-  const { uid, newEmail, newPassword, role, note, prevEmail } =
-    (req.data || {}) as AdminEditUserPayload;
+  const { uid, newEmail, newPassword, role, note } =
+    (req.data || {}) as {
+      uid?: string;
+      newEmail?: string;
+      newPassword?: string;
+      role?: "Admin" | "User";
+      note?: string;
+    };
 
   if (!uid) throw new HttpsError("invalid-argument", "uid required.");
 
-  //Auth update
   const update: UpdateRequest = {};
   if (newEmail) update.email = newEmail;
   if (newPassword) update.password = newPassword;
@@ -52,43 +57,23 @@ export const adminEditUser = onCall(async (req) => {
     await getAuth().updateUser(uid, update);
   }
 
-  //Custom claim from role
-  if (role) {
+  if (role !== undefined) {
     await getAuth().setCustomUserClaims(uid, { admin: role === "Admin" });
   }
 
-  //Firestore sync
   const db = getFirestore();
   const record = await getAuth().getUser(uid);
-  const finalEmail = record.email!;
-  const targetRef = db.collection("users").doc(finalEmail);
+  const finalEmail = record.email || newEmail || "";
 
-  if (prevEmail && prevEmail !== finalEmail) {
-    const prevRef = db.collection("users").doc(prevEmail);
-    const prevSnap = await prevRef.get();
-    if (prevSnap.exists) {
-      const dataToWrite: Record<string, unknown> = { ...prevSnap.data(), email: finalEmail };
-      if (role) dataToWrite.role = role;
-      if (note !== undefined) dataToWrite.note = note;
-      await targetRef.set(dataToWrite, { merge: true });
-      await prevRef.delete();
-    } else {
-      await targetRef.set(
-        { user_ID: uid, email: finalEmail, role: role ?? "User", note: note ?? "" },
-        { merge: true }
-      );
-    }
-  } else {
-    await targetRef.set(
-      {
-        user_ID: uid,
-        email: finalEmail,
-        ...(role ? { role } : {}),
-        ...(note !== undefined ? { note } : {}),
-      },
-      { merge: true }
-    );
-  }
+  await db.collection("users").doc(uid).set(
+    {
+      user_ID: uid,
+      ...(finalEmail ? { email: finalEmail } : {}),
+      ...(role !== undefined ? { role } : {}),
+      ...(note !== undefined ? { note } : {}),
+    },
+    { merge: true }
+  );
 
   return { ok: true, email: finalEmail };
 });
