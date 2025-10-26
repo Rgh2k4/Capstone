@@ -187,15 +187,32 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   //This code was made with help from gpt 
   // after having gpt check the code for bugs and having it ask if I wanted to have the markers place dynamicaly based on the filter settings and me responding "Doesn't it already do that?"
   const filteredPois = filters.length
-  ? pois.filter(poi =>
-    filters.some(f =>
-      [poi.properties?.Accommodation_Type, poi.properties?.Principal_type, poi.properties?.Facility_Type_Installation]
-        .some(val => String(val).trim() === String(f).trim()) ||
-      ['Label_e_5k_less', 'Label_e_20k_5k', 'Label_e_100k_20k', 'Label_e_100k_plus']
-        .some(label => String(poi.properties?.[label]).trim() === String(f).trim())
-    )
-  )
+  ? pois.filter(poi =>{
+    const poiValues = [
+      poi.properties?.Accommodation_Type,
+      poi.properties?.Principal_type,
+      poi.properties?.Facility_Type_Installation,
+      poi.properties?.CONCISCODE,
+      poi.properties?.Label_e_5k_less,
+      poi.properties?.Lable_e_20k_5k,
+      poi.properties?.Label_e_100k_20k,
+      poi.properties?.Label_e_100k_plus
+    ].filter(Boolean)
+    .flatMap(val => Array.isArray(val) ? val : [val])
+    .map(val => String(val).trim());
+
+    return filters.some(f =>{
+      const filterValue = String(f).trim();
+      return poiValues.some(pv => pv.includes(filterValue));
+    });
+  })
+  
   :pois;
+
+  console.log("Filters active:", filters);
+console.log("Number of POIs loaded:", pois.length);
+console.log("Number of POIs shown after filtering:", filteredPois.length);
+
 
     //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js
     function computeRoute(poi) {
