@@ -198,44 +198,41 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
     //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js
     function computeRoute(poi) {
       return new Promise((resolve, reject) => {
-        if (!window.google || !window.google.maps) {
-          return reject("Google Maps API not loaded");
+        if (!directionsServiceRef.current || !directionsRendererRef.current) {
+          return reject("Directions not ready");
         }
         
-        const directionsService = new google.maps.DirectionsService();
-        
-        directionsService.route(
+        directionsServiceRef.current.route(
           {
-            origin: { lat: userLocation.lat, lng: userLocation.lng },
-            destination: { lat: poi.location.lat, lng: poi.location.lng },
-            travelMode: google.maps.TravelMode.DRIVING,
+            origin: {lat: userLocation.lat, lng: userLocation.lng},
+            destination: {lat: poi.location.lat, lng: poi.location.lng},
+            travelMode: window.google.maps.TravelMode.DRIVING,
           },
           (result, status) => {
             if (status === "OK") {
-              directionsRendererRef.current?.setDirections(result);
-            setRoutedPOI(poi);
+              directionsRendererRef.current.setDirections(result);
+              setRoutedPOI(poi);
               
-        const leg = result.routes[0].legs[0];
-        resolve({
-          distance: leg.distance.value / 1000,
-          duration: leg.duration.value / 60,
-        });
-      } else {
-        reject(status);
-      }
+              const leg = result.routes[0].legs[0];
+              resolve({
+                distance: leg.distance.value / 1000,
+                duration: leg.duration.value / 60,
+              });
+            } else {
+              reject(status);
+            }
+          }
+        );
+      });
     }
-  );
-});
-}
 
     const [routedPOI, setRoutedPOI] = useState(null);
   
   useEffect(() => {
-    if (computeRouteRef){
+    if (computeRouteRef && directionsServiceRef.current && computeRouteRef.current){
       computeRouteRef.current =  computeRoute;
-      console.log("ComputeRouteRef successfully assigned in MapFunction")
     }
-  }, [directionsServiceRef]);
+  }, [directionsServiceRef.current, directionsRendererRef.current, computeRouteRef, userLocation]);
 
   //This code drops the current route if it is to a location that gets filtered out
   useEffect(() => {

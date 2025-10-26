@@ -45,14 +45,31 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
   const [uniqueTypes, setUniqueTypes] = useState({
     Accommodation_Type: [],
     Principal_type: [],
+    CONCISCODE: [],
     Facility_Type_Installation: [],
     TrailDistance: [],
   });
 
+  //This code was changed to add the default filter right after the first data et was pulled to avoid crashing the site trying to render 16000+ markers at once
   useEffect(() => {
-    if (selectedFilters.length === 0 && uniqueTypes.Principal_type.length > 0) {
-      const defaultFilter = uniqueTypes.Principal_type[0];
+    if (selectedFilters.length === 0) {
+      const catagories = [
+        uniqueTypes.Accommodation_Type,
+        uniqueTypes.CONCISCODE,
+        uniqueTypes.Principal_type,
+        uniqueTypes.Facility_Type_Installation,
+        uniqueTypes.TrailDistance, 
+      ];
+
+      //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+      const firstType = catagories.find(
+        (arr) => Array.isArray(arr) && arr.length > 0
+      );
+
+      if (firstType){
+        const defaultFilter = firstType[0];
       setSelectedFilters([defaultFilter])
+      }
     }
   }, [uniqueTypes]);
   
