@@ -1,6 +1,6 @@
 "use client";
 
-import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch } from "firebase/firestore";
+import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch, query } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
 import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
 
@@ -209,26 +209,32 @@ export async function DeleteUser() {
 
 export async function addReview(uid, reviewData, location) {
     try {
-        await setDoc(doc(database, "users", uid, "reviews", location), reviewData)
+        await addDoc(collection(database, "users", uid, "reviews", location, "reviewData"), reviewData)
         //alert("Reviews Added");
     } catch (error) {
         console.error("Error: ", error);
     }
 };
 
-export async function readData(userID) {
-    const review = []; 
-
+export async function readData(location) {
+    
     try {
-        const reviewData = await getDocs(query(collection(database, "users", userID, "review")));
-        reviewData.forEach((review) => {
-            review.push({
-                ...review.data()
-            });
-        });
+        const userData = await getDocs(query(collection(database, "users")));
+        const reviews = [];
+        for (const user of userData.docs) {
+          const reviewData = await getDocs(query(collection(database, "users", user.id, "reviews", location.split(' ').join(''), "reviewData")));
+            if (!reviewData.empty) {
+              reviewData.forEach((review) => {
+                reviews.push({
+                  ...review.data()
+                })
+              });
+            }
+        }
+        return reviews;
     } catch (error) {
         console.error("Error: ", error);
     }
 
-    return review;
+    return null;
 };

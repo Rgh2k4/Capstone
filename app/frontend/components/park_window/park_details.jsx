@@ -14,12 +14,16 @@ import { database as db, auth } from "../../../backend/databaseIntegration";
 import { ActionIcon, Button } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import MapFunction from "@/app/backend/mapFunction";
+import { PullImage } from "@/app/backend/uploadStorage";
+import { readData } from "@/app/backend/database";
 
 export default function ParkDetails({ selectedPark, openButtonUpload, computeRoute }) {
   console.log("Selected Park:", selectedPark);
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark ? selectedPark : null);
   const computeRouteRef = useRef(null);
+  const [review, setReview] = useState([]);
+  const user = auth.currentUser;
 
   if (!park) return null;
 
@@ -115,6 +119,19 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
     </ActionIcon>
   );
 
+  async function loadReviews() {
+    try {
+      const pullReview = await readData(park.name);
+      setReview(pullReview);
+    } catch(error) {
+      console.error("Error: ", error);
+    }  
+  }
+
+  useEffect(() => {
+    loadReviews();
+  }, [park])
+
   checkImages(wildlifePhotos);
 
   return (
@@ -156,14 +173,15 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
             {hasImage && (
               <div>
                 <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-4 space-x-8 overflow-x-auto max-h-[500px]">
-                  {wildlifePhotos.map((img, index) => (
+                  {/*{wildlifePhotos.map((img, index) => (
                     <img
                       key={index}
                       src={img}
                       alt={img}
                       className="w-50 h-50 bg-gray-400 rounded"
                     />
-                  ))}
+                  ))}*/}
+                  <PullImage location={park.name.split(' ').join('')}/>
                 </ul>
               </div>
             )}
@@ -183,9 +201,9 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
         <section className="flex flex-col mt-30 items-center">
           <h1 className="font-bold text-2xl mb-10">Reviews</h1>
           <div className="rounded-md p-6 w-3/4">
-            {park.reviews?.length > 0 ? (
+            {review?.length > 0 ? (
               <ul>
-                {park.reviews.map((user, index) => (
+                {review.map((user, index) => (
                   <div key={index} className="">
                     <div className="flex flex-row gap-0 mx-4 my-18 space-x-6">
                       <div className="">
@@ -216,7 +234,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
                           </ul>
                         )}
                         <div className="grid grid-cols-3">
-                          <p className=" col-span-2">{user.comment}</p>
+                          <p className=" col-span-2">{user.message}</p>
                           <p
                             className="hover:underline italic flex justify-end items-end"
                             onClick={() => handleData({ user })}
