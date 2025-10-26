@@ -136,7 +136,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
             .map((f, idx) => ({
               id: f.id || `${i}-${idx}`,
               name: f.properties?.Name_e || f.properties?.Nom_f || "Unnamed POI",
-              description: f.properties?.Description || f.properties?.description || "No description",
+              description: f.properties?.Description || f.properties?.description || f.properties?.URL_e || "No description",
               location: {
                 lat: parseFloat(f.geometry.coordinates[1]),
                 lng: parseFloat(f.geometry.coordinates[0])
@@ -162,6 +162,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       //The following code extracts the unique sub-types for use in the front-end filter and was made with the help of https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set,
       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter, and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
       const accommodationTypes = getUniqueSubTypes(allPois, 'Accommodation_Type');
+      const conciscodeTypes = getUniqueSubTypes(allPois, "CONCISCODE");
       const principalTypes = getUniqueSubTypes(allPois, 'Principal_type');
       const facilityTypes = getUniqueSubTypes(allPois, 'Facility_Type_Installation');
       // This code is the same but for trail distances
@@ -172,6 +173,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
 
       if (typeof setUniqueTypes === "function"){
         setUniqueTypes({
+          CONCISCODE: uniqueArray(conciscodeTypes),
           Accommodation_Type: uniqueArray(accommodationTypes),
           Principal_type: uniqueArray(principalTypes),
           Facility_Type_Installation: uniqueArray(facilityTypes),
@@ -198,41 +200,44 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
     //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js
     function computeRoute(poi) {
       return new Promise((resolve, reject) => {
-        if (!directionsServiceRef.current || !directionsRendererRef.current) {
-          return reject("Directions not ready");
+        if (!window.google || !window.google.maps) {
+          return reject("Google Maps API not loaded");
         }
         
-        directionsServiceRef.current.route(
+        const directionsService = new google.maps.DirectionsService();
+        
+        directionsService.route(
           {
-            origin: {lat: userLocation.lat, lng: userLocation.lng},
-            destination: {lat: poi.location.lat, lng: poi.location.lng},
-            travelMode: window.google.maps.TravelMode.DRIVING,
+            origin: { lat: userLocation.lat, lng: userLocation.lng },
+            destination: { lat: poi.location.lat, lng: poi.location.lng },
+            travelMode: google.maps.TravelMode.DRIVING,
           },
           (result, status) => {
             if (status === "OK") {
-              directionsRendererRef.current.setDirections(result);
-              setRoutedPOI(poi);
+              directionsRendererRef.current?.setDirections(result);
+            setRoutedPOI(poi);
               
-              const leg = result.routes[0].legs[0];
-              resolve({
-                distance: leg.distance.value / 1000,
-                duration: leg.duration.value / 60,
-              });
-            } else {
-              reject(status);
-            }
-          }
-        );
-      });
+        const leg = result.routes[0].legs[0];
+        resolve({
+          distance: leg.distance.value / 1000,
+          duration: leg.duration.value / 60,
+        });
+      } else {
+        reject(status);
+      }
     }
+  );
+});
+}
 
     const [routedPOI, setRoutedPOI] = useState(null);
   
   useEffect(() => {
-    if (computeRouteRef && directionsServiceRef.current && computeRouteRef.current){
+    if (computeRouteRef){
       computeRouteRef.current =  computeRoute;
+      console.log("ComputeRouteRef successfully assigned in MapFunction")
     }
-  }, [directionsServiceRef.current, directionsRendererRef.current, computeRouteRef, userLocation]);
+  }, [directionsServiceRef]);
 
   //This code drops the current route if it is to a location that gets filtered out
   useEffect(() => {
