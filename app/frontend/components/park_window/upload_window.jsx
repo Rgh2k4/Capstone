@@ -22,12 +22,21 @@ export default function Upload_Window({ onClose, parkInfo }) {
     const userData = await getDoc(doc(database, "users", user.uid));
     const date = new Date().toISOString().split('T')[0];
     const location = park.name.split(' ').join('');
-    
-    if (image && park != null) {
-      addReview(user.uid, {title: title, message: message, rating: rating, location_name: park.name, displayName: userData.data().displayName, date: date}, location)
-      uploadImage(image, location);    
+
+    try {
+      const imgURL = image.name;
+      console.log("Image URL:", imgURL);
+
+      if (park != null) {
+        addReview(user.uid, {title: title, message: message, rating: rating, location_name: park.name, displayName: userData.data().displayName, date: date, image: imgURL}, location)
+      }
+      if (image != null) {
+        uploadImage(image, location);
+      }
+    } catch (error) {
+      console.error("Error uploading review:", error);
     }
-  }
+    }
 
   function previewImage(e) {
     const file = e.target.files[0];
