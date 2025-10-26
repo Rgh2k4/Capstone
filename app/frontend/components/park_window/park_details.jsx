@@ -21,7 +21,6 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
   console.log("Selected Park:", selectedPark);
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark ? selectedPark : null);
-  const computeRouteRef = useRef(null);
   const [review, setReview] = useState([]);
   const user = auth.currentUser;
 
