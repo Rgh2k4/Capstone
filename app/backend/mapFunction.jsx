@@ -39,7 +39,7 @@ function MapContent({filteredPois, setVisiblePois, viewParkDetails}) {
   );
 }
 
-function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef}) {
+function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -210,12 +210,11 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   :pois;
 
   console.log("Filters active:", filters);
-console.log("Number of POIs loaded:", pois.length);
-console.log("Number of POIs shown after filtering:", filteredPois.length);
+  console.log("Number of POIs loaded:", pois.length);
+  console.log("Number of POIs shown after filtering:", filteredPois.length);
 
-
-    //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js
-    function computeRoute(poi) {
+    //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js, https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes
+    function computeRoute(poi, mode) {
       return new Promise((resolve, reject) => {
         if (!window.google || !window.google.maps) {
           return reject("Google Maps API not loaded");
@@ -223,11 +222,12 @@ console.log("Number of POIs shown after filtering:", filteredPois.length);
         
         const directionsService = new google.maps.DirectionsService();
         
-        directionsService.route(
+        directionsService
+        .route(
           {
             origin: { lat: userLocation.lat, lng: userLocation.lng },
             destination: { lat: poi.location.lat, lng: poi.location.lng },
-            travelMode: google.maps.TravelMode.DRIVING,
+            travelMode: google.maps.TravelMode[travelMode],
           },
           (result, status) => {
             if (status === "OK") {
@@ -242,9 +242,8 @@ console.log("Number of POIs shown after filtering:", filteredPois.length);
       } else {
         reject(status);
       }
-    }
-  );
-});
+    })
+  });
 }
 
     const [routedPOI, setRoutedPOI] = useState(null);

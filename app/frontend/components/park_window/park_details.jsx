@@ -16,6 +16,7 @@ import { IconHeart } from "@tabler/icons-react";
 import MapFunction from "@/app/backend/mapFunction";
 import { PullImage } from "@/app/backend/uploadStorage";
 import { readData } from "@/app/backend/database";
+import { Select } from "@mantine/core";
 
 export default function ParkDetails({ selectedPark, openButtonUpload, computeRouteRef }) {
   console.log("Selected Park:", selectedPark);
@@ -23,6 +24,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
   const [park, setPark] = useState(selectedPark ? selectedPark : null);
   const [review, setReview] = useState([]);
   const user = auth.currentUser;
+  const [travelMode, setTravelMode] = useState("DRIVING");
 
   if (!park) return null;
 
@@ -35,7 +37,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
       alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
     } catch {
     console.error();
-    alert("Error: could not compute route, try again later");
+    alert("Error: could not compute route, try again later or try a different travel mode");
     }
   };
 
@@ -156,8 +158,22 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
           <p className="w-3/4">
             {park.description || "No description available."}
           </p>
+
+          {/*This was made with the help of https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes#maps_directions_travel_modes-javascript & 
+          https://mantine.dev/core/select/#combobox, and debugging with the help of gpt*/}
+          <Select
+          label="Travel Mode"
+          value={travelMode}
+          onChange={(value) => setTravelMode(value)}
+          data={[
+            {value: "DRIVING", label:"Driving"},
+            {value:"WALKING", label:"Walking"},
+            {value:"BICYCLING", label:"Bicycling"},
+            {value:"TRANSIT", label: "Transit"}
+          ]}
+          />
+
           <Button
-          
           variant="gradient"
           gradient={{ from: 'pink', to: 'grape', deg: 90 }}
           onClick={()=>{

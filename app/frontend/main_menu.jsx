@@ -26,6 +26,7 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const computeRouteRef = useRef(null);
+  const [travelMode, setTravelMode] = useState("DRIVING");
 
   async function setupUser() {
     //console.log("Current user:", user);
@@ -200,14 +201,26 @@ export default function MainMenu( { onRouteToLogin, onRouteToDashboard}) {
                 </div>
             </header>  
             <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
-              <ParkDetails selectedPark={selectedPark} openButtonUpload={handleOpenUpload} computeRouteRef={computeRouteRef}/>
+              <ParkDetails 
+              selectedPark={selectedPark}
+              openButtonUpload={handleOpenUpload} 
+              computeRouteRef={computeRouteRef} 
+              travelMode={travelMode}
+              setTravelMode={setTravelMode}
+              />
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
               <UploadWindow onClose={swapToParkDetails} parkInfo={selectedPark} />
             </Modal>
               
               <section className="w-full">
-                <MapFunction filters={selectedFilters} setUniqueTypes={setUniqueTypes} viewParkDetails={viewParkDetails} computeRouteRef={computeRouteRef} />
+                <MapFunction
+                filters={selectedFilters}
+                setUniqueTypes={setUniqueTypes}
+                viewParkDetails={viewParkDetails}
+                computeRouteRef={computeRouteRef}
+                travelMode={travelMode}
+                />
               </section>
         </main>
     );  
