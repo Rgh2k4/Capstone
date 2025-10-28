@@ -18,25 +18,36 @@ export default function Upload_Window({ onClose, parkInfo }) {
   const user = auth.currentUser;
 
   async function handleSubmit(e) {
+    setSubmitted(true);
     e.preventDefault();
     const userData = await getDoc(doc(database, "users", user.uid));
     const date = new Date().toISOString().split('T')[0];
     const location = park.name.split(' ').join('');
 
     try {
-      const imgURL = image.name;
-      console.log("Image URL:", imgURL);
+      let imgURL;
+      try {
+        imgURL = image.name;
+        console.log("Image URL:", imgURL);
+      } catch (error) {
+        imgURL = null;
+        console.log("No image uploaded.");
+      }
 
       if (park != null) {
-        addReview(user.uid, {title: title, message: message, rating: rating, location_name: park.name, displayName: userData.data().displayName, date: date, image: imgURL}, location)
+        addReview(user.uid, {uid: user.uid, title: title, message: message, rating: rating, location_name: park.name, displayName: userData.data().displayName, date: date, image: imgURL, status: "pending"}, location)
       }
       if (image != null) {
         uploadImage(image, location);
       }
+      alert("Review Submitted!");
+      onClose();
     } catch (error) {
       console.error("Error uploading review:", error);
+      setSubmitted(false);
+      return;
     }
-    }
+  }
 
   function previewImage(e) {
     const file = e.target.files[0];
