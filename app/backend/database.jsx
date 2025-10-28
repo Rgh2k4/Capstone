@@ -216,22 +216,122 @@ export async function addReview(uid, reviewData, location) {
     }
 };
 
-export async function readData(location) {
+export async function readReviewData(location) {
     
     try {
         const userData = await getDocs(query(collection(database, "users")));
-        const reviews = [];
+        let reviews = [];
         for (const user of userData.docs) {
           const reviewData = await getDocs(query(collection(database, "users", user.id, "reviews", location.split(' ').join(''), "reviewData")));
             if (!reviewData.empty) {
               reviewData.forEach((review) => {
                 reviews.push({
                   ...review.data()
-                })
+                });
               });
             }
         }
+        reviews = reviews.filter((rev) => rev.status === "approved");
         return reviews;
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+
+    return null;
+};
+
+export async function loadPendingReviews() {
+  try {
+    console.log("Loading pending reviews...");
+    const userData = await getDocs(collection(database, "users"));
+    console.log("Total Users Found:", userData.docs.length);
+
+    let pendingReviews = [];
+
+    for (const user of userData.docs) {
+      console.log("User ID Being Read:", user.id, user.data());
+
+      const reviewData = await getDocs(collection(database, "users", user.id, "reviews"));
+      console.log(`Reviews found for ${user.id}:`, reviewData.docs.map(d => d.id));
+
+      for (const location of reviewData.docs) {
+        console.log("Location (Document ID):", location.id);
+        const reviewCollectionRef = collection(database, "users", user.id, "reviews", location.id, "reviewData");
+        const reviewSnapshots = await getDocs(reviewCollectionRef);
+        console.log(`Reviews under ${location.id}:`, reviewSnapshots.docs.length);
+
+        for (const review of reviewSnapshots.docs) {
+          console.log("Review Data:", review.data());
+            pendingReviews.push(review.data());
+        }
+      }
+    }
+
+    console.log("Pending Reviews Loaded:", pendingReviews.length);
+    return pendingReviews;
+
+  } catch (error) {
+    console.error("Error:", error);
+  }
+
+  return null;
+}
+
+
+export async function approveReview({ rev }) {
+    try {
+        const reviewRef = doc(database, "users", rev.uid, "reviews", rev.location_name.split(' ').join(''), "reviewData");
+        await updateDoc(reviewRef, { status: "approved" });
+        alert("Review Approved");
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+}
+
+export async function denyReview({ rev }) {
+    try {
+        const reviewRef = doc(database, "users", rev.uid, "reviews", rev.location_name.split(' ').join(''), "reviewData");
+        await deleteDoc(reviewRef);
+        alert("Review Denied");
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+}
+
+export async function ReportUser(usersInfo, { rev }) {
+    const reportData = {
+        reportedUserID: usersInfo.reportedUserID,
+        reporterUserID: usersInfo.reporterUserID,
+        reason: usersInfo.reason,
+        reviewData: {
+            uid: rev.uid,
+            title: rev.title,
+            message: rev.message,
+            rating: rev.rating,
+            location_name: rev.location_name,
+            displayName: rev.displayName,
+            date: rev.date,
+            image: rev.image,
+            status: rev.status
+        }
+    };
+    try {
+        await addDoc(collection(database, "reports"), reportData)
+        alert("Report Submitted");
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+};
+
+export async function loadReports() {
+    try {
+        const reportData = await getDocs(collection(database, "reports"));
+       const reports = [];
+       reportData.forEach((doc) => {
+        const data = doc.data();
+           reports.push(data);
+       });
+       return reports;
     } catch (error) {
         console.error("Error: ", error);
     }

@@ -15,7 +15,7 @@ import { ActionIcon, Button } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import MapFunction from "@/app/backend/mapFunction";
 import { PullImage } from "@/app/backend/uploadStorage";
-import { readData } from "@/app/backend/database";
+import { readReviewData, ReportUser } from "@/app/backend/database";
 
 export default function ParkDetails({ selectedPark, openButtonUpload, computeRoute }) {
   console.log("Selected Park:", selectedPark);
@@ -99,8 +99,9 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
     if (photos && photos[0]) hasImage = true;
   }
 
-  function handleData({ user }) {
-    alert(`${user.username} has been reported.`);
+  function handleReport({ rev }) {
+    ReportUser({ reportedUserID: rev.uid, reporterUserID: user.uid, reason: "Inappropriate content" }, {rev});
+    alert(`${rev.displayName || "Anonymous"} has been reported.`);
   }
 
   const FavoriteButton = () => (
@@ -121,7 +122,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
 
   async function loadReviews() {
     try {
-      const pullReview = await readData(park.name);
+      const pullReview = await readReviewData(park.name);
       setReview(pullReview);
     } catch(error) {
       console.error("Error: ", error);
@@ -203,7 +204,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
           <div className="rounded-md p-6 w-full bg-gray-100 shadow-inner max-h-96 overflow-y-auto">
             {review?.length > 0 ? (
               <ul>
-                {review.map((user, index) => (
+                {review.map((rev, index) => (
                   <div key={index} className="">
                     <div className="flex flex-row gap-0 mx-4 my-18 space-x-6">
                       <div className="">
@@ -215,21 +216,21 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
                       <div className="space-y-2">
                         <div className=" flex flex-row space-x-2 items-center">
                           <p className=" font-semibold text-1xl">
-                            {user.displayName || "Anonymous"}
+                            {rev.displayName || "Anonymous"}
                           </p>
-                          <p className=" text-1xl italic">- {user.date}</p>
+                          <p className=" text-1xl italic">- {rev.date}</p>
                         </div>
-                        <p className=" text-1xl">{user.title}</p>
-                        {user.image && (
+                        <p className=" text-1xl">{rev.title}</p>
+                        {rev.image && (
                           <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-2 space-x-8 overflow-x-auto">
-                            <PullImage location={park.name.split(' ').join('')} url={user.image} />
+                            <PullImage location={park.name.split(' ').join('')} url={rev.image} />
                           </ul>
                         )}
                         <div className="grid grid-cols-3">
-                          <p className=" col-span-2">{user.message}</p>
+                          <p className=" col-span-2">{rev.message}</p>
                           <p
                             className="hover:underline italic flex justify-end items-end"
-                            onClick={() => handleData({ user })}
+                            onClick={() => handleReport({ rev })}
                           >
                             Report User
                           </p>
