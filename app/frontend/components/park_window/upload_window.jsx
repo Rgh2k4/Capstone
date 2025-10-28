@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { uploadImage } from "@/app/backend/UploadStorage.jsx";
+import { uploadImage } from "@/app/backend/uploadStorage.jsx";
 import { Button, Input, Textarea, TextInput } from "@mantine/core";
 import { auth, database } from "@/app/backend/databaseIntegration";
 import { addReview } from "@/app/backend/database";

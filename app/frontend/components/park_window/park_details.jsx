@@ -1,16 +1,15 @@
 "use client";
 
 import Reviews from "./review_section";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect} from "react";
 import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
+  deleteDoc,
+  collection,
 } from "firebase/firestore";
-import { database as db, auth } from "../../../backend/databaseIntegration";
+import { database, auth } from "../../../backend/databaseIntegration";
 import { ActionIcon, Button } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import MapFunction from "@/app/backend/mapFunction";
@@ -49,14 +48,9 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
       const user = auth.currentUser;
       if (!user || !park?.id) return;
 
-      const safeEmail = user.email.replace(/\./g, ",");
-      const userRef = doc(db, "users", safeEmail);
-      const userSnap = await getDoc(userRef);
-
-      if (userSnap.exists()) {
-        const favorites = userSnap.data().favorites || [];
-        setIsFavorite(favorites.includes(park.id));
-      }
+      const favoriteRef = doc(database, "users", user.uid, "favorites", park.id);
+      const favoriteSnap = await getDoc(favoriteRef);
+      setIsFavorite(favoriteSnap.exists());
     }
     checkFavorite();
   }, [park, auth.currentUser]);
@@ -68,27 +62,17 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
       return;
     }
 
-    const userRef = doc(db, "users", user.uid);
-    const userSnap = await getDoc(userRef);
-
-    //This code creates the user doc if the user doesnt have one yet
-    if (!userSnap.exists()) {
-      await setDoc(userRef, { favorites: [] });
-    }
-
-    //If the user has a doc, but it doesn't contain a favorite field, it creates one
-    if (!userData.favorites) {
-      await updateDoc(userRef, { favorites: [] });
-    }
+    const favoriteRef = doc(database, "users", user.uid, "favorites", park.id);
 
     if (isFavorite) {
-      await updateDoc(userRef, {
-        favorites: arrayRemove(park.id),
-      });
+      await deleteDoc(favoriteRef);
       setIsFavorite(false);
     } else {
-      await updateDoc(userRef, {
-        favorites: arrayUnion(park.id),
+      await setDoc(favoriteRef, {
+        Name_e: park.name,
+        id: park.id,
+        lat: park.location.lat,
+        lng: park.location.lng
       });
       setIsFavorite(true);
     }

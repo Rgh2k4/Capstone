@@ -214,7 +214,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   console.log("Number of POIs shown after filtering:", filteredPois.length);
 
     //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js, https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes
-    function computeRoute(poi, mode) {
+    function computeRoute(poi, travelMode) {
       return new Promise((resolve, reject) => {
         if (!window.google || !window.google.maps) {
           return reject("Google Maps API not loaded");
