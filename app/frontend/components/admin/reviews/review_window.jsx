@@ -1,22 +1,19 @@
-function ReviewWindow({ user, onClose, onDeleteReview }) {
-  let photos = user.images;
-  let hasImage = false;
+import { approveReview } from "@/app/backend/database";
+import { PullImage } from "@/app/backend/uploadStorage";
 
-  function checkImages(photos) {
-    if (!photos[0] == "" || null) hasImage = true;
-  }
+function ReviewWindow({ user: rev, onClose, onDeleteReview }) {
+
 
   function handleDelete() {
     onClose();
-    onDeleteReview(user.id);
+    onDeleteReview();
     alert("Review Deleted!");
   }
 
   function handleApprove() {
+    approveReview(rev);
     onClose();
   }
-
-  checkImages(photos);
 
   return (
     <div className=" p-12 rounded flex flex-col justify-center text-center space-y-24">
@@ -27,24 +24,15 @@ function ReviewWindow({ user, onClose, onDeleteReview }) {
         />
       </div>
       <div className="space-y-6">
-        <p className=" text-4xl font-semibold">{user.username}</p>
-        <p className=" text-2xl text-left">{user.comment}</p>
+        <p className=" text-4xl font-semibold">{rev.displayName || "Anonymous"}</p>
+        <p className=" text-3xl">{rev.title}</p>
+        <p className=" text-2xl text-left">{rev.message}</p>
       </div>
-      {hasImage && (
-        <div>
-          <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-4 space-x-8 overflow-x-auto max-h-[500px]">
-            {photos.map((img, index) => (
-              <>
-                <img
-                  key={index}
-                  src={img}
-                  alt={img}
-                  className="w-50 h-50 bg-gray-400 rounded"
-                />
-              </>
-            ))}
-          </ul>
-        </div>
+
+      {rev.image && (
+        <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-2 space-x-8 overflow-x-auto">
+          <PullImage location={park.name.split(' ').join('')} url={rev.image} />
+        </ul>
       )}
       <div>
         <button onClick={handleDelete} className="red-button">
