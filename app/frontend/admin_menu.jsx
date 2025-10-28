@@ -11,7 +11,7 @@ import testUsers from "./components/admin/user_test_data.json";
 import { Button } from "@mantine/core";
 import { auth } from "../backend/databaseIntegration.jsx";
 import ProfileMenu from "./components/profile/profile_menu";
-import { GetUserData, isAdmin, LoadAdminList, LoadUserList } from "../backend/database";
+import { GetUserData, isAdmin, LoadAdminList, loadPendingReviews, LoadUserList } from "../backend/database";
 
 function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [showModal, setShowModal] = useState(false);
@@ -25,6 +25,8 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [idCounter, setIdCounter] = useState(db.accounts.length + 1);
   const [users, setUsers] = useState([]);
   const [admins, setAdmins] = useState([]);
+  const [pendingReviews, setPendingReviews] = useState([]);
+  const [reports, setReports] = useState([]);
   
 
 
@@ -34,7 +36,6 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
 
   function setupUser() {
     //console.log("Current user:", user);
-    const email = auth.currentUser.email;
     GetUserData(user.uid).then((data) => {
       //console.log("User Data:", data);
       console.log("Is Admin:", data.role === "Admin");
@@ -52,6 +53,14 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   useEffect(() => {
     setupUser();
 
+    const reportList = loadPendingReviews().then(reportList => {
+      console.log("Pending Reports:", reportList);
+      setReports(reportList)
+    });
+    const reviewList = loadPendingReviews().then(reviewList => {
+      console.log("Pending Reviews:", reviewList);
+      setPendingReviews(reviewList)
+    });
     const userList = LoadUserList().then(userList => {
       console.log("User List:", userList);
       setUsers(userList)
@@ -126,25 +135,25 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
             <div className="bg-white shadow-md rounded-xl p-6">
               <div className=" flex flex-row justify-between">
                 <h2 className="text-xl font-semibold mb-4">Recent Reviews</h2>
-                <Button on onClick={() => setPageName("Reviews")}>View More</Button>
+                <Button onClick={() => setPageName("Reviews")}>View More</Button>
               </div>
               <ReviewList
                 showHeader={false}
                 setShowModal={setShowModal}
                 sendUser={setAccount}
-                reviews={db.reviews}
+                reviews={pendingReviews}
               />
             </div>
             <div className="bg-white shadow-md rounded-xl p-6">
               <div className=" flex flex-row justify-between">
                 <h2 className="text-xl font-semibold mb-4">Recent Reports</h2>
-                <Button on onClick={() => setPageName("Reports")}>View More</Button>
+                <Button onClick={() => setPageName("Reports")}>View More</Button>
               </div>
               <ReportList
                 showHeader={false}
                 setShowModal={setShowModal2}
                 sendUser={setAccount}
-                reports={db.reports}
+                reports={reports}
               />
             </div>
           </div>
@@ -156,7 +165,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
               showHeader={true}
               setShowModal={setShowModal}
               sendUser={setAccount}
-              reviews={db.reviews}
+              reviews={pendingReviews}
             />
           </div>
         )}
@@ -164,10 +173,9 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
         {pageName === "Reports" && (
           <div className="bg-white shadow-md rounded-xl p-6">
             <ReportList
-
               setShowModal={setShowModal2}
               sendUser={setAccount}
-              reports={db.reports}
+              reports={reports}
               showHeader={true}
             />
           </div>
