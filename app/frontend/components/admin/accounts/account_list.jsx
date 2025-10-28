@@ -8,8 +8,8 @@ function AccountList({ setShowModalEdit, setShowModalAdd, setRole, sendUser, use
   };
 
   const handleEdit = (account) => {
-    console.log("Data Recieved:");
-    console.log(account);
+    //console.log("Data Recieved:");
+    //console.log(account);
     sendUser(account);
     setShowModalEdit(true);
   };
