@@ -11,7 +11,7 @@ import testUsers from "./components/admin/user_test_data.json";
 import { Button } from "@mantine/core";
 import { auth } from "../backend/databaseIntegration.jsx";
 import ProfileMenu from "./components/profile/profile_menu";
-import { GetUserData, isAdmin, LoadAdminList, loadPendingReviews, LoadUserList } from "../backend/database";
+import { approveReview, denyReview, GetUserData, isAdmin, LoadAdminList, loadPendingReviews, loadReports, LoadUserList, resolveReport } from "../backend/database";
 
 function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [showModal, setShowModal] = useState(false);
@@ -53,7 +53,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   useEffect(() => {
     setupUser();
 
-    const reportList = loadPendingReviews().then(reportList => {
+    const reportList = loadReports().then(reportList => {
       console.log("Pending Reports:", reportList);
       setReports(reportList)
     });
@@ -69,7 +69,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
       console.log("Admin List:", adminList);
       setAdmins(adminList)
     });
-  }, [])
+  }, [resolveReport, approveReview, denyReview]);
   
 
   function handleDeleteAccount(id) {
@@ -78,13 +78,15 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
     reviews: db.reviews.filter(r => r.id !== id),
     reports: db.reports.filter(r => r.id !== id)}));
   }
-  function handleDeleteReport(id) {
-    setDb(db => ({...db,
-    reports: db.reports.filter(r => r.id !== id)}));
+  function handleReport(report, action) {
+    resolveReport(report, action);
   }
-  function handleDeleteReview(id) {
-    setDb(db => ({...db,
-    reviews: db.reviews.filter(r => r.id !== id),}));
+  function handleReview(rev, action) {
+    if (action === "approve") {
+      approveReview(rev);
+    } else if (action === "delete") {
+      denyReview(rev);
+    }
   }
 
   function handleAddAccount(account) {
@@ -200,7 +202,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
       <ReviewWindow
         onClose={() => setShowModal(false)}
         user={account}
-        onDeleteReview={handleDeleteReview}
+        onHandleReview={handleReview}
       />
     </Modal>
 
@@ -208,7 +210,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
       <ReportWindow
         onClose={() => setShowModal2(false)}
         user={account}
-        onDeleteReport={handleDeleteReport}
+        onHandleReport={handleReport}
       />
     </Modal>
 
