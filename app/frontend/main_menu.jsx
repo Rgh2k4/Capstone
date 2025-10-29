@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@mantine/core";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import ParkDetails from "./components/park_window/park_details";
 import ProfileMenu from "./components/profile/profile_menu";
 import dynamic from "next/dynamic";
@@ -24,6 +24,8 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [userData, setUserData] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
+  const computeRouteRef = useRef(null);
+  const [travelMode, setTravelMode] = useState("DRIVING");
 
   async function setupUser() {
     //console.log("Current user:", user);
@@ -43,14 +45,33 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [uniqueTypes, setUniqueTypes] = useState({
     Accommodation_Type: [],
     Principal_type: [],
+    CONCISCODE: [],
     Facility_Type_Installation: [],
     TrailDistance: [],
   });
 
+  //This code was changed to add the default filter right after the first data et was pulled to avoid crashing the site trying to render 16000+ markers at once
   useEffect(() => {
-    if (selectedFilters.length === 0 && uniqueTypes.Principal_type.length > 0) {
-      const defaultFilter = uniqueTypes.Principal_type[0];
-      setSelectedFilters([defaultFilter]);
+
+    if (selectedFilters.length === 0) {
+      const catagories = [
+        uniqueTypes.Accommodation_Type,
+        uniqueTypes.CONCISCODE,
+        uniqueTypes.Principal_type,
+        uniqueTypes.Facility_Type_Installation,
+        uniqueTypes.TrailDistance, 
+      ];
+
+      //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+      const firstType = catagories.find(
+        (arr) => Array.isArray(arr) && arr.length > 0
+      );
+
+      if (firstType){
+        const defaultFilter = firstType[0];
+      setSelectedFilters([defaultFilter])
+      }
+
     }
   }, [uniqueTypes]);
 
@@ -222,13 +243,64 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
         <UploadWindow onClose={swapToParkDetails} parkInfo={selectedPark} />
       </Modal>
 
-      <section className="w-full">
-        <MapFunction
-          filters={selectedFilters}
-          setUniqueTypes={setUniqueTypes}
-          viewParkDetails={viewParkDetails}
-        />
-      </section>
-    </main>
-  );
+    return (
+        <main className="flex flex-col h-screen w-screen relative">
+            <header className="w-screen p-2 flex justify-between items-center bg-blue-300 absolute top-0 z-10 shadow-md shadow-gray-600">
+                <h1 className="w-60 ml-18 text-2xl break-normal font-bold text-white text-shadow-sm text-shadow-black text-center">
+                    National Parks Information System
+                </h1>
+                <div className="">
+                  <MultiSelect
+                  size="md"
+                  placeholder="Filter and search..."
+                  searchable
+                  className="w-3xl pl-6 rounded-full text-neutral-950 border-gray-400"
+                  value={selectedFilters}
+                  onChange={(newValue) =>{
+                    if (newValue.length === 0) {
+                      console.warn("At least one filter must remain active, this ensures a timely resonse from the site.");
+                      return;
+                    }
+                    setSelectedFilters(newValue);
+                  }}
+                  data={buildMultiSelectData(uniqueTypes)}
+                  />
+                </div>
+                <div className=" flex flex-row mr-24 space-x-8">
+                  {userData ? (
+                    <>
+                      {isAdmin && <Button size='lg' onClick={onRouteToDashboard}>Dashboard</Button>}
+                      <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
+                    </>
+                    ) : (
+                      <Button size='lg' onClick={onRouteToLogin}>Log in</Button>
+                    )
+                  }
+
+                </div>
+            </header>  
+            <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
+              <ParkDetails 
+              selectedPark={selectedPark}
+              openButtonUpload={handleOpenUpload} 
+              computeRouteRef={computeRouteRef} 
+              travelMode={travelMode}
+              setTravelMode={setTravelMode}
+              />
+            </Modal>
+            <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
+              <UploadWindow onClose={swapToParkDetails} parkInfo={selectedPark} />
+            </Modal>
+              
+              <section className="w-full">
+                <MapFunction
+                filters={selectedFilters}
+                setUniqueTypes={setUniqueTypes}
+                viewParkDetails={viewParkDetails}
+                computeRouteRef={computeRouteRef}
+                travelMode={travelMode}
+                />
+              </section>
+        </main>
+    );  
 }

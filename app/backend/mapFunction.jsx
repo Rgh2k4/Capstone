@@ -39,7 +39,7 @@ function MapContent({filteredPois, setVisiblePois, viewParkDetails}) {
   );
 }
 
-function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef}) {
+function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -86,17 +86,21 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         
         useEffect(() => {
           if (!mapRef.current?.map) return;
+
+          if (!directionsServiceRef.current) {
+            directionsServiceRef.current = new window.google.maps.DirectionsService();
+          }
           
-          const googleMap = mapRef.current.map;
-          
-          const directionsService = new window.google.maps.DirectionsService();
-          const directionsRenderer = new window.google.maps.DirectionsRenderer({
-            map: googleMap
-          });
-          
-          directionsServiceRef.current = directionsService;
-          directionsRendererRef.current = directionsRenderer;
-        }, [mapRef.current?.map]);
+          if (!directionsRendererRef.current) {
+            directionsRendererRef.current = new window.google.maps.DirectionsRenderer({
+              map: mapRef.current.map
+            });
+          }
+
+          if (computeRouteRef){
+            computeRouteRef.current = computeRoute;
+          }
+        }, [mapRef.current?.map, computeRouteRef, userLocation]);
 
 
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
@@ -132,7 +136,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
             .map((f, idx) => ({
               id: f.id || `${i}-${idx}`,
               name: f.properties?.Name_e || f.properties?.Nom_f || "Unnamed POI",
-              description: f.properties?.Description || f.properties?.description || "No description",
+              description: f.properties?.Description || f.properties?.description || f.properties?.URL_e || "No description",
               location: {
                 lat: parseFloat(f.geometry.coordinates[1]),
                 lng: parseFloat(f.geometry.coordinates[0])
@@ -158,6 +162,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       //The following code extracts the unique sub-types for use in the front-end filter and was made with the help of https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set,
       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter, and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
       const accommodationTypes = getUniqueSubTypes(allPois, 'Accommodation_Type');
+      const conciscodeTypes = getUniqueSubTypes(allPois, "CONCISCODE");
       const principalTypes = getUniqueSubTypes(allPois, 'Principal_type');
       const facilityTypes = getUniqueSubTypes(allPois, 'Facility_Type_Installation');
       // This code is the same but for trail distances
@@ -168,6 +173,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
 
       if (typeof setUniqueTypes === "function"){
         setUniqueTypes({
+          CONCISCODE: uniqueArray(conciscodeTypes),
           Accommodation_Type: uniqueArray(accommodationTypes),
           Principal_type: uniqueArray(principalTypes),
           Facility_Type_Installation: uniqueArray(facilityTypes),
@@ -176,55 +182,78 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       }}
 
     loadData();
-  }, [setUniqueTypes]);
+  }, []);
 
   //This code was made with help from gpt 
   // after having gpt check the code for bugs and having it ask if I wanted to have the markers place dynamicaly based on the filter settings and me responding "Doesn't it already do that?"
   const filteredPois = filters.length
-  ? pois.filter(poi =>
-    filters.some(f =>
-      [poi.properties?.Accommodation_Type, poi.properties?.Principal_type, poi.properties?.Facility_Type_Installation]
-        .some(val => String(val).trim() === String(f).trim()) ||
-      ['Label_e_5k_less', 'Label_e_20k_5k', 'Label_e_100k_20k', 'Label_e_100k_plus']
-        .some(label => String(poi.properties?.[label]).trim() === String(f).trim())
-    )
-  )
+  ? pois.filter(poi =>{
+    const poiValues = [
+      poi.properties?.Accommodation_Type,
+      poi.properties?.Principal_type,
+      poi.properties?.Facility_Type_Installation,
+      poi.properties?.CONCISCODE,
+      poi.properties?.Label_e_5k_less,
+      poi.properties?.Lable_e_20k_5k,
+      poi.properties?.Label_e_100k_20k,
+      poi.properties?.Label_e_100k_plus
+    ].filter(Boolean)
+    .flatMap(val => Array.isArray(val) ? val : [val])
+    .map(val => String(val).trim());
+
+    return filters.some(f =>{
+      const filterValue = String(f).trim();
+      return poiValues.some(pv => pv.includes(filterValue));
+    });
+  })
+  
   :pois;
 
-    //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js
-    function computeRoute(poi) {
+  console.log("Filters active:", filters);
+  console.log("Number of POIs loaded:", pois.length);
+  console.log("Number of POIs shown after filtering:", filteredPois.length);
+
+    //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js, https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes
+    function computeRoute(poi, travelMode) {
       return new Promise((resolve, reject) => {
-        if (!directionsServiceRef.current || !directionsRendererRef.current) return reject("Directions not ready");
+        if (!window.google || !window.google.maps) {
+          return reject("Google Maps API not loaded");
+        }
         
-        directionsServiceRef.current.route(
+        const directionsService = new google.maps.DirectionsService();
+        
+        directionsService
+        .route(
           {
             origin: { lat: userLocation.lat, lng: userLocation.lng },
             destination: { lat: poi.location.lat, lng: poi.location.lng },
-            travelMode: window.google.maps.TravelMode.DRIVING,
+            travelMode: google.maps.TravelMode[travelMode],
           },
           (result, status) => {
             if (status === "OK") {
-              directionsRendererRef.current.setDirections(result);
-              setRoutedPOI(poi);
+              directionsRendererRef.current?.setDirections(result);
+            setRoutedPOI(poi);
               
-              const leg = result.routes[0].legs[0];
-              resolve({
-                distance: leg.distance.value / 1000,
-                duration: leg.duration.value / 3600,
-              });
-            } else {
-              reject(status);
-            }
-          }
-        );
-      });
-    }
+        const leg = result.routes[0].legs[0];
+        resolve({
+          distance: leg.distance.value / 1000,
+          duration: leg.duration.value / 60,
+        });
+      } else {
+        reject(status);
+      }
+    })
+  });
+}
 
     const [routedPOI, setRoutedPOI] = useState(null);
   
   useEffect(() => {
-    if (computeRouteRef) computeRouteRef.current = computeRoute;
-  }, [computeRouteRef, userLocation]);
+    if (computeRouteRef){
+      computeRouteRef.current =  computeRoute;
+      console.log("ComputeRouteRef successfully assigned in MapFunction")
+    }
+  }, [directionsServiceRef]);
 
   //This code drops the current route if it is to a location that gets filtered out
   useEffect(() => {

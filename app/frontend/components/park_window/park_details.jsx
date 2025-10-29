@@ -1,29 +1,32 @@
 "use client";
 
 import Reviews from "./review_section";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect} from "react";
 import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
+  deleteDoc,
+  collection,
 } from "firebase/firestore";
-import { database as db, auth } from "../../../backend/databaseIntegration";
+import { database, auth } from "../../../backend/databaseIntegration";
 import { ActionIcon, Button } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import MapFunction from "@/app/backend/mapFunction";
 import { PullImage } from "@/app/backend/uploadStorage";
+
+import { readData } from "@/app/backend/database";
+import { Select } from "@mantine/core";
 import { readReviewData, ReportUser } from "@/app/backend/database";
 
-export default function ParkDetails({ selectedPark, openButtonUpload, computeRoute }) {
+
+export default function ParkDetails({ selectedPark, openButtonUpload, computeRouteRef }) {
   console.log("Selected Park:", selectedPark);
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark ? selectedPark : null);
-  const computeRouteRef = useRef(null);
   const [review, setReview] = useState([]);
   const user = auth.currentUser;
+  const [travelMode, setTravelMode] = useState("DRIVING");
 
   if (!park) return null;
 
@@ -31,11 +34,12 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
     if (!computeRouteRef.current || !park) return;
     
     try{
+      console.log("---Before route: ", computeRouteRef.current);
       const result = await computeRouteRef.current(park);
       alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
     } catch {
     console.error();
-    alert("Error: could not compute route, try again later");
+    alert("Error: could not compute route, try again later or try a different travel mode");
     }
   };
 
@@ -47,14 +51,9 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
       const user = auth.currentUser;
       if (!user || !park?.id) return;
 
-      const safeEmail = user.email.replace(/\./g, ",");
-      const userRef = doc(db, "users", safeEmail);
-      const userSnap = await getDoc(userRef);
-
-      if (userSnap.exists()) {
-        const favorites = userSnap.data().favorites || [];
-        setIsFavorite(favorites.includes(park.id));
-      }
+      const favoriteRef = doc(database, "users", user.uid, "favorites", park.id);
+      const favoriteSnap = await getDoc(favoriteRef);
+      setIsFavorite(favoriteSnap.exists());
     }
     checkFavorite();
   }, [park, auth.currentUser]);
@@ -66,33 +65,23 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
       return;
     }
 
-    const userRef = doc(db, "users", user.uid);
-    const userSnap = await getDoc(userRef);
-
-    //This code creates the user doc if the user doesnt have one yet
-    if (!userSnap.exists()) {
-      await setDoc(userRef, { favorites: [] });
-    }
-
-    //If the user has a doc, but it doesn't contain a favorite field, it creates one
-    if (!userData.favorites) {
-      await updateDoc(userRef, { favorites: [] });
-    }
+    const favoriteRef = doc(database, "users", user.uid, "favorites", park.id);
 
     if (isFavorite) {
-      await updateDoc(userRef, {
-        favorites: arrayRemove(park.id),
-      });
+      await deleteDoc(favoriteRef);
       setIsFavorite(false);
     } else {
-      await updateDoc(userRef, {
-        favorites: arrayUnion(park.id),
+      await setDoc(favoriteRef, {
+        Name_e: park.name,
+        id: park.id,
+        lat: park.location.lat,
+        lng: park.location.lng
       });
       setIsFavorite(true);
     }
   }
 
-  let wildlifePhotos = ["image_1.jpeg", "image_2.jpeg"];
+  let wildlifePhotos = [];
   let hasImage = false;
 
   function checkImages(photos) {
@@ -157,11 +146,29 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
           <p className="w-3/4 mb-22">
             {park.description || "No description available."}
           </p>
+
+
+          {/*This was made with the help of https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes#maps_directions_travel_modes-javascript & 
+          https://mantine.dev/core/select/#combobox, and debugging with the help of gpt*/}
+          <Select
+          label="Travel Mode"
+          value={travelMode}
+          onChange={(value) => setTravelMode(value)}
+          data={[
+            {value: "DRIVING", label:"Driving"},
+            {value:"WALKING", label:"Walking"},
+            {value:"BICYCLING", label:"Bicycling"},
+            {value:"TRANSIT", label: "Transit"}
+          ]}
+          />
            {/* <MapFunction computeRouteRef={computeRouteRef} /> */}
+
           <Button
           variant="gradient"
           gradient={{ from: 'pink', to: 'grape', deg: 90 }}
-          onClick={handleRouteClick}
+          onClick={()=>{
+            console.log("Button clicked!");
+          handleRouteClick();}}
           >
             Compute Route
           </Button>
