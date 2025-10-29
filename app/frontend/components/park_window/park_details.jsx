@@ -161,7 +161,6 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
             {value:"TRANSIT", label: "Transit"}
           ]}
           />
-           {/* <MapFunction computeRouteRef={computeRouteRef} /> */}
 
           <Button
           variant="gradient"
