@@ -35,7 +35,7 @@ export default function Upload_Window({ onClose, parkInfo }) {
       }
 
       if (park != null) {
-        addReview(user.uid, {uid: user.uid, title: title, message: message, rating: rating, location_name: park.name, displayName: userData.data().displayName, date: date, image: imgURL, status: "pending"}, location)
+        addReview({uid: user.uid, title: title, message: message, rating: rating, location_name: park.name, displayName: userData.data().displayName, date: date, image: imgURL, status: "pending"}, location)
       }
       if (image != null) {
         uploadImage(image, location);

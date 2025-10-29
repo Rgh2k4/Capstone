@@ -207,9 +207,9 @@ export async function DeleteUser() {
       }
   }
 
-export async function addReview(uid, reviewData, location) {
+export async function addReview(reviewData, location) {
     try {
-        await addDoc(collection(database, "users", uid, "reviews", location, "reviewData"), reviewData)
+        await addDoc(collection(database, "reviews", location, "reviewData"), reviewData)
         //alert("Reviews Added");
     } catch (error) {
         console.error("Error: ", error);
@@ -247,20 +247,23 @@ export async function loadAllReviewData() {
         let reviews = [];
         for (const user of userData.docs) {
           const locationData = await getDocs(query(collection(database, "users", user.id, "reviews")));
-            if (!locationData.empty) {
-              for (const location of locationData.docs) {
-                const reviewData = await getDocs(query(collection(database, "users", user.id, "reviews", location.id.split(' ').join(''), "reviewData")));
-                if (!reviewData.empty) {
-                  reviewData.forEach((review) => {
-                    reviews.push({
-                      ...review.data()
-                    });
+          alert(locationData.empty);
+          if (locationData.empty) {
+            //alert(locationData.empty);
+            for (const location of locationData.docs) {
+              alert(location.id.split(' ').join(''));
+              const reviewData = await getDocs(query(collection(database, "users", user.id, "reviews", location.id.split(' ').join(''), "reviewData")));
+              if (!reviewData.empty) {
+                reviewData.forEach((review) => {
+                  reviews.push({
+                    ...review.data()
                   });
-                }
+                });
               }
-            }           
+            }
+          }           
         }
-        reviews = reviews.filter((rev) => rev.status === "approved");
+        //reviews = reviews.filter((rev) => rev.status === "approved");
         return reviews;
     } catch (error) {
         console.error("Error: ", error);
