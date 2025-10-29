@@ -223,13 +223,13 @@ export async function readReviewData(location) {
         let reviews = [];
         for (const user of userData.docs) {
           const reviewData = await getDocs(query(collection(database, "users", user.id, "reviews", location.split(' ').join(''), "reviewData")));
-            if (!reviewData.empty) {
-              reviewData.forEach((review) => {
-                reviews.push({
-                  ...review.data()
-                });
+          if (!reviewData.empty) {
+            reviewData.forEach((review) => {
+              reviews.push({
+                ...review.data()
               });
-            }
+            });
+          }
         }
         reviews = reviews.filter((rev) => rev.status === "approved");
         return reviews;
@@ -239,6 +239,35 @@ export async function readReviewData(location) {
 
     return null;
 };
+
+export async function loadAllReviewData() {
+
+  try {
+        const userData = await getDocs(query(collection(database, "users")));
+        let reviews = [];
+        for (const user of userData.docs) {
+          const locationData = await getDocs(query(collection(database, "users", user.id, "reviews")));
+            if (!locationData.empty) {
+              for (const location of locationData.docs) {
+                const reviewData = await getDocs(query(collection(database, "users", user.id, "reviews", location.id.split(' ').join(''), "reviewData")));
+                if (!reviewData.empty) {
+                  reviewData.forEach((review) => {
+                    reviews.push({
+                      ...review.data()
+                    });
+                  });
+                }
+              }
+            }           
+        }
+        reviews = reviews.filter((rev) => rev.status === "approved");
+        return reviews;
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+
+    return null;
+}
 
 export async function loadPendingReviews() {
   try {
