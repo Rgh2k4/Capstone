@@ -170,70 +170,8 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
       },
     ];
   }
-
-  return (
-    <main className="flex flex-col h-screen w-screen relative">
-      <header className="w-full flex items-center justify-between bg-gradient-to-r from-green-700 to-blue-500 px-8 py-3 shadow-lg shadow-gray-700/40 fixed top-0 z-50">
-        <div className="flex items-center gap-3">
-          <img
-            src="/icons/park-logo.svg"
-            alt="Park Logo"
-            className="h-10 w-10 drop-shadow-md"
-          />
-          <h1 className="text-2xl font-extrabold tracking-wide text-white drop-shadow-md">
-            National Parks GPS
-          </h1>
-        </div>
-
-        <div className="w-[40%]">
-          <MultiSelect
-            size="md"
-            placeholder="Search or filter parks..."
-            searchable
-            className="w-full rounded-full border-gray-300 text-gray-900 bg-white/90 backdrop-blur-md shadow-inner"
-            value={selectedFilters}
-            onChange={(newValue) => {
-              if (newValue.length === 0) {
-                console.warn("At least one filter must remain active.");
-                return;
-              }
-              setSelectedFilters(newValue);
-            }}
-            data={buildMultiSelectData(uniqueTypes)}
-          />
-        </div>
-
-        <div className="flex items-center gap-5">
-          {userData ? (
-            <>
-              {isAdmin && (
-                <Button
-                  size="lg"
-                  color="green"
-                  className="bg-amber-500 hover:bg-amber-600 shadow-md"
-                  onClick={onRouteToDashboard}
-                >
-                  Dashboard
-                </Button>
-              )}
-              <ProfileMenu
-                onRouteToLogin={onRouteToLogin}
-                userData={userData}
-              />
-            </>
-          ) : (
-            <Button
-              size="lg"
-              color="green"
-              className="bg-green-600 hover:bg-green-700 text-white shadow-md"
-              onClick={onRouteToLogin}
-            >
-              Log in
-            </Button>
-          )}
-        </div>
-      </header>
-      <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
+  
+     <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
         <ParkDetails
           selectedPark={selectedPark}
           openButtonUpload={handleOpenUpload}
@@ -245,9 +183,9 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
 
     return (
         <main className="flex flex-col h-screen w-screen relative">
-            <header className="w-screen p-2 flex justify-between items-center bg-blue-300 absolute top-0 z-10 shadow-md shadow-gray-600">
-                <h1 className="w-60 ml-18 text-2xl break-normal font-bold text-white text-shadow-sm text-shadow-black text-center">
-                    National Parks Information System
+            <header className="w-full flex items-center justify-between bg-gradient-to-r from-green-700 to-blue-500 px-8 py-3 shadow-lg shadow-gray-700/40 fixed top-0 z-50">
+                 <h1 className="text-2xl font-extrabold tracking-wide text-white drop-shadow-md">
+                    National Parks GPS
                 </h1>
                 <div className="">
                   <MultiSelect
