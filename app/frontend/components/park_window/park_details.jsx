@@ -218,16 +218,16 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
                           <p className=" font-semibold text-1xl">
                             {rev.displayName || "Anonymous"}
                           </p>
-                          <p className=" text-1xl italic">- {rev.date}</p>
+                          <p className=" text-1xl italic">- {rev.dateSubmitted}</p>
                         </div>
                         <p className=" text-1xl">{rev.title}</p>
-                        {rev.image && (
+                        {rev.reviewData.image && (
                           <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-2 space-x-8 overflow-x-auto">
-                            <PullImage location={park.name.split(' ').join('')} url={rev.image} />
+                            <PullImage location={park.name.split(' ').join('')} url={rev.reviewData.image} />
                           </ul>
                         )}
                         <div className="grid grid-cols-3">
-                          <p className=" col-span-2">{rev.message}</p>
+                          <p className=" col-span-2">{rev.reviewDatamessage}</p>
                           <p
                             className="hover:underline italic flex justify-end items-end"
                             onClick={() => handleReport({ rev })}
