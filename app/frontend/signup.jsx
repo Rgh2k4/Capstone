@@ -55,7 +55,7 @@ export default function SignupPage({ handleNewAccount }) {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-sky-300  to-sky-700  flex flex-col justify-center items-center space-y-6">
-      <h1 className="text-8xl break-normal font-bold text-gray-200 text-shadow-lg text-shadow-black text-center">
+      <h1 className="text-8xl break-normal  text-shadow-lg text-shadow-black text-center font-extrabold tracking-wide text-white drop-shadow-md">
         Sign up
       </h1>
 

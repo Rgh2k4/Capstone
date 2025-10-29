@@ -7,7 +7,7 @@ function Add({ onClose, role, setRole, onAddAccount }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [visible, setVisible] = u(false);
+  const [visible, setVisible] = useState(false);
 
   function handleAdd() {
     if (!email.trim() || !password.trim() || !confirm.trim()) {

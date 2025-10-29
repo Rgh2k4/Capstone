@@ -79,7 +79,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       return [...new Set(values)];
     };
 
-    console.log("MapFunction props:", {filters, setUniqueTypes, viewParkDetails});
+    //console.log("MapFunction props:", {filters, setUniqueTypes, viewParkDetails});
         
         const directionsServiceRef = useRef(null);
         const directionsRendererRef = useRef(null);
@@ -264,11 +264,11 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   }, [filteredPois, routedPOI]);
 
         console.log("=== Rendering POIs ===");
-        console.log("Filtered POIs:", filteredPois);
+        //console.log("Filtered POIs:", filteredPois);
         filteredPois.forEach(poi => {
-          console.log(
+          /*console.log(
             `[POI] id=${poi.id}, lat=${poi.location?.lat}, lng=${poi.location?.lng}`
-          );
+          );*/
         });
 
         return (

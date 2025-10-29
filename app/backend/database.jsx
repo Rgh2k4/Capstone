@@ -1,6 +1,6 @@
 "use client";
 
-import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch, query } from "firebase/firestore";
+import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch, query, where } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
 import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
 
@@ -207,34 +207,145 @@ export async function DeleteUser() {
       }
   }
 
-export async function addReview(uid, reviewData, location) {
+export async function addReview(reviewData) {
     try {
-        await addDoc(collection(database, "users", uid, "reviews", location, "reviewData"), reviewData)
+        await addDoc(collection(database, "reviews"), {
+          reviewData,
+          dateSubmitted: serverTimestamp()
+        })
         //alert("Reviews Added");
     } catch (error) {
         console.error("Error: ", error);
     }
 };
 
-export async function readData(location) {
+export async function readReviewData(location) {
     
     try {
-        const userData = await getDocs(query(collection(database, "users")));
-        const reviews = [];
-        for (const user of userData.docs) {
-          const reviewData = await getDocs(query(collection(database, "users", user.id, "reviews", location.split(' ').join(''), "reviewData")));
-            if (!reviewData.empty) {
-              reviewData.forEach((review) => {
-                reviews.push({
-                  ...review.data()
-                })
-              });
-            }
+        let reviews = []
+        const reviewData = await getDocs(query(collection(database, "reviews"), where("location_name", "==", location)));
+        if (!reviewData.empty) {
+          reviewData.forEach((review) => {
+            reviews.push({
+              ...review.data()
+            });
+          });
         }
+        reviews = reviews.filter((rev) => rev.status === "approved");
         return reviews;
     } catch (error) {
         console.error("Error: ", error);
     }
 
     return null;
+};
+
+export async function loadPendingReviews() {
+  try {
+    console.log("Loading pending reviews...");
+    const pendingReviews = [];
+    const reviewData = await getDocs(query(collection(database, "reviews")));
+    if (!reviewData.empty) {
+        reviewData.forEach((review) => {
+          if (review.data().status === "pending") {
+            pendingReviews.push({
+              ...review.data()
+            });
+          }
+        });
+      }
+
+    console.log("Pending Reviews Loaded:", pendingReviews.length);
+    return pendingReviews;
+
+  } catch (error) {
+    console.error("Error:", error);
+  }
+
+  return null;
+}
+
+
+export async function approveReview({ rev }) {
+    try {
+        const reviewRef = doc(database, "reviews", rev.id);
+        await updateDoc(reviewRef, { status: "approved" });
+        alert("Review Approved");
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+}
+
+export async function denyReview({ rev }) {
+    try {
+        const reviewRef = doc(database, "reviews", rev.id);
+        await deleteDoc(reviewRef);
+        alert("Review Denied");
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+}
+
+export async function ReportUser(usersInfo, { rev }) {
+    const reportData = {
+        reportedUserID: usersInfo.reportedUserID,
+        reporterUserID: usersInfo.reporterUserID,
+        reason: usersInfo.reason,
+        dateReported: serverTimestamp(),
+        status: "unresolved",
+        reviewData: {
+            uid: rev.uid,
+            title: rev.title,
+            message: rev.message,
+            rating: rev.rating,
+            location_name: rev.location_name,
+            displayName: rev.displayName,
+            date: rev.date,
+            image: rev.image,
+            status: rev.status
+        }
+    };
+    try {
+        await addDoc(collection(database, "reports"), reportData)
+        alert("Report Submitted");
+    } catch (error) {
+        console.error("Error: ", error);
+    }
+};
+
+export async function loadReports() {
+    try {
+      const reportData = await getDocs(collection(database, "reports"));
+      const reports = [];
+      reportData.forEach((doc) => {
+        const data = doc.data();
+          reports.push(data);
+      });
+      return reports;
+    } catch (error) {
+      console.error("Error: ", error);
+    }
+
+    return null;
+};
+
+export async function resolveReport(report, actions) {
+  try {
+    console.log("Resolving report for:", report);
+      const reportOriginalRef = query(collection(database, "reports"), where("reportedUserID", "==", report.reportedUserID), where("reporterUserID", "==", report.reporterUserID), where("dateReported", "==", report.dateReported));
+      await updateDoc(reportOriginalRef, { status: "resolved" });
+      const reportCopyRef = getDocs(database, "reports");
+      for (const review of reportCopyRef) {
+          if (review.data().reviewData === report.reviewData && review.data().status === "unresolved") {
+              await deleteDoc(review);
+          }
+      }
+      if (action === "delete") {
+          const reviewRef = query(collection(database, "reviews"), where("uid", "==", report.reviewData.uid), where("title", "==", report.reviewData.title), where("message", "==", report.reviewData.message), where("location_name", "==", report.reviewData.location_name));
+          await deleteDoc(reviewRef);
+      }
+      alert("Report Resolved");
+  } catch (error) {
+      console.error("Error: ", error);
+  }
 };
