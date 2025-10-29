@@ -18,14 +18,33 @@ export default function Upload_Window({ onClose, parkInfo }) {
   const user = auth.currentUser;
 
   async function handleSubmit(e) {
+    setSubmitted(true);
     e.preventDefault();
     const userData = await getDoc(doc(database, "users", user.uid));
-    const date = new Date().toISOString().split('T')[0];
     const location = park.name.split(' ').join('');
-    
-    if (image && park != null) {
-      addReview(user.uid, {title: title, message: message, rating: rating, location_name: park.name, displayName: userData.data().displayName, date: date}, location)
-      uploadImage(image, location);    
+
+    try {
+      let imgURL;
+      try {
+        imgURL = image.name;
+        console.log("Image URL:", imgURL);
+      } catch (error) {
+        imgURL = null;
+        console.log("No image uploaded.");
+      }
+
+      if (park != null) {
+        addReview({uid: user.uid, title: title, message: message, rating: rating, location_name: park.name, image: imgURL, status: "pending"})
+      }
+      if (image != null) {
+        uploadImage(image, location);
+      }
+      alert("Review Submitted!");
+      onClose();
+    } catch (error) {
+      console.error("Error uploading review:", error);
+      setSubmitted(false);
+      return;
     }
   }
 
@@ -63,10 +82,12 @@ export default function Upload_Window({ onClose, parkInfo }) {
         <form onSubmit={handleSubmit}>
           <div id="upload-container" className="grid grid-cols-2 gap-10 my-12">
             <div className="flex flex-col gap-6">
-              {preview && (
-                <img src={preview} alt="Image" className="w-100" />
-              )}
-              <input type="file" name="image" accept="image/*" onChange={previewImage} className="border-2" />
+              <div className="flex h-50 cursor-pointer items-center justify-center rounded-2xl border-2 border-gray-300 bg-white">
+                {preview && (
+                  <img src={preview} alt="Image" className="w-fit rounded-2xl" />
+                )}
+              </div>
+              <input className="z-50" type="file" name="image" accept="image/*" onChange={previewImage} />
               <div className="rounded-xl bg-[#e2e2e2] px-6 py-5 text-xl font-semibold">
                 <TextInput 
                   size="md"

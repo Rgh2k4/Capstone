@@ -15,7 +15,7 @@ import { ActionIcon, Button } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import MapFunction from "@/app/backend/mapFunction";
 import { PullImage } from "@/app/backend/uploadStorage";
-import { readData } from "@/app/backend/database";
+import { readReviewData, ReportUser } from "@/app/backend/database";
 
 export default function ParkDetails({ selectedPark, openButtonUpload, computeRoute }) {
   console.log("Selected Park:", selectedPark);
@@ -99,8 +99,9 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
     if (photos && photos[0]) hasImage = true;
   }
 
-  function handleData({ user }) {
-    alert(`${user.username} has been reported.`);
+  function handleReport({ rev }) {
+    ReportUser({ reportedUserID: rev.uid, reporterUserID: user.uid, reason: "Inappropriate content" }, {rev});
+    alert(`${rev.displayName || "Anonymous"} has been reported.`);
   }
 
   const FavoriteButton = () => (
@@ -121,7 +122,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
 
   async function loadReviews() {
     try {
-      const pullReview = await readData(park.name);
+      const pullReview = await readReviewData(park.name);
       setReview(pullReview);
     } catch(error) {
       console.error("Error: ", error);
@@ -135,7 +136,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
   checkImages(wildlifePhotos);
 
   return (
-    <>
+    <div className=" ">
       <header className="flex flex-col">
         <img
           src="https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg"
@@ -148,15 +149,15 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
         <section className="my-20 place-self-center">
           <h1 className="font-bold text-2xl">Ratings</h1>
         </section>
-        <section className="flex flex-col items-center text-justify mb-20">
-          <h1 className="font-extrabold text-2xl mb-10 flex items-center gap-2">
+        <section className="flex flex-col items-center text-justify mb-8">
+          <h1 className="font-extrabold text-2xl mb-22 flex items-center gap-2">
             {park.name}
             <FavoriteButton />
           </h1>
-          <p className="w-3/4">
+          <p className="w-3/4 mb-22">
             {park.description || "No description available."}
           </p>
-           <MapFunction computeRouteRef={computeRouteRef} />
+           {/* <MapFunction computeRouteRef={computeRouteRef} /> */}
           <Button
           variant="gradient"
           gradient={{ from: 'pink', to: 'grape', deg: 90 }}
@@ -181,7 +182,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
                       className="w-50 h-50 bg-gray-400 rounded"
                     />
                   ))}*/}
-                  <PullImage location={park.name.split(' ').join('')}/>
+                  
                 </ul>
               </div>
             )}
@@ -200,10 +201,10 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
         </section>
         <section className="flex flex-col mt-30 items-center">
           <h1 className="font-bold text-2xl mb-10">Reviews</h1>
-          <div className="rounded-md p-6 w-3/4">
+          <div className="rounded-md p-6 w-full bg-gray-100 shadow-inner max-h-96 overflow-y-auto">
             {review?.length > 0 ? (
               <ul>
-                {review.map((user, index) => (
+                {review.map((rev, index) => (
                   <div key={index} className="">
                     <div className="flex flex-row gap-0 mx-4 my-18 space-x-6">
                       <div className="">
@@ -215,29 +216,21 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
                       <div className="space-y-2">
                         <div className=" flex flex-row space-x-2 items-center">
                           <p className=" font-semibold text-1xl">
-                            {user.displayName || "Anonymous"}
+                            {rev.displayName || "Anonymous"}
                           </p>
-                          <p className=" text-1xl italic">- {user.date}</p>
+                          <p className=" text-1xl italic">- {rev.dateSubmitted}</p>
                         </div>
-                        {user.images && user.images.length > 0 && (
+                        <p className=" text-1xl">{rev.title}</p>
+                        {rev.reviewData.image && (
                           <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-2 space-x-8 overflow-x-auto">
-                            {user.images.map((img, index) => (
-                              <>
-                                <img
-                                  key={index}
-                                  src={img}
-                                  alt={img}
-                                  className="w-30 h-30 bg-gray-400 rounded"
-                                />
-                              </>
-                            ))}
+                            <PullImage location={park.name.split(' ').join('')} url={rev.reviewData.image} />
                           </ul>
                         )}
                         <div className="grid grid-cols-3">
-                          <p className=" col-span-2">{user.message}</p>
+                          <p className=" col-span-2">{rev.reviewDatamessage}</p>
                           <p
                             className="hover:underline italic flex justify-end items-end"
-                            onClick={() => handleData({ user })}
+                            onClick={() => handleReport({ rev })}
                           >
                             Report User
                           </p>
@@ -256,6 +249,6 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
           <button>Back to top</button>
         </footer>
       </main>
-    </>
+    </div>
   );
 }

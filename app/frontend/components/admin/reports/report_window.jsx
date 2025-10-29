@@ -1,22 +1,16 @@
-function ReportWindow({ user, onClose, onDeleteReport}) {
-  let photos = user.images;
-  let hasImage = false;
+import { Button } from "@mantine/core";
 
-  function checkImages(photos) {
-    if (!photos[0] == "" || null) hasImage = true;
-  }
-
+function ReportWindow({ user: report, onClose, onHandleReport }) {
   function handleDelete() {
     onClose();
-    onDeleteReport(user.id);
+    onHandleReport(report, "delete");
     alert("Report Deleted!");
   }
 
   function handleApprove() {
     onClose();
+    onHandleReport(report, "approve");
   }
-
-  checkImages(photos);
 
   return (
     <div className=" p-12 rounded flex flex-col justify-center text-center space-y-24">
@@ -26,31 +20,32 @@ function ReportWindow({ user, onClose, onDeleteReport}) {
           alt="profile picture"
         />
       </div>
+
       <div className="space-y-6">
-        <p className=" text-4xl font-semibold">{user.username}</p>
-        <p className=" text-2xl text-left">{user.comment}</p>
+        <p className=" text-2xl font-bold">Offending User</p>
+        <p className=" text-1xl italic">{report.reportedUserID}</p>
+        <p className=" text-2xl font-bold">Reporting User</p>
+        <p className=" text-1xl italic">{report.reporterUserID}</p>
+        <p className=" text-2xl">{report.reason}</p>
       </div>
-      {hasImage && (
-        <div>
-          <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-4 space-x-8 overflow-x-auto max-h-[500px]">
-            {photos.map((img, index) => (
-              <>
-                <img
-                  key={index}
-                  src={img}
-                  alt={img}
-                  className="w-50 h-50 bg-gray-400 rounded"
-                />
-              </>
-            ))}
-          </ul>
-        </div>
+
+      <div className="space-y-6">
+        <p className=" text-3xl">{report.reviewData.title}</p>
+        <p className=" text-2xl text-left">{report.reviewData.message}</p>
+      </div>
+      {report.reviewData.image && (
+        <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-2 space-x-8 overflow-x-auto">
+          <PullImage
+            location={report.reviewData.location_name.split(" ").join("")}
+            url={report.reviewData.image}
+          />
+        </ul>
       )}
-      <div>
-        <button onClick={handleDelete} className="red-button">
+      <div className="space-x-12">
+        <Button color="red" onClick={handleDelete}>
           Delete
-        </button>
-        <button onClick={handleApprove}>Approve</button>
+        </Button>
+        <Button onClick={handleApprove}>Approve</Button>
       </div>
     </div>
   );

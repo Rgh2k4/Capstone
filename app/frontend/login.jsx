@@ -32,8 +32,8 @@ export default function Login({ handleLogin, handleSignUp }) {
   return (
     <main className="flex flex-col items-center bg-gradient-to-b from-sky-300  to-sky-700 h-screen w-screen">
       <section className="w-256 m-16 flex-initial">
-        <h1 className="text-8xl break-normal font-bold text-gray-200 text-shadow-lg text-shadow-black text-center">
-          National Parks Information System
+        <h1 className="text-8xl break-normal text-shadow-lg text-shadow-black text-center font-extrabold tracking-wide text-white drop-shadow-md">
+          National Parks GPS
         </h1>
       </section>
       <section className="border-2 border-hidden w-124 h-1/2 bg-white rounded-md drop-shadow-2xl drop-shadow-blue-400">
