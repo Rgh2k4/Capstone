@@ -52,6 +52,16 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   const mapRef = useRef(null);
   const polylineRef = useRef(null);
 
+      //This code ensures each location grabbed has a unique name to help avaiod overcrowding of markers
+    const getUniquePOINames = (pois) => {
+      const seen = new Set();
+      return pois.filter(poi => {
+        if (seen.has(poi.name)) return false;
+        seen.add(poi.name);                   
+        return true;
+      });
+    };
+
   //This code gets the users location with permission on load and was made with help from https://developers.google.com/maps/documentation/javascript/geolocation, https://developers.google.com/maps/documentation/geolocation/overview
   //and the code snippets provided by VS code"
   useEffect(() => {
@@ -120,6 +130,10 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       //https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of
       //https://developers.google.com/maps/documentation/javascript/best-practices#optimize-performance
       const allPois = [];
+
+      const uniquePois = getUniquePOINames(allPois);
+
+      setPois(uniquePois);
 
       for (const [i, url] of urls.entries()) {
         try {
