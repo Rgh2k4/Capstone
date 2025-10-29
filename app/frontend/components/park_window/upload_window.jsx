@@ -21,7 +21,6 @@ export default function Upload_Window({ onClose, parkInfo }) {
     setSubmitted(true);
     e.preventDefault();
     const userData = await getDoc(doc(database, "users", user.uid));
-    const date = new Date().toISOString().split('T')[0];
     const location = park.name.split(' ').join('');
 
     try {
@@ -35,7 +34,7 @@ export default function Upload_Window({ onClose, parkInfo }) {
       }
 
       if (park != null) {
-        addReview({uid: user.uid, title: title, message: message, rating: rating, location_name: park.name, displayName: userData.data().displayName, date: date, image: imgURL, status: "pending"})
+        addReview({uid: user.uid, title: title, message: message, rating: rating, location_name: park.name, image: imgURL, status: "pending"})
       }
       if (image != null) {
         uploadImage(image, location);
