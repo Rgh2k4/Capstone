@@ -170,16 +170,6 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
       },
     ];
   }
-  
-     <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
-        <ParkDetails
-          selectedPark={selectedPark}
-          openButtonUpload={handleOpenUpload}
-        />
-      </Modal>
-      <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)}>
-        <UploadWindow onClose={swapToParkDetails} parkInfo={selectedPark} />
-      </Modal>
 
     return (
         <main className="flex flex-col h-screen w-screen relative">
