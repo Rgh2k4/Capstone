@@ -1,6 +1,6 @@
 "use client";
 
-import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch, query } from "firebase/firestore";
+import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch, query, where } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
 import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
 
@@ -207,9 +207,9 @@ export async function DeleteUser() {
       }
   }
 
-export async function addReview(reviewData, location) {
+export async function addReview(reviewData) {
     try {
-        await addDoc(collection(database, "reviews", location, "reviewData"), reviewData)
+        await addDoc(collection(database, "reviews"), reviewData)
         //alert("Reviews Added");
     } catch (error) {
         console.error("Error: ", error);
@@ -219,17 +219,14 @@ export async function addReview(reviewData, location) {
 export async function readReviewData(location) {
     
     try {
-        const userData = await getDocs(query(collection(database, "users")));
-        let reviews = [];
-        for (const user of userData.docs) {
-          const reviewData = await getDocs(query(collection(database, "users", user.id, "reviews", location.split(' ').join(''), "reviewData")));
-          if (!reviewData.empty) {
-            reviewData.forEach((review) => {
-              reviews.push({
-                ...review.data()
-              });
+        let reviews = []
+        const reviewData = await getDocs(query(collection(database, "reviews"), where("location_name", "==", location)));
+        if (!reviewData.empty) {
+          reviewData.forEach((review) => {
+            reviews.push({
+              ...review.data()
             });
-          }
+          });
         }
         reviews = reviews.filter((rev) => rev.status === "approved");
         return reviews;
@@ -240,64 +237,18 @@ export async function readReviewData(location) {
     return null;
 };
 
-export async function loadAllReviewData() {
-
-  try {
-        const userData = await getDocs(query(collection(database, "users")));
-        let reviews = [];
-        for (const user of userData.docs) {
-          const locationData = await getDocs(query(collection(database, "users", user.id, "reviews")));
-          alert(locationData.empty);
-          if (locationData.empty) {
-            //alert(locationData.empty);
-            for (const location of locationData.docs) {
-              alert(location.id.split(' ').join(''));
-              const reviewData = await getDocs(query(collection(database, "users", user.id, "reviews", location.id.split(' ').join(''), "reviewData")));
-              if (!reviewData.empty) {
-                reviewData.forEach((review) => {
-                  reviews.push({
-                    ...review.data()
-                  });
-                });
-              }
-            }
-          }           
-        }
-        //reviews = reviews.filter((rev) => rev.status === "approved");
-        return reviews;
-    } catch (error) {
-        console.error("Error: ", error);
-    }
-
-    return null;
-}
-
 export async function loadPendingReviews() {
   try {
     console.log("Loading pending reviews...");
-    const userData = await getDocs(collection(database, "users"));
-    console.log("Total Users Found:", userData.docs.length);
-
-    let pendingReviews = [];
-
-    for (const user of userData.docs) {
-      console.log("User ID Being Read:", user.id, user.data());
-
-      const reviewData = await getDocs(collection(database, "users", user.id, "reviews"));
-      console.log(`Reviews found for ${user.id}:`, reviewData.docs.map(d => d.id));
-
-      for (const location of reviewData.docs) {
-        console.log("Location (Document ID):", location.id);
-        const reviewCollectionRef = collection(database, "users", user.id, "reviews", location.id, "reviewData");
-        const reviewSnapshots = await getDocs(reviewCollectionRef);
-        console.log(`Reviews under ${location.id}:`, reviewSnapshots.docs.length);
-
-        for (const review of reviewSnapshots.docs) {
-          console.log("Review Data:", review.data());
-            pendingReviews.push(review.data());
-        }
+    const pendingReviews = [];
+    const reviewData = await getDocs(query(collection(database, "reviews")));
+    if (!reviewData.empty) {
+        reviewData.forEach((review) => {
+          pendingReviews.push({
+            ...review.data()
+          });
+        });
       }
-    }
 
     console.log("Pending Reviews Loaded:", pendingReviews.length);
     return pendingReviews;
