@@ -2,7 +2,6 @@
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
 import React, {useState, useEffect, useRef} from 'react';
 import {APIProvider, Map, AdvancedMarker, useMap} from '@vis.gl/react-google-maps';
-
 const uniqueArray = (arr) => [...new Set(arr)];
 
 //This code was made with help from https://developers.google.com/maps/documentation/javascript/events#map_events
@@ -89,7 +88,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       return [...new Set(values)];
     };
 
-    //console.log("MapFunction props:", {filters, setUniqueTypes, viewParkDetails});
+    console.log("MapFunction props:", {filters, setUniqueTypes, viewParkDetails});
         
         const directionsServiceRef = useRef(null);
         const directionsRendererRef = useRef(null);
@@ -131,9 +130,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       //https://developers.google.com/maps/documentation/javascript/best-practices#optimize-performance
       const allPois = [];
 
-      const uniquePois = getUniquePOINames(allPois);
 
-      setPois(uniquePois);
 
       for (const [i, url] of urls.entries()) {
         try {
@@ -160,6 +157,10 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
             }));
 
           allPois.push(...pois);
+          
+          const uniquePois = getUniquePOINames(allPois);
+
+          setPois(uniquePois);
 
           //Progressively update markers so the map doesn't wait for all datasets
           setPois([...allPois]);

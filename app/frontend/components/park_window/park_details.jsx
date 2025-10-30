@@ -35,7 +35,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
     
     try{
       console.log("---Before route: ", computeRouteRef.current);
-      const result = await computeRouteRef.current(park);
+      const result = await computeRouteRef.current(park, travelMode);
       alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
     } catch {
     console.error();
