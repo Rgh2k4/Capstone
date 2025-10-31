@@ -38,7 +38,6 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
       const result = await computeRouteRef.current(park, travelMode);
       alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
     } catch {
-    console.error();
     alert("Error: could not compute route, try again later or try a different travel mode");
     }
   };
@@ -168,6 +167,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
           onClick={()=>{
             console.log("Button clicked!");
           handleRouteClick();}}
+          
           >
             Compute Route
           </Button>

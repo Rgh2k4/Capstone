@@ -37,6 +37,51 @@ function MapContent({filteredPois, setVisiblePois, viewParkDetails}) {
     </>
   );
 }
+//https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js, https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes
+//
+function RouteHandler({ computeRouteRef, travelMode, userLocation }) {
+  const map = useMap();
+  const directionsRendererRef = useRef(null);
+
+  useEffect(() => {
+    if (!map) return;
+
+    const directionsService = new google.maps.DirectionsService();
+    directionsRendererRef.current = new google.maps.DirectionsRenderer({
+      suppressMarkers: false,
+      preserveViewport: true,
+    });
+    directionsRendererRef.current.setMap(map);
+
+    if (computeRouteRef) {
+      computeRouteRef.current = (poi, mode = travelMode) => {
+        return new Promise((resolve, reject) => {
+          directionsService.route(
+            {
+            origin: { lat: userLocation.lat, lng: userLocation.lng },
+            destination: { lat: poi.location.lat, lng: poi.location.lng },
+            travelMode: google.maps.TravelMode[travelMode],
+            },
+            (result, status) => {
+              if (status === "OK") {
+                directionsRendererRef.current.setDirections(result);
+                const leg = result.routes[0].legs[0];
+                resolve({
+                  distance: leg.distance.value / 1000,
+                  duration: leg.duration.value / 60,
+                });
+              } else {
+                reject(status);
+              }
+            }
+          );
+        });
+      };
+    }
+  }, [map, computeRouteRef, travelMode, userLocation]);
+
+  return null;
+}
 
 function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
@@ -95,21 +140,16 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         
         useEffect(() => {
           if (!mapRef.current?.map) return;
-
-          if (!directionsServiceRef.current) {
-            directionsServiceRef.current = new window.google.maps.DirectionsService();
-          }
+          const map = mapRef.current.map;
           
-          if (!directionsRendererRef.current) {
-            directionsRendererRef.current = new window.google.maps.DirectionsRenderer({
-              map: mapRef.current.map
-            });
-          }
+          directionsServiceRef.current = new google.maps.DirectionsService();
+          directionsRendererRef.current = new google.maps.DirectionsRenderer();
+          directionsRendererRef.current.setMap(map);
 
           if (computeRouteRef){
             computeRouteRef.current = computeRoute;
           }
-        }, [mapRef.current?.map, computeRouteRef, userLocation]);
+        }, [mapRef.current?.map]);
 
 
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
@@ -161,9 +201,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           const uniquePois = getUniquePOINames(allPois);
 
           setPois(uniquePois);
-
-          //Progressively update markers so the map doesn't wait for all datasets
-          setPois([...allPois]);
 
           //This adds a small delay to the site to avoid overloading it
           await new Promise(res => setTimeout(res, 1500));
@@ -226,49 +263,9 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
 
   console.log("Filters active:", filters);
   console.log("Number of POIs loaded:", pois.length);
-  console.log("Number of POIs shown after filtering:", filteredPois.length);
-
-    //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js, https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes
-    function computeRoute(poi, travelMode) {
-      return new Promise((resolve, reject) => {
-        if (!window.google || !window.google.maps) {
-          return reject("Google Maps API not loaded");
-        }
-        
-        const directionsService = new google.maps.DirectionsService();
-        
-        directionsService
-        .route(
-          {
-            origin: { lat: userLocation.lat, lng: userLocation.lng },
-            destination: { lat: poi.location.lat, lng: poi.location.lng },
-            travelMode: google.maps.TravelMode[travelMode],
-          },
-          (result, status) => {
-            if (status === "OK") {
-              directionsRendererRef.current?.setDirections(result);
-            setRoutedPOI(poi);
-              
-        const leg = result.routes[0].legs[0];
-        resolve({
-          distance: leg.distance.value / 1000,
-          duration: leg.duration.value / 60,
-        });
-      } else {
-        reject(status);
-      }
-    })
-  });
-}
+  console.log("Number of POIs shown after filtering:", filteredPois.length);  
 
     const [routedPOI, setRoutedPOI] = useState(null);
-  
-  useEffect(() => {
-    if (computeRouteRef){
-      computeRouteRef.current =  computeRoute;
-      console.log("ComputeRouteRef successfully assigned in MapFunction")
-    }
-  }, [directionsServiceRef]);
 
   //This code drops the current route if it is to a location that gets filtered out
   useEffect(() => {
@@ -281,9 +278,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         console.log("=== Rendering POIs ===");
         //console.log("Filtered POIs:", filteredPois);
         filteredPois.forEach(poi => {
-          /*console.log(
-            `[POI] id=${poi.id}, lat=${poi.location?.lat}, lng=${poi.location?.lng}`
-          );*/
         });
 
         return (
@@ -314,6 +308,11 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
                   border: '2px solid white',
                 }}/>
               </AdvancedMarker>
+              <RouteHandler
+              computeRouteRef={computeRouteRef}
+              travelMode={travelMode}
+              userLocation={userLocation}
+              />
           </Map>
         </APIProvider>
       </div>
