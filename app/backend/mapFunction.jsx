@@ -38,8 +38,8 @@ function MapContent({filteredPois, setVisiblePois, viewParkDetails}) {
   );
 }
 //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js, https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes
-//
-function RouteHandler({ computeRouteRef, travelMode, userLocation }) {
+//https://visgl.github.io/react-google-maps/examples/directions
+function RouteHandler({computeRouteRef, travelMode, userLocation}) {
   const map = useMap();
   const directionsRendererRef = useRef(null);
 
@@ -58,8 +58,8 @@ function RouteHandler({ computeRouteRef, travelMode, userLocation }) {
         return new Promise((resolve, reject) => {
           directionsService.route(
             {
-            origin: { lat: userLocation.lat, lng: userLocation.lng },
-            destination: { lat: poi.location.lat, lng: poi.location.lng },
+            origin: {lat: userLocation.lat, lng: userLocation.lng},
+            destination: {lat: poi.location.lat, lng: poi.location.lng},
             travelMode: google.maps.TravelMode[travelMode],
             },
             (result, status) => {
@@ -181,6 +181,18 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           const data = await response.json();
           console.log(`Succesfully loaded dataset ${i + 1}: ${data.features?.length || 0} features`);
 
+          //This code processes a GeoJSON dataset (data.features) to extract valid Points of Interest (POIs).
+          //1. It first checks that 'data.features' exists; if not, it defaults to an empty array.
+          //2. It filters out invalid entries — only keeping features with valid [longitude, latitude] coordinates
+          //and at least one name field (English, French, or fallback label).
+          //3. For each valid feature, it constructs a standardized POI object containing:
+          //- a unique id (using the feature's own id or a generated one),
+          //- a name (from 'Name_e', 'Nom_f', or a fallback "Unnamed POI"),
+          //- a description (from available description or URL fields, or a default "No description"),
+          //- a location object with numeric lat/lng parsed from the geometry coordinates,
+          //- the raw 'properties' object from the source data for future reference,
+          //- and an empty 'reviews' array placeholder for user-generated content.
+          //The final result is an array of clean, usable POI objects for display or mapping.
           const pois = (data.features || [])
             .filter(f => f.geometry?.coordinates?.length === 2 &&
               (f.properties?.Name_e || f.properties?.Nom_f || f.properties?.Label_e_5k_less))

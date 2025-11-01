@@ -14,13 +14,13 @@ import { ActionIcon, Button } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import MapFunction from "@/app/backend/mapFunction";
 import { PullImage } from "@/app/backend/uploadStorage";
-
 import { readData } from "@/app/backend/database";
 import { Select } from "@mantine/core";
 import { readReviewData, ReportUser } from "@/app/backend/database";
+import {modal} from "@/app/frontend/components/Modal"
 
 
-export default function ParkDetails({ selectedPark, openButtonUpload, computeRouteRef }) {
+export default function ParkDetails({selectedPark, openButtonUpload, computeRouteRef, onClose}) {
   console.log("Selected Park:", selectedPark);
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark ? selectedPark : null);
@@ -37,6 +37,8 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
       console.log("---Before route: ", computeRouteRef.current);
       const result = await computeRouteRef.current(park, travelMode);
       alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
+      if (onClose) onClose();
+
     } catch {
     alert("Error: could not compute route, try again later or try a different travel mode");
     }
@@ -166,8 +168,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
           gradient={{ from: 'pink', to: 'grape', deg: 90 }}
           onClick={()=>{
             console.log("Button clicked!");
-          handleRouteClick();}}
-          
+            handleRouteClick();}}
           >
             Compute Route
           </Button>

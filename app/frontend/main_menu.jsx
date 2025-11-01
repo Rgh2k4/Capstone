@@ -163,6 +163,11 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
         ).filter((v) => v && !allValues.has(v) && allValues.add(v)),
       },
       {
+        group: "CONSICODE",
+        items: uniqueTypes.CONCISCODE.map(normalizeOption).filter(
+          (v) => v && !allValues.has(v) && allValues.add(v)),
+      },
+      {
         group: "Trail Distance",
         items: uniqueTypes.TrailDistance.map(normalizeOption).filter(
           (v) => v && !allValues.has(v) && allValues.add(v)
@@ -214,6 +219,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               computeRouteRef={computeRouteRef} 
               travelMode={travelMode}
               setTravelMode={setTravelMode}
+              onClose={() => setShowModal(false)}
               />
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
