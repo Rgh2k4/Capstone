@@ -219,7 +219,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               computeRouteRef={computeRouteRef} 
               travelMode={travelMode}
               setTravelMode={setTravelMode}
-              onClose={() => setShowModal(false)}
+              onClose={() => setOverlay(false)}
               />
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
