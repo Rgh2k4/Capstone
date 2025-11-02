@@ -1,7 +1,7 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
 import React, {useState, useEffect, useRef} from 'react';
-import {APIProvider, Map, AdvancedMarker, useMap} from '@vis.gl/react-google-maps';
+import {APIProvider, Map as GoogleMap, AdvancedMarker, useMap} from '@vis.gl/react-google-maps';
 const uniqueArray = (arr) => [...new Set(arr)];
 
 //This code was made with help from https://developers.google.com/maps/documentation/javascript/events#map_events
@@ -83,7 +83,7 @@ function RouteHandler({computeRouteRef, travelMode, userLocation}) {
   return null;
 }
 
-function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode}) {
+function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode, favorites}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   //and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -91,6 +91,8 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   //This code gets the users location to start the map at, and if the location is not found, it will start the map at the useState location
   const [userLocation, setUserLocation] = useState({lat: 52.8866, lng:-118.10222});
   const [routeData, setRouteData] = useState(null);
+  const favoriteFilterSelected = filters.includes("Favorites");
+  const nonFavoriteFilters = filters.filter(f => f !== "Favorites");
 
   //https://developers.google.com/maps/documentation/utilities/polylineutility & https://developers.google.com/maps/documentation/javascript/reference/polygon#Polyline
   const mapRef = useRef(null);
@@ -190,6 +192,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           //- the raw 'properties' object from the source data for future reference,
           //- and an empty 'reviews' array placeholder for user-generated content.
           //The final result is an array of clean, usable POI objects for display or mapping.
+          let filteredPois = nonFavoriteFilters.length
           const pois = (data.features || [])
             .filter(f => f.geometry?.coordinates?.length === 2 &&
               (f.properties?.Name_e || f.properties?.Nom_f || f.properties?.Label_e_5k_less))
@@ -247,7 +250,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
 
   //This code was made with help from gpt 
   //after having gpt check the code for bugs and having it ask if I wanted to have the markers place dynamicaly based on the filter settings and me responding "Doesn't it already do that?"
-  const filteredPois = filters.length
+  let filteredPois = nonFavoriteFilters.length
   ? pois.filter(poi =>{
     const poiValues = [
       poi.properties?.Accommodation_Type,
@@ -262,13 +265,22 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
     .flatMap(val => Array.isArray(val) ? val : [val])
     .map(val => String(val).trim());
 
-    return filters.some(f =>{
-      const filterValue = String(f).trim();
-      return poiValues.some(pv => pv.includes(filterValue));
-    });
+    return nonFavoriteFilters.some(f =>
+      poiValues.some(pv => pv.includes(String(f).trim()))
+    );
   })
   
   :pois;
+
+  //This code de-duplicates markers by id, ensuring that even if a marker is in both Favorites and another filter,
+  //the marker will only render once
+  if (favoriteFilterSelected && favorites?.length) {
+  const favoritePois = pois.filter(poi => favorites.includes(poi.id));
+  const combined = [...filteredPois, ...favoritePois];
+  filteredPois = Array.from(
+    combined.reduce((map, poi) => map.set(poi.id, poi), new Map()).values()
+  );
+}
 
   console.log("Filters active:", filters);
   console.log("Number of POIs loaded:", pois.length);
@@ -293,7 +305,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         <div>
           <div className='h-screen w-full'>
             <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
-              <Map
+              <GoogleMap
               ref={mapRef}
               defaultCenter={userLocation}
               defaultZoom={10}
@@ -322,7 +334,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
               travelMode={travelMode}
               userLocation={userLocation}
               />
-          </Map>
+          </GoogleMap>
         </APIProvider>
       </div>
       

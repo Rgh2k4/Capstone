@@ -155,7 +155,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   //It was made with the help of gpt after asking it "How can I ensure each uniquesubtype is grabbed only once from all 4 of these apis?"
   function buildMultiSelectData(uniqueTypes) {
     const allValues = new Set();
-    const groups = [
+    return [
       {
         group: "Accommodations",
         items: uniqueTypes.Accommodation_Type.map(normalizeOption).filter(
@@ -185,14 +185,11 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
           (v) => v && !allValues.has(v) && allValues.add(v)
         ),
       },
+      {
+        group: "Favorites",
+        items: ["Favorites"],
+      },
     ];
-    
-    groups.push({
-      group: "Special Filter",
-      items: ["Favorites"],
-    });
-
-    return groups;
   }
 
     return (
@@ -248,6 +245,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               <section className="w-full">
                 <MapFunction
                 filters={selectedFilters}
+                favorites={favorites}
                 setUniqueTypes={setUniqueTypes}
                 viewParkDetails={viewParkDetails}
                 computeRouteRef={computeRouteRef}
