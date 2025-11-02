@@ -1,16 +1,15 @@
 "use client";
 import { Button } from "@mantine/core";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect} from "react";
 import ParkDetails from "./components/park_window/park_details";
 import ProfileMenu from "./components/profile/profile_menu";
 import dynamic from "next/dynamic";
 import UploadWindow from "./components/park_window/upload_window.jsx";
 import Modal from "./components/Modal";
-import { auth } from "../backend/databaseIntegration.jsx";
-import { useEffect } from "react";
+import { auth, database } from "../backend/databaseIntegration.jsx";
 import { MultiSelect } from "@mantine/core";
-import { getUniqueTypes } from "../backend/mapFunction";
 import { GetUserData, isAdmin } from "../backend/database";
+import {collection, getDocs} from "firebase/firestore";
 
 const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
@@ -26,6 +25,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [selectedFilters, setSelectedFilters] = useState([]);
   const computeRouteRef = useRef(null);
   const [travelMode, setTravelMode] = useState("DRIVING");
+  const [favorites, setFavorites] = useState([]);
 
   async function setupUser() {
     //console.log("Current user:", user);
@@ -40,6 +40,18 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     });
   }
 
+  useEffect(() => {
+  const fetchFavorites = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const favsRef = collection(database, "users", user.uid, "favorites");
+    const snapshot = await getDocs(favsRef);
+    const favs = snapshot.docs.map(doc => doc.id);
+    setFavorites(favs);
+  };
+  fetchFavorites();
+}, []);
+
   const [upload, setUpload] = useState(false);
 
   const [uniqueTypes, setUniqueTypes] = useState({
@@ -50,7 +62,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     TrailDistance: [],
   });
 
-  //This code was changed to add the default filter right after the first data et was pulled to avoid crashing the site trying to render 16000+ markers at once
+  //This code was changed to add the default filter right after the first data was pulled to avoid crashing the site trying to render 16000+ markers at once
   useEffect(() => {
 
     if (selectedFilters.length === 0) {
@@ -143,7 +155,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   //It was made with the help of gpt after asking it "How can I ensure each uniquesubtype is grabbed only once from all 4 of these apis?"
   function buildMultiSelectData(uniqueTypes) {
     const allValues = new Set();
-    return [
+    const groups = [
       {
         group: "Accommodations",
         items: uniqueTypes.Accommodation_Type.map(normalizeOption).filter(
@@ -174,6 +186,13 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
         ),
       },
     ];
+    
+    groups.push({
+      group: "Special Filter",
+      items: ["Favorites"],
+    });
+
+    return groups;
   }
 
     return (

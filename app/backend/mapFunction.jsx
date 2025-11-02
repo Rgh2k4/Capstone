@@ -85,7 +85,7 @@ function RouteHandler({computeRouteRef, travelMode, userLocation}) {
 
 function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
-  // and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
+  //and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
   const [selectedPOI, setSelectedPOI] = useState(null);
   //This code gets the users location to start the map at, and if the location is not found, it will start the map at the useState location
@@ -126,7 +126,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   }, []);
 
     //This code grabs each non-null unique sub-type of location from each of the API's, this was made with help by asking GPT "For a filter, how do I ensure I only get one of every non-null subtype
-    // from Accommodation_Type, Principal_type, Facility_Type_Installation, and the Label_e_5k_less, Label_e_20k_5k, Label_e_100k_20k, Label_e_100k_plus"
+    //from Accommodation_Type, Principal_type, Facility_Type_Installation, and the Label_e_5k_less, Label_e_20k_5k, Label_e_100k_20k, Label_e_100k_plus"
     //The Boolean removes any null/undefined/empty values, and new set() ensures only 1 of each subtype appears
     const getUniqueSubTypes = (data, property) => {
       const values = data.map(f => f.properties?.[property]).filter(Boolean);
@@ -151,7 +151,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           }
         }, [mapRef.current?.map]);
 
-
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
   //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
   useEffect(() => {
@@ -169,8 +168,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       //https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of
       //https://developers.google.com/maps/documentation/javascript/best-practices#optimize-performance
       const allPois = [];
-
-
 
       for (const [i, url] of urls.entries()) {
         try {
@@ -229,7 +226,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       const conciscodeTypes = getUniqueSubTypes(allPois, "CONCISCODE");
       const principalTypes = getUniqueSubTypes(allPois, 'Principal_type');
       const facilityTypes = getUniqueSubTypes(allPois, 'Facility_Type_Installation');
-      // This code is the same but for trail distances
+      //This code is the same but for trail distances
       const trailDistanceFields = ['Label_e_5k_less', 'Label_e_20k_5k', 'Label_e_100k_20k', 'Label_e_100k_plus'];
       const trailDistance = uniqueArray(
         trailDistanceFields.flatMap(field => getUniqueSubTypes(allPois, field))
@@ -249,7 +246,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   }, []);
 
   //This code was made with help from gpt 
-  // after having gpt check the code for bugs and having it ask if I wanted to have the markers place dynamicaly based on the filter settings and me responding "Doesn't it already do that?"
+  //after having gpt check the code for bugs and having it ask if I wanted to have the markers place dynamicaly based on the filter settings and me responding "Doesn't it already do that?"
   const filteredPois = filters.length
   ? pois.filter(poi =>{
     const poiValues = [
