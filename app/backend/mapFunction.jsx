@@ -166,7 +166,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
         "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson",
         //Provincial park urls in order - Saskatchewan
-        "https://hotline.gov.sk.ca/api/v2/get/parks"
+        "https://geohub.saskatchewan.ca/api/download/v1/items/2dcf3ee92e2c4d25a109eeac74f085af/geojson?layers=4"
       ];
 
       //https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of
@@ -174,7 +174,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       const allPois = [];
 
       for (const [i, url] of urls.entries()) {
-        let pois = [];
         try {
           console.log(`Fetching dataset ${i + 1}/${urls.length}...`);
           const response = await fetch(url, { signal: AbortSignal.timeout(25000) }); //This will cause any pull longer than 25 seconds to abort
@@ -196,26 +195,12 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           //- and an empty 'reviews' array placeholder for user-generated content.
           //The final result is an array of clean, usable POI objects for display or mapping.
           let filteredPois = nonFavoriteFilters.length
-          //This part of the code is for the saskatchewan url as it produces a .JSON instead of the national urls .GEOJSON
-          if (url.includes("hotline.gov.sk.ca")) {
-            pois = data.map((f, idx) => ({
-              id: f.Id || `sk-${idx}`,
-              name: f.Name || "Unnamed Park",
-              description: f.Description || f.Website || "No description",
-              location: {
-                lat: parseFloat(f.Latitude),
-                lng: parseFloat(f.Longitude),
-              },
-              properties: f,
-              reviews: []
-            }));
-          } else {
-            pois = (data.features || [])
+          const pois = (data.features || [])
             .filter(f => f.geometry?.coordinates?.length === 2 &&
               (f.properties?.Name_e || f.properties?.Nom_f || f.properties?.Label_e_5k_less))
             .map((f, idx) => ({
               id: f.id || `${i}-${idx}`,
-              name: f.properties?.Name_e || f.properties?.Nom_f || "Unnamed POI",
+              name: f.properties?.Name_e || f.properties?.Nom_f || f.properties.PARKNM || "Unnamed POI",
               description: f.properties?.Description || f.properties?.description || f.properties?.URL_e || "No description",
               location: {
                 lat: parseFloat(f.geometry.coordinates[1]),
@@ -224,21 +209,19 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
               properties: f.properties,
               reviews: []
             }));
+
+          allPois.push(...pois);
           
           const uniquePois = getUniquePOINames(allPois);
 
           setPois(uniquePois);
-          
-          allPois.push(...pois);
 
           //This adds a small delay to the site to avoid overloading it
           await new Promise(res => setTimeout(res, 1500));
-        }} catch (err) {
+        } catch (err) {
           console.error(`There was an error loading dataset ${i + 1}:`, err);
         }
       }
-      
-
 
       console.log(`All datasets loaded: ${allPois.length} POIs`);
 
