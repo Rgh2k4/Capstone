@@ -250,20 +250,25 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
 
   //This code was made with help from gpt 
   //after having gpt check the code for bugs and having it ask if I wanted to have the markers place dynamicaly based on the filter settings and me responding "Doesn't it already do that?"
-  let filteredPois = nonFavoriteFilters.length
-  ? pois.filter(poi =>{
-    const poiValues = [
-      poi.properties?.Accommodation_Type,
-      poi.properties?.Principal_type,
-      poi.properties?.Facility_Type_Installation,
-      poi.properties?.CONCISCODE,
-      poi.properties?.Label_e_5k_less,
-      poi.properties?.Lable_e_20k_5k,
-      poi.properties?.Label_e_100k_20k,
-      poi.properties?.Label_e_100k_plus
-    ].filter(Boolean)
-    .flatMap(val => Array.isArray(val) ? val : [val])
-    .map(val => String(val).trim());
+  let filteredPois;
+
+  if (favoriteFilterSelected && nonFavoriteFilters.length === 0) {
+    filteredPois = pois.filter(poi => favorites?.includes(poi.id));
+  } else {
+    filteredPois = nonFavoriteFilters.length
+    ? pois.filter(poi =>{
+      const poiValues = [
+        poi.properties?.Accommodation_Type,
+        poi.properties?.Principal_type,
+       poi.properties?.Facility_Type_Installation,
+       poi.properties?.CONCISCODE,
+       poi.properties?.Label_e_5k_less,
+       poi.properties?.Lable_e_20k_5k,
+       poi.properties?.Label_e_100k_20k,
+       poi.properties?.Label_e_100k_plus
+      ].filter(Boolean)
+      .flatMap(val => Array.isArray(val) ? val : [val])
+      .map(val => String(val).trim());
 
     return nonFavoriteFilters.some(f =>
       poiValues.some(pv => pv.includes(String(f).trim()))
@@ -271,6 +276,16 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   })
   
   :pois;
+
+   if (favoriteFilterSelected && favorites?.length) {
+    const favoritePois = pois.filter(poi => favorites.includes(poi.id));
+    const seen = new Set(filteredPois.map(poi => poi.id));
+    filteredPois = [
+      ...filteredPois,
+      ...favoritePois.filter(poi => !seen.has(poi.id))
+    ];
+  }
+}
 
   //This code de-duplicates markers by id, ensuring that even if a marker is in both Favorites and another filter,
   //the marker will only render once
