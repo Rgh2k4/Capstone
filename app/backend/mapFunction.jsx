@@ -164,7 +164,9 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         "https://opendata.arcgis.com/datasets/1769ca13cd044206ba59aa1b0bc84356_0.geojson",
         "https://opendata.arcgis.com/datasets/28b55decfac848c782819b1706e58aa1_0.geojson",
         "https://opendata.arcgis.com/datasets/76e8ea9ddd5b4a67862b57bd450810ce_0.geojson",
-        "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson"
+        "https://opendata.arcgis.com/datasets/85d09f00b6454413bd51dea2846d9d98_0.geojson",
+        //Provincial park urls in order - Saskatchewan
+        "https://hotline.gov.sk.ca/api/v2/get/parks"
       ];
 
       //https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of
@@ -172,6 +174,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       const allPois = [];
 
       for (const [i, url] of urls.entries()) {
+        let pois = [];
         try {
           console.log(`Fetching dataset ${i + 1}/${urls.length}...`);
           const response = await fetch(url, { signal: AbortSignal.timeout(25000) }); //This will cause any pull longer than 25 seconds to abort
@@ -193,7 +196,21 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           //- and an empty 'reviews' array placeholder for user-generated content.
           //The final result is an array of clean, usable POI objects for display or mapping.
           let filteredPois = nonFavoriteFilters.length
-          const pois = (data.features || [])
+          //This part of the code is for the saskatchewan url as it produces a .JSON instead of the national urls .GEOJSON
+          if (url.includes("hotline.gov.sk.ca")) {
+            pois = data.map((f, idx) => ({
+              id: f.Id || `sk-${idx}`,
+              name: f.Name || "Unnamed Park",
+              description: f.Description || f.Website || "No description",
+              location: {
+                lat: parseFloat(f.Latitude),
+                lng: parseFloat(f.Longitude),
+              },
+              properties: f,
+              reviews: []
+            }));
+          } else {
+            pois = (data.features || [])
             .filter(f => f.geometry?.coordinates?.length === 2 &&
               (f.properties?.Name_e || f.properties?.Nom_f || f.properties?.Label_e_5k_less))
             .map((f, idx) => ({
@@ -207,19 +224,21 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
               properties: f.properties,
               reviews: []
             }));
-
-          allPois.push(...pois);
           
           const uniquePois = getUniquePOINames(allPois);
 
           setPois(uniquePois);
+          
+          allPois.push(...pois);
 
           //This adds a small delay to the site to avoid overloading it
           await new Promise(res => setTimeout(res, 1500));
-        } catch (err) {
+        }} catch (err) {
           console.error(`There was an error loading dataset ${i + 1}:`, err);
         }
       }
+      
+
 
       console.log(`All datasets loaded: ${allPois.length} POIs`);
 
@@ -260,12 +279,12 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       const poiValues = [
         poi.properties?.Accommodation_Type,
         poi.properties?.Principal_type,
-       poi.properties?.Facility_Type_Installation,
-       poi.properties?.CONCISCODE,
-       poi.properties?.Label_e_5k_less,
-       poi.properties?.Lable_e_20k_5k,
-       poi.properties?.Label_e_100k_20k,
-       poi.properties?.Label_e_100k_plus
+        poi.properties?.Facility_Type_Installation,
+        poi.properties?.CONCISCODE,
+        poi.properties?.Label_e_5k_less,
+        poi.properties?.Lable_e_20k_5k,
+        poi.properties?.Label_e_100k_20k,
+        poi.properties?.Label_e_100k_plus
       ].filter(Boolean)
       .flatMap(val => Array.isArray(val) ? val : [val])
       .map(val => String(val).trim());
