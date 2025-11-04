@@ -58,6 +58,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     Accommodation_Type: [],
     Principal_type: [],
     CONCISCODE: [],
+    PARKTYPE:[],
     Facility_Type_Installation: [],
     TrailDistance: [],
   });
@@ -159,20 +160,17 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
       {
         group: "Accommodations",
         items: uniqueTypes.Accommodation_Type.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)
-        ),
+          (v) => v && !allValues.has(v) && allValues.add(v)),
       },
       {
         group: "Principal Types",
         items: uniqueTypes.Principal_type.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)
-        ),
+          (v) => v && !allValues.has(v) && allValues.add(v)),
       },
       {
         group: "Facilities",
-        items: uniqueTypes.Facility_Type_Installation.map(
-          normalizeOption
-        ).filter((v) => v && !allValues.has(v) && allValues.add(v)),
+        items: uniqueTypes.Facility_Type_Installation.map(normalizeOption).filter(
+          (v) => v && !allValues.has(v) && allValues.add(v)),
       },
       {
         group: "CONSICODE",
@@ -182,8 +180,12 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
       {
         group: "Trail Distance",
         items: uniqueTypes.TrailDistance.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)
-        ),
+          (v) => v && !allValues.has(v) && allValues.add(v)),
+      },
+      {
+        group: "Provincial Parks",
+        items: uniqueTypes.PARKTYPE.map(normalizeOption).filter(
+          (v) => v && !allValues.has(v) && allValues.add(v)),
       },
       {
         group: "Favorites",

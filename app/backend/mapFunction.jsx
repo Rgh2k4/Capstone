@@ -196,15 +196,21 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           //The final result is an array of clean, usable POI objects for display or mapping.
           let filteredPois = nonFavoriteFilters.length
           const pois = (data.features || [])
-            .filter(f => f.geometry?.coordinates?.length === 2 &&
-              (f.properties?.Name_e || f.properties?.Nom_f || f.properties?.Label_e_5k_less))
+            .filter(f => 
+              (f.geometry?.type === "Point" && f.geometry?.coordinates?.length === 2) ||
+              (f.geometry?.type === "Polygon" && f.geometry?.coordinates?.[0]?.[0]?.length === 2) &&
+              (f.properties?.Name_e || f.properties?.Nom_f || f.properties?.Label_e_5k_less || f.properties?.Lable_e_20k_5k || f.properties?.Label_e_100k_20k || f.properties?.Label_e_100k_plus || f.properties?.PARKNM))
             .map((f, idx) => ({
               id: f.id || `${i}-${idx}`,
               name: f.properties?.Name_e || f.properties?.Nom_f || f.properties.PARKNM || "Unnamed POI",
               description: f.properties?.Description || f.properties?.description || f.properties?.URL_e || "No description",
               location: {
-                lat: parseFloat(f.geometry.coordinates[1]),
-                lng: parseFloat(f.geometry.coordinates[0])
+                lat: f.geometry.type === "Polygon"
+                ? parseFloat(f.geometry.coordinates[0][0][1])
+                : parseFloat(f.geometry.coordinates[1]),
+                lng: f.geometry.type === "Polygon"
+                ? parseFloat(f.geometry.coordinates[0][0][0])
+                : parseFloat(f.geometry.coordinates[0])
               },
               properties: f.properties,
               reviews: []
@@ -231,6 +237,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       const conciscodeTypes = getUniqueSubTypes(allPois, "CONCISCODE");
       const principalTypes = getUniqueSubTypes(allPois, 'Principal_type');
       const facilityTypes = getUniqueSubTypes(allPois, 'Facility_Type_Installation');
+      const PARKTYPE = getUniqueSubTypes(allPois, "PARKTYPE");
       //This code is the same but for trail distances
       const trailDistanceFields = ['Label_e_5k_less', 'Label_e_20k_5k', 'Label_e_100k_20k', 'Label_e_100k_plus'];
       const trailDistance = uniqueArray(
@@ -243,6 +250,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           Accommodation_Type: uniqueArray(accommodationTypes),
           Principal_type: uniqueArray(principalTypes),
           Facility_Type_Installation: uniqueArray(facilityTypes),
+          PARKTYPE: uniqueArray(PARKTYPE),
           TrailDistance: trailDistance
         });
       }}
@@ -264,6 +272,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         poi.properties?.Principal_type,
         poi.properties?.Facility_Type_Installation,
         poi.properties?.CONCISCODE,
+        poi.properties?.PARKTYPE,
         poi.properties?.Label_e_5k_less,
         poi.properties?.Lable_e_20k_5k,
         poi.properties?.Label_e_100k_20k,
