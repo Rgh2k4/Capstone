@@ -42,6 +42,7 @@ function MapContent({filteredPois, setVisiblePois, viewParkDetails}) {
 function RouteHandler({computeRouteRef, travelMode, userLocation}) {
   const map = useMap();
   const directionsRendererRef = useRef(null);
+  const [routePois, setRoutePois] = useState([]);
 
   useEffect(() => {
     if (!map) return;
@@ -54,21 +55,36 @@ function RouteHandler({computeRouteRef, travelMode, userLocation}) {
     directionsRendererRef.current.setMap(map);
 
     if (computeRouteRef) {
-      computeRouteRef.current = (poi, mode = travelMode) => {
+      computeRouteRef.current = (poiInput, mode = travelMode) => {
+        const poiArray = Array.isArray(poiInput) ? poiInput : [poiInput];
+
+        //This was written with help from gpt after I asked it to help me
+        //make my code capable of routing both single and multi leg routes
+        const origin = {lat: userLocation.lat, lng: userLocation.lng};
+        const destination = poiArray[poiArray.length -1].location;
+        const waypoints = poiArray.slice(0, -1).map(poi => ({
+          location: poi.location,
+          stopover: true
+        }));
+
         return new Promise((resolve, reject) => {
+          const directionsService = new google.maps.DirectionsService();
           directionsService.route(
             {
-            origin: {lat: userLocation.lat, lng: userLocation.lng},
-            destination: {lat: poi.location.lat, lng: poi.location.lng},
+            origin,
+            destination,
+            //https://developers.google.com/maps/documentation/javascript/legacy/directions#Waypoints
+            waypoints,
             travelMode: google.maps.TravelMode[travelMode],
             },
             (result, status) => {
               if (status === "OK") {
                 directionsRendererRef.current.setDirections(result);
-                const leg = result.routes[0].legs[0];
+                const totalDistance = result.routes[0].legs.reduce((sum, leg) => sum + leg.distance.value, 0);
+                const totalDuration = result.routes[0].legs.reduce((sum, leg) => sum + leg.duration.value, 0);
                 resolve({
-                  distance: leg.distance.value / 1000,
-                  duration: leg.duration.value / 60,
+                  distance: totalDistance / 1000,
+                  duration: totalDuration / 60,
                 });
               } else {
                 reject(status);
@@ -148,9 +164,9 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           directionsRendererRef.current = new google.maps.DirectionsRenderer();
           directionsRendererRef.current.setMap(map);
 
-          if (computeRouteRef){
-            computeRouteRef.current = computeRoute;
-          }
+          //if (computeRouteRef){
+          //  computeRouteRef.current = computeRoute;
+          //}
         }, [mapRef.current?.map]);
 
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly

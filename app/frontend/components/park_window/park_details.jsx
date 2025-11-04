@@ -35,7 +35,7 @@ export default function ParkDetails({selectedPark, openButtonUpload, computeRout
     
     try{
       console.log("---Before route: ", computeRouteRef.current);
-      const result = await computeRouteRef.current(park, travelMode);
+      const result = await computeRouteRef.current([park]);
       alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
       if (onClose) onClose();
 
@@ -92,6 +92,14 @@ export default function ParkDetails({selectedPark, openButtonUpload, computeRout
   function handleReport({ rev }) {
     ReportUser({ reportedUserID: rev.uid, reporterUserID: user.uid, reason: "Inappropriate content" }, {rev});
     alert(`${rev.displayName || "Anonymous"} has been reported.`);
+  }
+
+  const addToRoute = (poi) => {
+    setRoutePois(prev => {
+      if (prev.length >= 5) return prev;
+      if (prev.some(p => p.id === poi.id)) return prev;
+      return [...prev, poi];
+    });
   }
 
   const FavoriteButton = () => (
@@ -171,6 +179,15 @@ export default function ParkDetails({selectedPark, openButtonUpload, computeRout
             handleRouteClick();}}
           >
             Compute Route
+          </Button>
+
+          <Button
+          varient="gradient"
+          gradient={{from: 'grape', to: 'red', deg: 90}}
+          onClick={()=>{
+            addToRoute();
+          }}>
+            Add to Route
           </Button>
 
         </section>
