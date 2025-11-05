@@ -1,10 +1,11 @@
-import { AdminEditUser, EditUser } from "@/app/backend/database";
+import { AdminEditUser, EditUser, GetUserData } from "@/app/backend/database";
 import { auth } from "@/app/backend/databaseIntegration";
 import { Button, Input, Textarea } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useState } from "react";
 
-function Edit({ account, onClose, onDeleteAccount }) {
+function Edit({ account: uid, onClose, onDeleteAccount }) {
+  const [account, setAccount] = useState(GetUserData(uid));
   const [displayName, setDisplayName] = useState(account.displayName);
   const [email, setEmail] = useState(account.email);
   const [note, setNote] = useState(account.note);
@@ -14,11 +15,18 @@ function Edit({ account, onClose, onDeleteAccount }) {
   const icon = <IconInfoCircle />;
   const user = auth.currentUser;
 
+  useEffect(() => {
+    const data = GetUserData(uid).then ((data) => {
+      setAccount(data);
+    })
+  }, [])
+  
+
   function handleDelete() {
     setShowError(false);
     onClose();
     alert("Account Deleted!");
-    onDeleteAccount(account.id);
+    onDeleteAccount(account.user_ID);
   }
 
   function handleEdit() {
