@@ -24,7 +24,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
   console.log("Selected Park:", selectedPark);
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark ? selectedPark : null);
-  const [review, setReview] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const user = auth.currentUser;
   const [travelMode, setTravelMode] = useState("DRIVING");
 
@@ -89,7 +89,11 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
   }
 
   function handleReport({ rev }) {
-    ReportUser({ reportedUserID: rev.uid, reporterUserID: user.uid, reason: "Inappropriate content" }, {rev});
+    if (!user) {
+      alert("You must be logged in to report a user.");
+      return;
+    }
+    ReportUser({ reportedUserID: rev.reviewData.uid, reporterUserID: user.uid, reason: "Inappropriate content" }, {rev});
     alert(`${rev.displayName || "Anonymous"} has been reported.`);
   }
 
@@ -112,7 +116,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
   async function loadReviews() {
     try {
       const pullReview = await readReviewData(park.name);
-      setReview(pullReview);
+      setReviews(pullReview);
     } catch(error) {
       console.error("Error: ", error);
     }  
@@ -208,9 +212,9 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
         <section className="flex flex-col mt-30 items-center">
           <h1 className="font-bold text-2xl mb-10">Reviews</h1>
           <div className="rounded-md p-6 w-full bg-gray-100 shadow-inner max-h-96 overflow-y-auto">
-            {review?.length > 0 ? (
+            {reviews?.length > 0 ? (
               <ul>
-                {review.map((rev, index) => (
+                {reviews.map((rev, index) => (
                   <div key={index} className="">
                     <div className="flex flex-row gap-0 mx-4 my-18 space-x-6">
                       <div className="">
@@ -224,7 +228,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
                           <p className=" font-semibold text-1xl">
                             {rev.displayName || "Anonymous"}
                           </p>
-                          <p className=" text-1xl italic">- {rev.dateSubmitted}</p>
+                          <p className=" text-1xl italic">- {rev.dateSubmitted ? rev.dateSubmitted.toDate().toLocaleDateString() : "Unknown Date"}</p>
                         </div>
                         <p className=" text-1xl">{rev.title}</p>
                         {rev.reviewData.image && (
@@ -233,7 +237,7 @@ export default function ParkDetails({ selectedPark, openButtonUpload, computeRou
                           </ul>
                         )}
                         <div className="grid grid-cols-3">
-                          <p className=" col-span-2">{rev.reviewDatamessage}</p>
+                          <p className=" col-span-2">{rev.reviewData.message}</p>
                           <p
                             className="hover:underline italic flex justify-end items-end"
                             onClick={() => handleReport({ rev })}
