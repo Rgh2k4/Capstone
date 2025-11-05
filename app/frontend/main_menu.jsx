@@ -259,6 +259,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
                 travelMode={travelMode}
                 routePois={routePois}
                 setRoutePois={setRoutePois}
+                normalizeOption={normalizeOption}
                 />
               </section>
         </main>

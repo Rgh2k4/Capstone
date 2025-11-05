@@ -183,8 +183,8 @@ export default function ParkDetails({selectedPark, openButtonUpload, computeRout
           </Button>
 
           <Button
-          varient="gradient"
-          gradient={{from: 'grape', to: 'red', deg: 90}}
+          variant="gradient"
+          gradient={{from: 'pink', to: 'red', deg: 90}}
           onClick={()=>{
             addToRoute(park);
           }}>

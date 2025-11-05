@@ -101,6 +101,19 @@ function RouteHandler({computeRouteRef, travelMode, userLocation}) {
   return null;
 }
 
+function normalizeOption(str) {
+  if (typeof str !== "string") return str;
+  const parts = [
+    ...new Set(
+      str
+        .split("/")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    ),
+  ];
+  return parts.join(" / ");
+}
+
 function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode, favorites}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   //and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
@@ -255,7 +268,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       const conciscodeTypes = getUniqueSubTypes(allPois, "CONCISCODE");
       const principalTypes = getUniqueSubTypes(allPois, 'Principal_type');
       const facilityTypes = getUniqueSubTypes(allPois, 'Facility_Type_Installation');
-      const PARKTYPE = getUniqueSubTypes(allPois, "PARKTYPE");
+      const PARKTYPE = getUniqueSubTypes(allPois, 'PARKTYPE');
       //This code is the same but for trail distances
       const trailDistanceFields = ['Label_e_5k_less', 'Label_e_20k_5k', 'Label_e_100k_20k', 'Label_e_100k_plus'];
       const trailDistance = uniqueArray(
@@ -292,16 +305,14 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         poi.properties?.CONCISCODE,
         poi.properties?.PARKTYPE,
         poi.properties?.Label_e_5k_less,
-        poi.properties?.Lable_e_20k_5k,
+        poi.properties?.Label_e_20k_5k,
         poi.properties?.Label_e_100k_20k,
         poi.properties?.Label_e_100k_plus
       ].filter(Boolean)
       .flatMap(val => Array.isArray(val) ? val : [val])
-      .map(val => String(val).trim());
+      .map(val => normalizeOption(String(val)));
 
-    return nonFavoriteFilters.some(f =>
-      poiValues.some(pv => pv.includes(String(f).trim()))
-    );
+      return nonFavoriteFilters.some(filter => poiValues.includes(filter));
   })
   
   :pois;
