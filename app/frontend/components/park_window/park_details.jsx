@@ -1,32 +1,25 @@
 "use client";
 
-import Reviews from "./review_section";
 import { useState, useEffect} from "react";
 import {
   doc,
   getDoc,
   setDoc,
   deleteDoc,
-  collection,
 } from "firebase/firestore";
 import { database, auth } from "../../../backend/databaseIntegration";
 import { ActionIcon, Button } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
-import MapFunction from "@/app/backend/mapFunction";
 import { PullImage } from "@/app/backend/uploadStorage";
-import { readData } from "@/app/backend/database";
 import { Select } from "@mantine/core";
 import { readReviewData, ReportUser } from "@/app/backend/database";
-import {modal} from "@/app/frontend/components/Modal"
 
-
-export default function ParkDetails({selectedPark, openButtonUpload, computeRouteRef, onClose}) {
+export default function ParkDetails({selectedPark, openButtonUpload, computeRouteRef, onClose, travelMode, setTravelMode, routePois, setRoutePois}) {
   console.log("Selected Park:", selectedPark);
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark ? selectedPark : null);
   const [review, setReview] = useState([]);
   const user = auth.currentUser;
-  const [travelMode, setTravelMode] = useState("DRIVING");
 
   if (!park) return null;
 
@@ -35,7 +28,7 @@ export default function ParkDetails({selectedPark, openButtonUpload, computeRout
     
     try{
       console.log("---Before route: ", computeRouteRef.current);
-      const result = await computeRouteRef.current([park]);
+      const result = await computeRouteRef.current([park], travelMode);
       alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
       if (onClose) onClose();
 
@@ -93,14 +86,22 @@ export default function ParkDetails({selectedPark, openButtonUpload, computeRout
     ReportUser({ reportedUserID: rev.uid, reporterUserID: user.uid, reason: "Inappropriate content" }, {rev});
     alert(`${rev.displayName || "Anonymous"} has been reported.`);
   }
-
-  const addToRoute = (poi) => {
-    setRoutePois(prev => {
-      if (prev.length >= 5) return prev;
-      if (prev.some(p => p.id === poi.id)) return prev;
-      return [...prev, poi];
-    });
-  }
+  
+  const addToRoute = async (poi) => {
+    if (routePois.length >= 5) return;
+    if (routePois.some(p => p.id === poi.id)) return;
+    
+    const newRoute = [...routePois, poi];
+    setRoutePois(newRoute);
+    
+    try {
+      const result = await computeRouteRef.current(newRoute, travelMode);
+      alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
+    } catch (err) {
+      console.error("Error computing route:", err);
+      alert("Error computing route. Try again later.");
+    }
+  };  
 
   const FavoriteButton = () => (
     <ActionIcon
@@ -185,7 +186,7 @@ export default function ParkDetails({selectedPark, openButtonUpload, computeRout
           varient="gradient"
           gradient={{from: 'grape', to: 'red', deg: 90}}
           onClick={()=>{
-            addToRoute();
+            addToRoute(park);
           }}>
             Add to Route
           </Button>
@@ -198,14 +199,6 @@ export default function ParkDetails({selectedPark, openButtonUpload, computeRout
             {hasImage && (
               <div>
                 <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-4 space-x-8 overflow-x-auto max-h-[500px]">
-                  {/*{wildlifePhotos.map((img, index) => (
-                    <img
-                      key={index}
-                      src={img}
-                      alt={img}
-                      className="w-50 h-50 bg-gray-400 rounded"
-                    />
-                  ))}*/}
                   
                 </ul>
               </div>

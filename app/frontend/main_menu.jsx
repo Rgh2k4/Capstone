@@ -63,6 +63,9 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     TrailDistance: [],
   });
 
+  const [routePois, setRoutePois] = useState([]);
+
+
   //This code was changed to add the default filter right after the first data was pulled to avoid crashing the site trying to render 16000+ markers at once
   useEffect(() => {
 
@@ -238,6 +241,8 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               travelMode={travelMode}
               setTravelMode={setTravelMode}
               onClose={() => setOverlay(false)}
+              routePois={routePois}
+              setRoutePois={setRoutePois}
               />
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
@@ -252,6 +257,8 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
                 viewParkDetails={viewParkDetails}
                 computeRouteRef={computeRouteRef}
                 travelMode={travelMode}
+                routePois={routePois}
+                setRoutePois={setRoutePois}
                 />
               </section>
         </main>

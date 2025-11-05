@@ -47,12 +47,15 @@ function RouteHandler({computeRouteRef, travelMode, userLocation}) {
   useEffect(() => {
     if (!map) return;
 
+    if (!directionsRendererRef.current) {
+      directionsRendererRef.current = new google.maps.DirectionsRenderer({
+        suppressMarkers: false,
+        preserveViewport: true,
+      });
+      directionsRendererRef.current.setMap(map);
+    }
+
     const directionsService = new google.maps.DirectionsService();
-    directionsRendererRef.current = new google.maps.DirectionsRenderer({
-      suppressMarkers: false,
-      preserveViewport: true,
-    });
-    directionsRendererRef.current.setMap(map);
 
     if (computeRouteRef) {
       computeRouteRef.current = (poiInput, mode = travelMode) => {
@@ -69,13 +72,12 @@ function RouteHandler({computeRouteRef, travelMode, userLocation}) {
 
         return new Promise((resolve, reject) => {
           const directionsService = new google.maps.DirectionsService();
-          directionsService.route(
-            {
+          directionsService.route({
             origin,
             destination,
             //https://developers.google.com/maps/documentation/javascript/legacy/directions#Waypoints
             waypoints,
-            travelMode: google.maps.TravelMode[travelMode],
+            travelMode: google.maps.TravelMode[mode?.toUpperCase()],
             },
             (result, status) => {
               if (status === "OK") {
