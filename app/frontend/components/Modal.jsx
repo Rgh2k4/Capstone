@@ -29,7 +29,7 @@ const Modal = ({ isVisible, onClose, children }) => {
 
   return (
     <div
-      className=" fixed inset-0 backdrop-opacity-35 z-50 backdrop-brightness-0 flex justify-center items-center"
+      className=" fixed inset-0 backdrop-opacity-35 z-150 backdrop-brightness-0 flex justify-center items-center"
       id="wrapper"
       onClick={() => handleClose(event)}
     >
@@ -46,7 +46,7 @@ const Modal = ({ isVisible, onClose, children }) => {
               className="max-w-1/2 max-h-screen overflow-y-scroll"
             >
               <div className="bg-white p-2 rounded relative">
-                <div className="absolute left-4/5">
+                <div className="absolute left-4/5 z-200">
                   <button className="modal-close" onClick={onClose}>
                     X
                   </button>
