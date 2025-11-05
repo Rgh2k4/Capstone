@@ -32,7 +32,7 @@ function ReviewWindow({ user: rev, onClose, onHandleReview }) {
 
       {rev.reviewData.image && (
         <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-2 space-x-8 overflow-x-auto">
-          <PullImage location={rev.location_name.split(' ').join('')} url={rev.reviewData.image} />
+          <PullImage location={rev.reviewData.location_name.split(' ').join('')} url={rev.reviewData.image} />
         </ul>
       )}
       <div className="space-x-12">

@@ -111,40 +111,26 @@ export function isAdmin(data) {
 
 
 export async function AdminEditUser({ oldData, newData }) {
-  try {
-    const uid =
-      oldData?.user_ID ||
-      oldData?.uid ||
-      newData?.user_ID ||
-      newData?.uid ||
-      null;
+    try {
+      await updateDoc(doc(database, "users", oldData.user_ID), {
+        displayName: newData.displayName,
+        email: newData.email,
+        note: newData.note
+      });
+      console.log();
+      return true;
+  } catch (err) {
+    console.error("AdminEditUser (Firestore-only) error:", err);
+    return false;
+  }
+}
 
-    const oldEmail = (oldData?.email || "").trim();
-    const docId = uid || oldEmail;
-    if (!docId) {
-      console.error("AdminEditUser: missing uid/email identifier");
-      return false;
-    }
 
-    const ref = doc(database, "users", docId);
-    const snap = await getDoc(ref);
-    const base = snap.exists() ? snap.data() : { user_ID: uid ?? base?.user_ID };
-
-    const updates = {};
-
-    if (newData?.email !== undefined) updates.email = String(newData.email).trim();
-    if (newData?.displayName !== undefined) updates.displayName = newData.displayName;
-    if (newData?.photoURL !== undefined) updates.photoURL = newData.photoURL;
-    if (newData?.phoneNumber !== undefined) updates.phoneNumber = newData.phoneNumber;
-
-    if (newData?.role !== undefined) updates.role = newData.role;
-    if (newData?.note !== undefined) updates.note = newData.note;
-
-    if (uid && base?.user_ID !== uid) updates.user_ID = uid;
-
-    await setDoc(ref, { ...base, ...updates }, { merge: true });
-
-    return true;
+export async function AdminDeleteUser({ uid }) {
+    try {
+      await deleteDoc(doc(database, "users", uid))
+      console.log();
+      return true;
   } catch (err) {
     console.error("AdminEditUser (Firestore-only) error:", err);
     return false;
@@ -209,10 +195,18 @@ export async function DeleteUser() {
 
 export async function addReview(reviewData) {
     try {
-        await addDoc(collection(database, "reviews"), {
+        const docRef = await addDoc(collection(database, "reviews"), {
           reviewData,
-          dateSubmitted: serverTimestamp()
-        })
+          dateSubmitted: serverTimestamp(),
+          status: "pending",
+          reviewID: "",
+          location_name: reviewData.location_name
+        }).then(async (docRef) => {
+          await updateDoc(doc(database, "reviews", docRef.id), {
+            reviewID: docRef.id
+          });
+        });
+
         //alert("Reviews Added");
     } catch (error) {
         console.error("Error: ", error);
@@ -224,13 +218,29 @@ export async function readReviewData(location) {
     try {
         let reviews = []
         const reviewData = await getDocs(query(collection(database, "reviews"), where("location_name", "==", location)));
+        console.log("Total Reviews Fetched:", reviewData.size);
         if (!reviewData.empty) {
           reviewData.forEach((review) => {
-            reviews.push({
-              ...review.data()
-            });
+            if (review.data().status === "approved") {
+              const userData = GetUserData(review.data().reviewData.uid);
+              console.log("userData:", userData);
+              console.log("User:", userData.displayName);
+              const name = userData.displayName;
+              if (userData.displayName === "") {
+                reviews.push({
+                  ...review.data(), displayName: "Anonymous"
+                });
+              } else {
+                reviews.push({
+                  ...review.data(), displayName: name
+                });
+              }
+            }
           });
         }
+        console.log("=== Approved Reviews ===");
+        
+        console.log("Approved Reviews Loaded:", reviews);
         reviews = reviews.filter((rev) => rev.status === "approved");
         return reviews;
     } catch (error) {
@@ -245,16 +255,14 @@ export async function loadPendingReviews() {
     console.log("Loading pending reviews...");
     const pendingReviews = [];
     const reviewData = await getDocs(query(collection(database, "reviews")));
-    if (!reviewData.empty) {
-        reviewData.forEach((review) => {
-          if (review.data().status === "pending") {
-            pendingReviews.push({
-              ...review.data()
-            });
-          }
+    //console.log("Total Reviews Fetched:", reviewData.size);
+    for (const review of reviewData.docs) {
+      if (review.data().status === "pending") {
+        pendingReviews.push({
+          ...review.data()
         });
       }
-
+    }
     console.log("Pending Reviews Loaded:", pendingReviews.length);
     return pendingReviews;
 
@@ -267,8 +275,9 @@ export async function loadPendingReviews() {
 
 
 export async function approveReview({ rev }) {
+  //console.log("Approving review:", rev.reviewID);
     try {
-        const reviewRef = doc(database, "reviews", rev.id);
+        const reviewRef = doc(database, "reviews", rev.reviewID);
         await updateDoc(reviewRef, { status: "approved" });
         alert("Review Approved");
     } catch (error) {
@@ -278,7 +287,7 @@ export async function approveReview({ rev }) {
 
 export async function denyReview({ rev }) {
     try {
-        const reviewRef = doc(database, "reviews", rev.id);
+        const reviewRef = doc(database, "reviews", rev.reviewID);
         await deleteDoc(reviewRef);
         alert("Review Denied");
     } catch (error) {
@@ -300,7 +309,6 @@ export async function ReportUser(usersInfo, { rev }) {
             rating: rev.rating,
             location_name: rev.location_name,
             displayName: rev.displayName,
-            date: rev.date,
             image: rev.image,
             status: rev.status
         }

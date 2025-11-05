@@ -82,10 +82,12 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
     resolveReport(report, action);
   }
   function handleReview(rev, action) {
+    console.log("Handling review action:", action);
+    console.log("Review Data:", rev);
     if (action === "approve") {
-      approveReview(rev);
+      approveReview({rev});
     } else if (action === "delete") {
-      denyReview(rev);
+      denyReview({rev});
     }
   }
 
