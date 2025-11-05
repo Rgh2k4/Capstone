@@ -1,16 +1,15 @@
 "use client";
 import { Button } from "@mantine/core";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect} from "react";
 import ParkDetails from "./components/park_window/park_details";
 import ProfileMenu from "./components/profile/profile_menu";
 import dynamic from "next/dynamic";
 import UploadWindow from "./components/park_window/upload_window.jsx";
 import Modal from "./components/Modal";
-import { auth } from "../backend/databaseIntegration.jsx";
-import { useEffect } from "react";
+import { auth, database } from "../backend/databaseIntegration.jsx";
 import { MultiSelect } from "@mantine/core";
-import { getUniqueTypes } from "../backend/mapFunction";
 import { GetUserData, isAdmin } from "../backend/database";
+import {collection, getDocs} from "firebase/firestore";
 
 const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
@@ -26,6 +25,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [selectedFilters, setSelectedFilters] = useState([]);
   const computeRouteRef = useRef(null);
   const [travelMode, setTravelMode] = useState("DRIVING");
+  const [favorites, setFavorites] = useState([]);
 
   async function setupUser() {
     //console.log("Current user:", user);
@@ -40,17 +40,33 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     });
   }
 
+  useEffect(() => {
+  const fetchFavorites = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const favsRef = collection(database, "users", user.uid, "favorites");
+    const snapshot = await getDocs(favsRef);
+    const favs = snapshot.docs.map(doc => doc.id);
+    setFavorites(favs);
+  };
+  fetchFavorites();
+}, []);
+
   const [upload, setUpload] = useState(false);
 
   const [uniqueTypes, setUniqueTypes] = useState({
     Accommodation_Type: [],
     Principal_type: [],
     CONCISCODE: [],
+    PARKTYPE:[],
     Facility_Type_Installation: [],
     TrailDistance: [],
   });
 
-  //This code was changed to add the default filter right after the first data et was pulled to avoid crashing the site trying to render 16000+ markers at once
+  const [routePois, setRoutePois] = useState([]);
+
+
+  //This code was changed to add the default filter right after the first data was pulled to avoid crashing the site trying to render 16000+ markers at once
   useEffect(() => {
 
     if (selectedFilters.length === 0) {
@@ -147,26 +163,36 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
       {
         group: "Accommodations",
         items: uniqueTypes.Accommodation_Type.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)
-        ),
+          (v) => v && !allValues.has(v) && allValues.add(v)),
       },
       {
         group: "Principal Types",
         items: uniqueTypes.Principal_type.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)
-        ),
+          (v) => v && !allValues.has(v) && allValues.add(v)),
       },
       {
         group: "Facilities",
-        items: uniqueTypes.Facility_Type_Installation.map(
-          normalizeOption
-        ).filter((v) => v && !allValues.has(v) && allValues.add(v)),
+        items: uniqueTypes.Facility_Type_Installation.map(normalizeOption).filter(
+          (v) => v && !allValues.has(v) && allValues.add(v)),
+      },
+      {
+        group: "CONSICODE",
+        items: uniqueTypes.CONCISCODE.map(normalizeOption).filter(
+          (v) => v && !allValues.has(v) && allValues.add(v)),
       },
       {
         group: "Trail Distance",
         items: uniqueTypes.TrailDistance.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)
-        ),
+          (v) => v && !allValues.has(v) && allValues.add(v)),
+      },
+      {
+        group: "Provincial Parks",
+        items: uniqueTypes.PARKTYPE.map(normalizeOption).filter(
+          (v) => v && !allValues.has(v) && allValues.add(v)),
+      },
+      {
+        group: "Favorites",
+        items: ["Favorites"],
       },
     ];
   }
@@ -214,6 +240,9 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               computeRouteRef={computeRouteRef} 
               travelMode={travelMode}
               setTravelMode={setTravelMode}
+              onClose={() => setOverlay(false)}
+              routePois={routePois}
+              setRoutePois={setRoutePois}
               />
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
@@ -223,10 +252,14 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               <section className="w-full">
                 <MapFunction
                 filters={selectedFilters}
+                favorites={favorites}
                 setUniqueTypes={setUniqueTypes}
                 viewParkDetails={viewParkDetails}
                 computeRouteRef={computeRouteRef}
                 travelMode={travelMode}
+                routePois={routePois}
+                setRoutePois={setRoutePois}
+                normalizeOption={normalizeOption}
                 />
               </section>
         </main>
