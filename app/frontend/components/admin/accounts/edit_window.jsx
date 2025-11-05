@@ -96,10 +96,10 @@ function Edit({ account: uid, onClose, onDeleteAccount }) {
       </div>
       <div className="flex flex-col space-y-6">
         <p className=" italic font-light text-gray-500">
-          Account Created: {account.dateCreated}
+          Account Created: {account.dateCreated ? new Date(account.dateCreated).toLocaleDateString() : "Never"}
         </p>
         <p className="italic font-light text-gray-500">
-          Last Login: {account.lastLogin}
+          Last Login: {account.lastLogin ? new Date(account.lastLogin).toLocaleDateString() : "Never"}
         </p>
       </div>
       <div className=" flex flex-row justify-between items-center space-x-6">
