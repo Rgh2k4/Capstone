@@ -17,7 +17,7 @@ export default function UserList({ handleEdit, data }) {
       note: user.note ? user.note : "",
     };
 
-    handleEdit(selectedUser);
+    handleEdit(selectedUser.user_ID);
   }
 
   return (
