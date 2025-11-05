@@ -2,7 +2,7 @@ import { AdminEditUser, EditUser, GetUserData } from "@/app/backend/database";
 import { auth } from "@/app/backend/databaseIntegration";
 import { Button, Input, Textarea } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function Edit({ account: uid, onClose, onDeleteAccount }) {
   const [account, setAccount] = useState(GetUserData(uid));
