@@ -5,10 +5,10 @@ import { IconInfoCircle } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
 
 function Edit({ account: uid, onClose, onDeleteAccount }) {
-  const [account, setAccount] = useState(GetUserData(uid));
-  const [displayName, setDisplayName] = useState(account.displayName);
-  const [email, setEmail] = useState(account.email);
-  const [note, setNote] = useState(account.note);
+  const [account, setAccount] = useState({});
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [note, setNote] = useState("");
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [submited, setSubmitted] = useState(false);
@@ -18,6 +18,9 @@ function Edit({ account: uid, onClose, onDeleteAccount }) {
   useEffect(() => {
     const data = GetUserData(uid).then ((data) => {
       setAccount(data);
+      setDisplayName(data.displayName);
+      setEmail(data.email);
+      setNote(data.note);
     })
   }, [])
   
