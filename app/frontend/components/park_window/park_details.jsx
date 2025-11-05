@@ -1,44 +1,47 @@
 "use client";
 
-import { useState, useEffect} from "react";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  deleteDoc,
-} from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { database, auth } from "../../../backend/databaseIntegration";
-import { ActionIcon, Button } from "@mantine/core";
+import { ActionIcon, Button, Select, Divider } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import { PullImage } from "@/app/backend/uploadStorage";
-import { Select } from "@mantine/core";
 import { readReviewData, ReportUser } from "@/app/backend/database";
 
-export default function ParkDetails({selectedPark, openButtonUpload, computeRouteRef, onClose, travelMode, setTravelMode, routePois, setRoutePois}) {
-  console.log("Selected Park:", selectedPark);
+export default function ParkDetails({
+  selectedPark,
+  openButtonUpload,
+  computeRouteRef,
+  onClose,
+  travelMode,
+  setTravelMode,
+  routePois,
+  setRoutePois,
+}) {
   const [submited, setSubmitted] = useState(false);
-  const [park, setPark] = useState(selectedPark ? selectedPark : null);
+  const [park, setPark] = useState(selectedPark || null);
   const [reviews, setReviews] = useState([]);
+  const [isFavorite, setIsFavorite] = useState(false);
   const user = auth.currentUser;
 
   if (!park) return null;
 
   const handleRouteClick = async () => {
     if (!computeRouteRef.current || !park) return;
-    
-    try{
-      console.log("---Before route: ", computeRouteRef.current);
+    try {
       const result = await computeRouteRef.current([park], travelMode);
-      alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
+      alert(
+        `Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(
+          result.duration
+        )} mins`
+      );
       if (onClose) onClose();
-
     } catch {
-    alert("Error: could not compute route, try again later or try a different travel mode");
+      alert(
+        "Error: could not compute route, try again later or try a different travel mode."
+      );
     }
   };
-
-  //https://firebase.google.com/docs/reference/js/firestore_, https://firebase.google.com/docs/firestore/query-data/listen
-  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     async function checkFavorite() {
@@ -50,15 +53,10 @@ export default function ParkDetails({selectedPark, openButtonUpload, computeRout
       setIsFavorite(favoriteSnap.exists());
     }
     checkFavorite();
-  }, [park, auth.currentUser]);
+  }, [park]);
 
   async function toggleFavorite() {
-    const user = auth.currentUser;
-    if (!user) {
-      alert("You must be logged in to favorite a park.");
-      return;
-    }
-
+    if (!user) return alert("You must be logged in to favorite a park.");
     const favoriteRef = doc(database, "users", user.uid, "favorites", park.id);
 
     if (isFavorite) {
@@ -69,55 +67,23 @@ export default function ParkDetails({selectedPark, openButtonUpload, computeRout
         Name_e: park.name,
         id: park.id,
         lat: park.location.lat,
-        lng: park.location.lng
+        lng: park.location.lng,
       });
       setIsFavorite(true);
     }
   }
 
-  let wildlifePhotos = [];
-  let hasImage = false;
-
-  function checkImages(photos) {
-    if (photos && photos[0]) hasImage = true;
-  }
-
-  function handleReport({ rev }) {
-    if (!user) {
-      alert("You must be logged in to report a user.");
-      return;
-    }
-    ReportUser({ reportedUserID: rev.reviewData.uid, reporterUserID: user.uid, reason: "Inappropriate content" }, {rev});
-    alert(`${rev.displayName || "Anonymous"} has been reported.`);
-  }
-  
-  const addToRoute = async (poi) => {
-    if (routePois.length >= 5) return;
-    if (routePois.some(p => p.id === poi.id)) return;
-    
-    const newRoute = [...routePois, poi];
-    setRoutePois(newRoute);
-    
-    try {
-      const result = await computeRouteRef.current(newRoute, travelMode);
-      alert(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
-    } catch (err) {
-      console.error("Error computing route:", err);
-      alert("Error computing route. Try again later.");
-    }
-  };  
-
   const FavoriteButton = () => (
     <ActionIcon
       size={42}
-      variant="default"
+      variant="subtle"
       aria-label="Favorite Location"
       onClick={toggleFavorite}
     >
       <IconHeart
-        size={24}
-        className={`text-xl transition-transform ${
-          isFavorite ? "text-red-500 scale-110" : "text-gray-500"
+        size={26}
+        className={`transition-transform ${
+          isFavorite ? "text-red-500 scale-110" : "text-gray-400 hover:text-red-400"
         }`}
       />
     </ActionIcon>
@@ -127,147 +93,194 @@ export default function ParkDetails({selectedPark, openButtonUpload, computeRout
     try {
       const pullReview = await readReviewData(park.name);
       setReviews(pullReview);
-    } catch(error) {
-      console.error("Error: ", error);
-    }  
+    } catch (error) {
+      console.error("Error loading reviews:", error);
+    }
   }
 
   useEffect(() => {
     loadReviews();
-  }, [park])
+  }, [park]);
 
-  checkImages(wildlifePhotos);
+  function handleReport({ rev }) {
+    if (!user) return alert("You must be logged in to report a user.");
+    ReportUser(
+      {
+        reportedUserID: rev.reviewData.uid,
+        reporterUserID: user.uid,
+        reason: "Inappropriate content",
+      },
+      { rev }
+    );
+    alert(`${rev.displayName || "Anonymous"} has been reported.`);
+  }
+
+
+  const addToRoute = async (poi) => {
+    if (routePois.length >= 5) return;
+    if (routePois.some((p) => p.id === poi.id)) return;
+
+    const newRoute = [...routePois, poi];
+    setRoutePois(newRoute);
+
+    try {
+      const result = await computeRouteRef.current(newRoute, travelMode);
+      alert(
+        `Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(
+          result.duration
+        )} mins`
+      );
+    } catch (err) {
+      console.error("Error computing route:", err);
+      alert("Error computing route. Try again later.");
+    }
+  };
 
   return (
-    <div className=" ">
-      <header className="flex flex-col">
+    <div className="flex flex-col items-center bg-gradient-to-b from-white to-gray-50 rounded-2xl shadow-md overflow-hidden">
+      <header className="relative w-full h-72">
         <img
           src="https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg"
-          alt=""
-          className="h-75"
+          alt="Park"
+          className="object-cover w-full h-full"
         />
-      </header>
-      <main className="flex flex-col w-full px-22 justify-center items-center">
-
-        <section className="my-20 place-self-center">
-          <h1 className="font-bold text-2xl">Ratings</h1>
-        </section>
-        <section className="flex flex-col items-center text-justify mb-8">
-          <h1 className="font-extrabold text-2xl mb-22 flex items-center gap-2">
-            {park.name}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+          <div className="flex justify-between items-center">
+            <h1 className="text-4xl font-bold">{park.name}</h1>
             <FavoriteButton />
-          </h1>
-          <p className="w-3/4 mb-22">
+          </div>
+        </div>
+      </header>
+
+      <main className="w-full max-w-4xl px-8 py-10 space-y-12">
+        <section>
+          <h2 className="text-2xl font-semibold mb-3 text-gray-800">
+            About the Park
+          </h2>
+          <p className="text-gray-600 leading-relaxed">
             {park.description || "No description available."}
           </p>
-
-
-          {/*This was made with the help of https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes#maps_directions_travel_modes-javascript & 
-          https://mantine.dev/core/select/#combobox, and debugging with the help of gpt*/}
-          <Select
-          label="Travel Mode"
-          value={travelMode}
-          onChange={(value) => setTravelMode(value)}
-          data={[
-            {value: "DRIVING", label:"Driving"},
-            {value:"WALKING", label:"Walking"},
-            {value:"BICYCLING", label:"Bicycling"},
-            {value:"TRANSIT", label: "Transit"}
-          ]}
-          />
-
-          <Button
-          variant="gradient"
-          gradient={{ from: 'pink', to: 'grape', deg: 90 }}
-          onClick={()=>{
-            console.log("Button clicked!");
-            handleRouteClick();}}
-          >
-            Compute Route
-          </Button>
-
-          <Button
-          variant="gradient"
-          gradient={{from: 'pink', to: 'red', deg: 90}}
-          onClick={()=>{
-            addToRoute(park);
-          }}>
-            Add to Route
-          </Button>
-
         </section>
 
-        <section className="flex flex-col items-center">
-          <h1 className="font-bold text-xl mb-15">Wildlife</h1>
-          <div className="flex">
-            {hasImage && (
-              <div>
-                <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-4 space-x-8 overflow-x-auto max-h-[500px]">
-                  
-                </ul>
-              </div>
-            )}
+        <Divider />
+
+        <section className="space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-800">Directions</h2>
+          <Select
+            label="Travel Mode"
+            value={travelMode}
+            onChange={(value) => setTravelMode(value)}
+            data={[
+              { value: "DRIVING", label: "Driving" },
+              { value: "WALKING", label: "Walking" },
+              { value: "BICYCLING", label: "Bicycling" },
+              { value: "TRANSIT", label: "Transit" },
+            ]}
+          />
+          <div className="flex gap-4">
+            <Button
+              variant="gradient"
+              gradient={{ from: "blue", to: "cyan", deg: 60 }}
+              onClick={handleRouteClick}
+            >
+              Compute Route
+            </Button>
+            <Button
+              variant="gradient"
+              gradient={{ from: "green", to: "teal", deg: 60 }}
+              onClick={() => addToRoute(park)}
+            >
+              Add to Route
+            </Button>
           </div>
         </section>
-        <section className="mt-30 place-self-center">
-          <Button
-            className="w-full"
-            size="lg"
-            loading={submited}
-            variant="filled"
-            onClick={openButtonUpload}
-          >
-            Write a review
-          </Button>
+
+        <Divider />
+
+        <section>
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+            Wildlife
+          </h2>
+          <div className="bg-gray-100 border rounded-xl p-4 shadow-inner">
+            <p className="text-gray-500 italic text-center">
+              No wildlife images available.
+            </p>
+          </div>
         </section>
-        <section className="flex flex-col mt-30 items-center">
-          <h1 className="font-bold text-2xl mb-10">Reviews</h1>
-          <div className="rounded-md p-6 w-full bg-gray-100 shadow-inner max-h-96 overflow-y-auto">
+
+        <Divider />
+
+        <section>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold text-gray-800">Reviews</h2>
+            <Button
+              size="md"
+              variant="filled"
+              gradient={{ from: "orange", to: "red", deg: 90 }}
+              onClick={openButtonUpload}
+            >
+              Write a Review
+            </Button>
+          </div>
+
+          <div className="bg-gray-50 border rounded-xl p-6 shadow-inner max-h-[400px] overflow-y-auto">
             {reviews?.length > 0 ? (
-              <ul>
+              <ul className="space-y-8">
                 {reviews.map((rev, index) => (
-                  <div key={index} className="">
-                    <div className="flex flex-row gap-0 mx-4 my-18 space-x-6">
-                      <div className="">
-                        <img
-                          className="w-25 h-25 bg-gray-400 rounded-full"
-                          alt="profile picture"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div className=" flex flex-row space-x-2 items-center">
-                          <p className=" font-semibold text-1xl">
+                  <li key={index} className="bg-white p-4 rounded-lg shadow">
+                    <div className="flex items-start space-x-4">
+                      <img
+                        className="w-16 h-16 bg-gray-300 rounded-full"
+                        alt="profile"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold text-lg text-gray-800">
                             {rev.displayName || "Anonymous"}
                           </p>
-                          <p className=" text-1xl italic">- {rev.dateSubmitted ? rev.dateSubmitted.toDate().toLocaleDateString() : "Unknown Date"}</p>
-                        </div>
-                        <p className=" text-1xl">{rev.title}</p>
-                        {rev.reviewData.image && (
-                          <ul className="flex flex-row justify-center bg-gray-100 rounded-lg shadow-inner p-2 space-x-8 overflow-x-auto">
-                            <PullImage location={park.name.split(' ').join('')} url={rev.reviewData.image} />
-                          </ul>
-                        )}
-                        <div className="grid grid-cols-3">
-                          <p className=" col-span-2">{rev.reviewData.message}</p>
-                          <p
-                            className="hover:underline italic flex justify-end items-end"
-                            onClick={() => handleReport({ rev })}
-                          >
-                            Report User
+                          <p className="text-sm text-gray-500 italic">
+                            {rev.dateSubmitted
+                              ? rev.dateSubmitted
+                                  .toDate()
+                                  .toLocaleDateString()
+                              : "Unknown Date"}
                           </p>
+                        </div>
+                        <p className="text-gray-700 mt-2">{rev.title}</p>
+                        <p className="text-gray-600 mt-1 leading-relaxed">
+                          {rev.reviewData.message}
+                        </p>
+                        {rev.reviewData.image && (
+                          <div className="mt-4 bg-gray-100 rounded-lg p-2">
+                            <PullImage
+                              location={park.name.split(" ").join("")}
+                              url={rev.reviewData.image}
+                            />
+                          </div>
+                        )}
+                        <div
+                          className="text-right text-sm text-red-500 mt-2 hover:underline cursor-pointer"
+                          onClick={() => handleReport({ rev })}
+                        >
+                          Report User
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </li>
                 ))}
               </ul>
             ) : (
-              <p>No reviews yet</p>
+              <p className="text-center text-gray-500 italic">
+                No reviews yet.
+              </p>
             )}
           </div>
         </section>
-        <footer className="mt-30 mb-20 place-self-center">
-          <button>Back to top</button>
+
+        <footer className="pt-8 text-center">
+          <Button variant="subtle" color="gray">
+            Back to top ↑
+          </Button>
         </footer>
       </main>
     </div>
