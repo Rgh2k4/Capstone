@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { database, auth } from "../../../backend/databaseIntegration";
-import { ActionIcon, Button, Select, Divider } from "@mantine/core";
+import { ActionIcon, Button, Select, Divider, Notification } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import { PullImage } from "@/app/backend/uploadStorage";
 import { readReviewData, ReportUser } from "@/app/backend/database";
@@ -37,9 +37,9 @@ export default function ParkDetails({
       );
       if (onClose) onClose();
     } catch {
-      alert(
-        "Error: could not compute route, try again later or try a different travel mode."
-      );
+    <Notification color="red" title="Error">
+      Could not compute route, try again later or try a different travel mode.
+    </Notification>;
     }
   };
 
@@ -132,7 +132,9 @@ export default function ParkDetails({
       );
     } catch (err) {
       console.error("Error computing route:", err);
-      alert("Error computing route. Try again later.");
+      <Notification color="red" title="Error">
+      There was an error computing route. Try again later.
+      </Notification>;
     }
   };
 
@@ -183,12 +185,19 @@ export default function ParkDetails({
               gradient={{ from: "blue", to: "cyan", deg: 60 }}
               onClick={handleRouteClick}
             >
-              Compute Route
+              Compute New Route
             </Button>
             <Button
               variant="gradient"
               gradient={{ from: "green", to: "teal", deg: 60 }}
-              onClick={() => addToRoute(park)}
+              onClick={() => 
+                {if (!routePois || routePois.length === 0) {
+                  <Notification color="red" title="Alert">
+                    You must start a route first before adding another location.</Notification>;
+                  return;
+                }
+                else addToRoute(park)}
+              }
             >
               Add to Route
             </Button>

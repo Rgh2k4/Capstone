@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import UploadWindow from "./components/park_window/upload_window.jsx";
 import Modal from "./components/Modal";
 import { auth, database } from "../backend/databaseIntegration.jsx";
-import { MultiSelect } from "@mantine/core";
+import { MultiSelect, Notification } from "@mantine/core";
 import { GetUserData, isAdmin } from "../backend/database";
 import {collection, getDocs} from "firebase/firestore";
 
@@ -212,6 +212,9 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
                   value={selectedFilters}
                   onChange={(newValue) =>{
                     if (newValue.length === 0) {
+                      <Notification color="pink" title="Warning">
+                        At least one filter must remain active, this ensures a timely resonse from the site.
+                      </Notification>
                       console.warn("At least one filter must remain active, this ensures a timely resonse from the site.");
                       return;
                     }

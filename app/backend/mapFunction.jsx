@@ -352,7 +352,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   }, [filteredPois, routedPOI]);
 
         console.log("=== Rendering POIs ===");
-        //console.log("Filtered POIs:", filteredPois);
         filteredPois.forEach(poi => {
         });
 
