@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { database, auth } from "../../../backend/databaseIntegration";
 import { ActionIcon, Button, Select, Divider, Notification } from "@mantine/core";
+import {notifications} from "@mantine/notifications";
 import { IconHeart } from "@tabler/icons-react";
 import { PullImage } from "@/app/backend/uploadStorage";
 import { readReviewData, ReportUser } from "@/app/backend/database";
@@ -30,6 +31,7 @@ export default function ParkDetails({
     if (!computeRouteRef.current || !park) return;
     try {
       const result = await computeRouteRef.current([park], travelMode);
+      setRoutePois([park]);
       alert(
         `Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(
           result.duration
@@ -192,9 +194,11 @@ export default function ParkDetails({
               gradient={{ from: "green", to: "teal", deg: 60 }}
               onClick={() => 
                 {if (!routePois || routePois.length === 0) {
-                  <Notification color="red" title="Alert">
-                    You must start a route first before adding another location.</Notification>;
-                  return;
+                  return notifications.show({
+                    color: "red",
+                    title: "Alert",
+                    message: "You must start a route first before adding another location."
+                  })
                 }
                 else addToRoute(park)}
               }
