@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { database, auth } from "../../../backend/databaseIntegration";
-import { ActionIcon, Button, Select, Divider, Notification } from "@mantine/core";
-import {notifications} from "@mantine/notifications";
+import { ActionIcon, Button, Select, Divider } from "@mantine/core";
+import toast, {Toaster} from 'react-hot-toast';
 import { IconHeart } from "@tabler/icons-react";
 import { PullImage } from "@/app/backend/uploadStorage";
 import { readReviewData, ReportUser } from "@/app/backend/database";
@@ -18,6 +18,7 @@ export default function ParkDetails({
   setTravelMode,
   routePois,
   setRoutePois,
+  showToast,
 }) {
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark || null);
@@ -27,23 +28,24 @@ export default function ParkDetails({
 
   if (!park) return null;
 
+  //https://react-hot-toast.com/
   const handleRouteClick = async () => {
     if (!computeRouteRef.current || !park) return;
     try {
       const result = await computeRouteRef.current([park], travelMode);
       setRoutePois([park]);
-      alert(
-        `Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(
-          result.duration
-        )} mins`
-      );
-      if (onClose) onClose();
-    } catch {
-    <Notification color="red" title="Error">
-      Could not compute route, try again later or try a different travel mode.
-    </Notification>;
+
+      if (showToast) {
+        showToast(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
+      }
+
+      if (onClose) onClose(); 
+    } catch (err) {
+      console.error(err);
+      if (showToast) showToast("Could not compute route. Try again or use a different travel mode.", "error");
     }
   };
+
 
   useEffect(() => {
     async function checkFavorite() {
@@ -117,26 +119,25 @@ export default function ParkDetails({
     alert(`${rev.displayName || "Anonymous"} has been reported.`);
   }
 
-
   const addToRoute = async (poi) => {
     if (routePois.length >= 5) return;
     if (routePois.some((p) => p.id === poi.id)) return;
 
     const newRoute = [...routePois, poi];
     setRoutePois(newRoute);
-
+    
     try {
       const result = await computeRouteRef.current(newRoute, travelMode);
-      alert(
-        `Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(
-          result.duration
-        )} mins`
-      );
+      
+      if (showToast) {
+        showToast(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
+      }
+
+      if (onClose) onClose();
+
     } catch (err) {
-      console.error("Error computing route:", err);
-      <Notification color="red" title="Error">
-      There was an error computing route. Try again later.
-      </Notification>;
+      console.error(err);
+      if (showToast) showToast("Could not compute route. Try again or use a different travel mode.", "error");
     }
   };
 

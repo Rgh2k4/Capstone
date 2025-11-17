@@ -10,6 +10,7 @@ import { auth, database } from "../backend/databaseIntegration.jsx";
 import { MultiSelect, Notification } from "@mantine/core";
 import { GetUserData, isAdmin } from "../backend/database";
 import {collection, getDocs} from "firebase/firestore";
+import toast, {Toaster} from "react-hot-toast";
 
 const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
@@ -26,6 +27,11 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const computeRouteRef = useRef(null);
   const [travelMode, setTravelMode] = useState("DRIVING");
   const [favorites, setFavorites] = useState([]);
+
+  const showToast = (message, type = "success") => {
+    if (type === "success") toast.success(message);
+    else toast.error(message);
+  };
 
   async function setupUser() {
     //console.log("Current user:", user);
@@ -198,6 +204,8 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   }
 
     return (
+      <>
+      <Toaster position="top-middle" reverseOrder={false}/>
         <main className="flex flex-col h-screen w-screen relative">
             <header className="w-full flex items-center justify-between bg-gradient-to-r from-green-700 to-blue-500 px-8 py-3 shadow-lg shadow-gray-700/40 fixed top-0 z-50">
                  <h1 className="text-2xl font-extrabold tracking-wide text-white drop-shadow-md">
@@ -246,6 +254,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               onClose={() => setOverlay(false)}
               routePois={routePois}
               setRoutePois={setRoutePois}
+              showToast={showToast}
               />
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
@@ -266,5 +275,6 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
                 />
               </section>
         </main>
-    );  
+        </>
+    ); 
 }
