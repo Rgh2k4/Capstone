@@ -46,6 +46,20 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     });
   }
 
+  async function refreshFavorites() {
+  const user = auth.currentUser;
+  if (!user) return [];
+
+  const favsRef = collection(database, "users", user.uid, "favorites");
+  const snapshot = await getDocs(favsRef);
+  const favIds = snapshot.docs.map((doc) => doc.id);
+
+  setFavorites(favIds);
+
+  return favIds;
+}
+
+
   useEffect(() => {
   const fetchFavorites = async () => {
     const user = auth.currentUser;
@@ -255,6 +269,8 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               routePois={routePois}
               setRoutePois={setRoutePois}
               showToast={showToast}
+              favorites={favorites}
+              refreshFavorites={refreshFavorites}
               />
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
@@ -272,6 +288,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
                 routePois={routePois}
                 setRoutePois={setRoutePois}
                 normalizeOption={normalizeOption}
+                refreshFavorites={refreshFavorites}
                 />
               </section>
         </main>
