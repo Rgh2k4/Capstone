@@ -79,6 +79,8 @@ export default function ParkDetails({
     }
   }
 
+
+  
   const FavoriteButton = () => (
     <ActionIcon
       size={42}
