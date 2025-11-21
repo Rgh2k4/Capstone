@@ -18,6 +18,7 @@ export default function ParkDetails({
   routePois,
   setRoutePois,
   showToast,
+  onRouteSummary
 }) {
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark || null);
@@ -37,6 +38,9 @@ export default function ParkDetails({
       if (showToast) {
         showToast(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
       }
+
+      if (onRouteSummary)
+        onRouteSummary(result);
 
       if (onClose) onClose(); 
     } catch (err) {
@@ -130,6 +134,9 @@ export default function ParkDetails({
       if (showToast) {
         showToast(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
       }
+
+      if (onRouteSummary)
+        onRouteSummary(result);
 
       if (onClose) onClose();
 

@@ -16,7 +16,7 @@ const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
 });
 
-function handleRouteSummary(summary) {
+function onRouteSummary(summary) {
   setRouteSummary(summary);
   setIsRouteVisible(true);
 }
@@ -32,6 +32,12 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const computeRouteRef = useRef(null);
   const [travelMode, setTravelMode] = useState("DRIVING");
   const [favorites, setFavorites] = useState([]);
+  const [isRouteVisible, setIsRouteVisible] = useState(false);
+  const [routeSummary, setRouteSummary] = useState(null);
+  const onRouteSummary = (summary) => {
+    setRouteSummary(summary);
+  };
+
 
   const showToast = (message, type = "success") => {
     if (type === "success") toast.success(message);
@@ -261,7 +267,26 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
                   }
 
                 </div>
-            </header>  
+            </header>
+            {isRouteVisible && routeSummary && (
+            <div className="route-dropdown">
+              <button onClick={() => setIsRouteVisible(!isRouteVisible)}>
+                Trip Summary
+                </button>
+                <div className="dropdown-content">
+                  {routeSummary.legs.map((leg, i) => (
+                    <div key={i}>
+                      {leg.start} → {leg.end}: {leg.distanceText}, {leg.durationText}
+                      </div>
+                    ))}
+                    <div className="total">
+                      Total: {(routeSummary.totalDistance / 1000).toFixed(1)} km, 
+                      {Math.floor(routeSummary.totalDuration / 60)} min
+                    </div>
+                  </div>
+              </div>
+            )}
+  
             <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
               <ParkDetails 
               selectedPark={selectedPark}
@@ -274,6 +299,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               setRoutePois={setRoutePois}
               showToast={showToast}
               favorites={favorites}
+              onRouteSummary={onRouteSummary}
               />
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
