@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import UploadWindow from "./components/park_window/upload_window.jsx";
 import Modal from "./components/Modal";
 import { auth, database } from "../backend/databaseIntegration.jsx";
-import { MultiSelect, Notification } from "@mantine/core";
+import { MultiSelect, Notification, Accordion } from "@mantine/core";
 import { GetUserData, isAdmin } from "../backend/database";
 import {collection, getDocs} from "firebase/firestore";
 import toast, {Toaster} from "react-hot-toast";
@@ -16,10 +16,7 @@ const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
 });
 
-function onRouteSummary(summary) {
-  setRouteSummary(summary);
-  setIsRouteVisible(true);
-}
+
 
 export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [overlay, setOverlay] = useState(false);
@@ -32,12 +29,14 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const computeRouteRef = useRef(null);
   const [travelMode, setTravelMode] = useState("DRIVING");
   const [favorites, setFavorites] = useState([]);
-  const [isRouteVisible, setIsRouteVisible] = useState(false);
   const [routeSummary, setRouteSummary] = useState(null);
   const onRouteSummary = (summary) => {
-    setRouteSummary(summary);
+    if (summary?.legs?.length) {
+      setRouteSummary(summary);
+    } else {
+      setRouteSummary(null);
+    }
   };
-
 
   const showToast = (message, type = "success") => {
     if (type === "success") toast.success(message);
@@ -68,7 +67,6 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
 
   return favIds;
 }
-
 
   useEffect(() => {
   const fetchFavorites = async () => {
@@ -268,24 +266,27 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
 
                 </div>
             </header>
-            {isRouteVisible && routeSummary && (
-            <div className="route-dropdown">
-              <button onClick={() => setIsRouteVisible(!isRouteVisible)}>
-                Trip Summary
-                </button>
-                <div className="dropdown-content">
-                  {routeSummary.legs.map((leg, i) => (
-                    <div key={i}>
-                      {leg.start} → {leg.end}: {leg.distanceText}, {leg.durationText}
-                      </div>
-                    ))}
-                    <div className="total">
-                      Total: {(routeSummary.totalDistance / 1000).toFixed(1)} km, 
-                      {Math.floor(routeSummary.totalDuration / 60)} min
-                    </div>
-                  </div>
-              </div>
-            )}
+            {routePois.length > 0 && (
+              <div
+              className="absolute top-16 left-4 z-40 w-80 shadow-lg bg-white rounded-md p-2">
+                <Accordion multiple defaultValue={['trip-summary']}>
+                  <Accordion.Item value="trip-summary">
+                    <Accordion.Control>Trip Summary</Accordion.Control>
+                    <Accordion.Panel>
+                      {(routeSummary?.legs || []).map((leg, i) => (
+                        <div key={i} className="mb-1 text-sm">
+                          {leg.start} → {leg.end}: {leg.distanceText}, {leg.durationText}
+                          </div>
+                        ))}
+                        <div className="mt-2 font-semibold text-sm">
+                          Total: {routeSummary ? (routeSummary.totalDistance / 1000).toFixed(1) : 0} km,{' '}
+                          {routeSummary ? Math.floor(routeSummary.totalDuration / 60) : 0} min
+                        </div>
+                      </Accordion.Panel>
+                    </Accordion.Item>
+                  </Accordion>
+                </div>
+              )}
   
             <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
               <ParkDetails 
