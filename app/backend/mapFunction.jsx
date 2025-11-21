@@ -82,8 +82,23 @@ function RouteHandler({computeRouteRef, travelMode, userLocation}) {
             (result, status) => {
               if (status === "OK") {
                 directionsRendererRef.current.setDirections(result);
-                const totalDistance = result.routes[0].legs.reduce((sum, leg) => sum + leg.distance.value, 0);
-                const totalDuration = result.routes[0].legs.reduce((sum, leg) => sum + leg.duration.value, 0);
+                
+                const legs = result.routes[0].legs.map((leg) => ({
+                  start: leg.start_address,
+                  end: leg.end_address,
+                  distanceText: leg.distance.text,
+                  durationText: leg.duration.text,
+                  distanceValue: leg.distance.value,
+                  durationValue: leg.duration.value
+                }));
+
+                const totalDistance = legs.reduce((sum, leg) => sum + leg.distanceValue, 0);
+                const totalDuration = legs.reduce((sum, leg) => sum + leg.durationValue, 0);
+                
+                if (typeof onRouteSummary === "function") {
+                  onRouteSummary({ legs, totalDistance, totalDuration });
+                }
+
                 resolve({
                   distance: totalDistance / 1000,
                   duration: totalDuration / 60,
@@ -114,7 +129,7 @@ function normalizeOption(str) {
   return parts.join(" / ");
 }
 
-function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode, favorites}) {
+function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode, favorites, onRouteSummary}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   //and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
@@ -352,7 +367,6 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   }, [filteredPois, routedPOI]);
 
         console.log("=== Rendering POIs ===");
-        //console.log("Filtered POIs:", filteredPois);
         filteredPois.forEach(poi => {
         });
 

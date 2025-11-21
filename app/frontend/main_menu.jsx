@@ -7,13 +7,19 @@ import dynamic from "next/dynamic";
 import UploadWindow from "./components/park_window/upload_window.jsx";
 import Modal from "./components/Modal";
 import { auth, database } from "../backend/databaseIntegration.jsx";
-import { MultiSelect } from "@mantine/core";
+import { MultiSelect, Notification } from "@mantine/core";
 import { GetUserData, isAdmin } from "../backend/database";
 import {collection, getDocs} from "firebase/firestore";
+import toast, {Toaster} from "react-hot-toast";
 
 const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
 });
+
+function onRouteSummary(summary) {
+  setRouteSummary(summary);
+  setIsRouteVisible(true);
+}
 
 export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [overlay, setOverlay] = useState(false);
@@ -26,9 +32,19 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const computeRouteRef = useRef(null);
   const [travelMode, setTravelMode] = useState("DRIVING");
   const [favorites, setFavorites] = useState([]);
+  const [isRouteVisible, setIsRouteVisible] = useState(false);
+  const [routeSummary, setRouteSummary] = useState(null);
+  const onRouteSummary = (summary) => {
+    setRouteSummary(summary);
+  };
+
+
+  const showToast = (message, type = "success") => {
+    if (type === "success") toast.success(message);
+    else toast.error(message);
+  };
 
   async function setupUser() {
-    //console.log("Current user:", user);
     const email = auth.currentUser.email;
     GetUserData(user.uid).then((data) => {
       console.log("User Data:", data);
@@ -39,6 +55,20 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
       setUserData(data);
     });
   }
+
+  async function refreshFavorites() {
+  const user = auth.currentUser;
+  if (!user) return [];
+
+  const favsRef = collection(database, "users", user.uid, "favorites");
+  const snapshot = await getDocs(favsRef);
+  const favIds = snapshot.docs.map((doc) => doc.id);
+
+  setFavorites(favIds);
+
+  return favIds;
+}
+
 
   useEffect(() => {
   const fetchFavorites = async () => {
@@ -198,6 +228,8 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   }
 
     return (
+      <>
+      <Toaster position="top-middle" reverseOrder={false}/>
         <main className="flex flex-col h-screen w-screen relative">
             <header className="w-full flex items-center justify-between bg-gradient-to-r from-green-700 to-blue-500 px-8 py-3 shadow-lg shadow-gray-700/40 fixed top-0 z-50">
                  <h1 className="text-2xl font-extrabold tracking-wide text-white drop-shadow-md">
@@ -212,6 +244,9 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
                   value={selectedFilters}
                   onChange={(newValue) =>{
                     if (newValue.length === 0) {
+                      <Notification color="pink" title="Warning">
+                        At least one filter must remain active, this ensures a timely resonse from the site.
+                      </Notification>
                       console.warn("At least one filter must remain active, this ensures a timely resonse from the site.");
                       return;
                     }
@@ -232,7 +267,26 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
                   }
 
                 </div>
-            </header>  
+            </header>
+            {isRouteVisible && routeSummary && (
+            <div className="route-dropdown">
+              <button onClick={() => setIsRouteVisible(!isRouteVisible)}>
+                Trip Summary
+                </button>
+                <div className="dropdown-content">
+                  {routeSummary.legs.map((leg, i) => (
+                    <div key={i}>
+                      {leg.start} → {leg.end}: {leg.distanceText}, {leg.durationText}
+                      </div>
+                    ))}
+                    <div className="total">
+                      Total: {(routeSummary.totalDistance / 1000).toFixed(1)} km, 
+                      {Math.floor(routeSummary.totalDuration / 60)} min
+                    </div>
+                  </div>
+              </div>
+            )}
+  
             <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
               <ParkDetails 
               selectedPark={selectedPark}
@@ -243,6 +297,9 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               onClose={() => setOverlay(false)}
               routePois={routePois}
               setRoutePois={setRoutePois}
+              showToast={showToast}
+              favorites={favorites}
+              onRouteSummary={onRouteSummary}
               />
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
@@ -260,8 +317,10 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
                 routePois={routePois}
                 setRoutePois={setRoutePois}
                 normalizeOption={normalizeOption}
+                onRouteSummary={onRouteSummary}
                 />
               </section>
         </main>
-    );  
+        </>
+    ); 
 }
