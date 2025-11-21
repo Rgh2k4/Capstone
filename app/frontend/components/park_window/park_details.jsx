@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { database, auth } from "../../../backend/databaseIntegration";
 import { ActionIcon, Button, Select, Divider } from "@mantine/core";
-import toast, {Toaster} from 'react-hot-toast';
 import { IconHeart } from "@tabler/icons-react";
 import { PullImage } from "@/app/backend/uploadStorage";
 import { readReviewData, ReportUser } from "@/app/backend/database";
@@ -45,7 +44,6 @@ export default function ParkDetails({
       if (showToast) showToast("Could not compute route. Try again or use a different travel mode.", "error");
     }
   };
-
 
   useEffect(() => {
     async function checkFavorite() {

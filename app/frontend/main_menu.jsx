@@ -16,6 +16,11 @@ const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
 });
 
+function handleRouteSummary(summary) {
+  setRouteSummary(summary);
+  setIsRouteVisible(true);
+}
+
 export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [overlay, setOverlay] = useState(false);
   const [uploadOpened, setUploadOpened] = useState(false);
@@ -34,7 +39,6 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   };
 
   async function setupUser() {
-    //console.log("Current user:", user);
     const email = auth.currentUser.email;
     GetUserData(user.uid).then((data) => {
       console.log("User Data:", data);
@@ -270,7 +274,6 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               setRoutePois={setRoutePois}
               showToast={showToast}
               favorites={favorites}
-              refreshFavorites={refreshFavorites}
               />
             </Modal>
             <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
@@ -288,7 +291,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
                 routePois={routePois}
                 setRoutePois={setRoutePois}
                 normalizeOption={normalizeOption}
-                refreshFavorites={refreshFavorites}
+                onRouteSummary={onRouteSummary}
                 />
               </section>
         </main>
