@@ -18,13 +18,26 @@ export default function ParkDetails({
   routePois,
   setRoutePois,
   showToast,
-  onRouteSummary
+  routeSummaries
 }) {
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark || null);
   const [reviews, setReviews] = useState([]);
   const [isFavorite, setIsFavorite] = useState(false);
   const user = auth.currentUser;
+  const [routeSummaries, setRouteSummaries] = useState([]);
+
+  const newRouteSummary = {
+    legs: result.legs,
+    totalDistance: result.distance,
+    totalDuration: result.duration,
+  };
+
+  setRouteSummaries((prev) => {
+    const updated = [...prev, newRouteSummary];
+    if (updated.length > 5) updated.shift();
+    return updated;
+  });
 
   if (!park) return null;
 
@@ -39,8 +52,8 @@ export default function ParkDetails({
         showToast(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
       }
 
-      if (onRouteSummary)
-        onRouteSummary(result);
+      if (newRouteSummary)
+        newRouteSummary(result);
 
       if (onClose) onClose(); 
     } catch (err) {
@@ -80,7 +93,7 @@ export default function ParkDetails({
   }
 
 
-  
+
   const FavoriteButton = () => (
     <ActionIcon
       size={42}
@@ -137,8 +150,8 @@ export default function ParkDetails({
         showToast(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
       }
 
-      if (onRouteSummary)
-        onRouteSummary(result);
+      if (newRouteSummary)
+        newRouteSummary(result);
 
       if (onClose) onClose();
 
