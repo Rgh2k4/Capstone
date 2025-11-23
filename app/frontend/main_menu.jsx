@@ -16,8 +16,6 @@ const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
 });
 
-
-
 export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [overlay, setOverlay] = useState(false);
   const [uploadOpened, setUploadOpened] = useState(false);
@@ -31,12 +29,12 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [favorites, setFavorites] = useState([]);
   const [routeSummaries, setRouteSummaries] = useState([]);
 
-const onRouteSummary = (newSummary) => {
-  setRouteSummaries(prev => {
-    const updated = [...prev, newSummary];
-    return updated.slice(-5);
-  });
-};
+  const onRouteSummary = (newSummary) => {
+    setRouteSummaries(prev => {
+      const updated = [...prev, newSummary];
+      return updated.slice(-5);
+    });
+  };
 
   const showToast = (message, type = "success") => {
     if (type === "success") toast.success(message);

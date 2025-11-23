@@ -92,8 +92,8 @@ function RouteHandler({computeRouteRef, travelMode, userLocation, onRouteSummary
                   durationValue: leg.duration.value
                 }));
 
-                const totalDistance = legs.reduce((sum, leg) => sum + leg.distanceValue, 0);
-                const totalDuration = legs.reduce((sum, leg) => sum + leg.durationValue, 0);
+                const totalDistance = legs.reduce((sum, leg) => sum + leg.distanceValue / 1000, 0);
+                const totalDuration = legs.reduce((sum, leg) => sum + leg.durationValue / 60, 0);
                 
                 if (typeof onRouteSummary === "function") {
                   onRouteSummary({legs, totalDistance, totalDuration});
