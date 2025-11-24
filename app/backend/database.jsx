@@ -1,13 +1,34 @@
 "use client";
 
-import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch, query, where } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  setDoc,
+  doc,
+  serverTimestamp,
+  updateDoc,
+  getDoc,
+  deleteDoc,
+  getDocs,
+  writeBatch,
+  query,
+  where,
+} from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
-import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
+import {
+  EmailAuthProvider,
+  fetchSignInMethodsForEmail,
+  reauthenticateWithCredential,
+  signInWithCredential,
+  updateEmail,
+  updatePassword,
+  verifyBeforeUpdateEmail,
+} from "firebase/auth";
 
 export async function CreateUserAccount(data) {
   try {
     //console.log("Adding user to Firestore with ID:", data.uid);
-    
+
     await setDoc(doc(database, "users", data.uid), {
       user_ID: data.uid,
       email: data.email,
@@ -21,7 +42,7 @@ export async function CreateUserAccount(data) {
   } catch (error) {
     console.log(error);
   }
-};
+}
 
 export async function LoadUserList() {
   try {
@@ -40,8 +61,7 @@ export async function LoadUserList() {
     console.error("Error getting user list:", error);
     return [];
   }
-
-};
+}
 
 export async function LoadAdminList() {
   try {
@@ -60,8 +80,7 @@ export async function LoadAdminList() {
     console.error("Error getting admin list:", error);
     return [];
   }
-
-};
+}
 
 export async function UpdateLastLogin(user) {
   try {
@@ -77,7 +96,7 @@ export async function UpdateLastLogin(user) {
 export async function GetUserData(uid) {
   try {
     const userDoc = await getDoc(doc(database, "users", uid));
-    if (userDoc.exists()) {     
+    if (userDoc.exists()) {
       return userDoc.data();
     } else {
       console.log("No such document!");
@@ -87,9 +106,9 @@ export async function GetUserData(uid) {
     console.error("Error getting user data:", error);
     return null;
   }
-};
+}
 
-export async function SetDisplayName( displayName) {
+export async function SetDisplayName(displayName) {
   const user = auth.currentUser;
   try {
     await updateDoc(doc(database, "users", user.uid), {
@@ -109,34 +128,45 @@ export function isAdmin(data) {
   }
 }
 
-
 export async function AdminEditUser({ oldData, newData }) {
-    try {
-      await updateDoc(doc(database, "users", oldData.user_ID), {
-        displayName: newData.displayName,
-        email: newData.email,
-        note: newData.note
-      });
-      console.log();
-      return true;
+  try {
+    await updateDoc(doc(database, "users", oldData.user_ID), {
+      displayName: newData.displayName,
+      email: newData.email,
+      note: newData.note,
+    });
+    console.log();
+    return true;
   } catch (err) {
     console.error("AdminEditUser (Firestore-only) error:", err);
     return false;
   }
 }
 
+export async function PromoteToAdmin(uid) {
+  try {
+    console.log("database from add_window: Promoting user to Admin:", uid);
+    await updateDoc(doc(database, "users", uid), {
+      role: "Admin",
+    });
+    console.log("Promoted user to Admin:", uid);
+    return true;
+  } catch (err) {
+    console.error("PromoteToAdmin error:", err);
+    return false;
+  }
+}
 
 export async function AdminDeleteUser({ uid }) {
-    try {
-      await deleteDoc(doc(database, "users", uid))
-      console.log();
-      return true;
+  try {
+    await deleteDoc(doc(database, "users", uid));
+    console.log();
+    return true;
   } catch (err) {
     console.error("AdminEditUser (Firestore-only) error:", err);
     return false;
   }
 }
-
 
 export async function EditUser(type, value) {
   try {
@@ -146,109 +176,109 @@ export async function EditUser(type, value) {
     console.log("Current Password:", currentPassword);
     const currentEmail = user.email;
 
-
-    
-    if (type === "email"){
+    if (type === "email") {
       const newEmail = value?.newValue?.trim();
       console.log("New Email:", newEmail);
-      
+
       const methods = await fetchSignInMethodsForEmail(auth, newEmail);
       if (methods.length > 0) {
         throw new Error("Email already in use");
       }
-      
+
       const ref = doc(database, "users", user.uid);
       await updateDoc(ref, { email: newEmail });
       await updateEmail(user, newEmail);
       return true;
-
-
     } else if (type === "password") {
       const newPassword = value?.newValue?.trim();
 
       if (newPassword) {
         await updatePassword(user, newPassword);
-    }
+      }
       return true;
-  } else {
+    } else {
       return false;
     }
-
   } catch (err) {
     console.error("EditUser error:", err);
     return err.message || false;
   }
-};
-
+}
 
 export async function DeleteUser() {
   try {
-    const user = auth.currentUser; 
-    await deleteDoc(doc(database, "users", user.uid))
-    await user.delete()   
+    const user = auth.currentUser;
+    await deleteDoc(doc(database, "users", user.uid));
+    await user.delete();
     return true;
   } catch (e) {
-        console.error("Auth delete error (re-auth may be required):", e);
-        return false;
-      }
+    console.error("Auth delete error (re-auth may be required):", e);
+    return false;
   }
+}
 
 export async function addReview(reviewData) {
-    try {
-        const docRef = await addDoc(collection(database, "reviews"), {
-          reviewData,
-          dateSubmitted: serverTimestamp(),
-          status: "pending",
-          reviewID: "",
-          location_name: reviewData.location_name
-        }).then(async (docRef) => {
-          await updateDoc(doc(database, "reviews", docRef.id), {
-            reviewID: docRef.id
-          });
-        });
+  try {
+    const docRef = await addDoc(collection(database, "reviews"), {
+      reviewData,
+      dateSubmitted: serverTimestamp(),
+      status: "pending",
+      reviewID: "",
+      location_name: reviewData.location_name,
+    }).then(async (docRef) => {
+      await updateDoc(doc(database, "reviews", docRef.id), {
+        reviewID: docRef.id,
+      });
+    });
 
-        //alert("Reviews Added");
-    } catch (error) {
-        console.error("Error: ", error);
-    }
-};
+    //alert("Reviews Added");
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
 
 export async function readReviewData(location) {
-    
-    try {
-        let reviews = []
-        const reviewData = await getDocs(query(collection(database, "reviews"), where("location_name", "==", location)));
-        console.log("Total Reviews Fetched:", reviewData.size);
-        if (!reviewData.empty) {
-          reviewData.forEach((review) => {
-            if (review.data().status === "approved") {
-              const userData = GetUserData(review.data().reviewData.uid);
-              console.log("userData:", userData);
-              console.log("User:", userData.displayName);
-              const name = userData.displayName;
-              if (userData.displayName === "") {
-                reviews.push({
-                  ...review.data(), displayName: "Anonymous"
-                });
-              } else {
-                reviews.push({
-                  ...review.data(), displayName: name
-                });
-              }
-            }
-          });
+  try {
+    let reviews = [];
+    const reviewData = await getDocs(
+      query(
+        collection(database, "reviews"),
+        where("location_name", "==", location)
+      )
+    );
+    console.log("Total Reviews Fetched:", reviewData.size);
+    if (!reviewData.empty) {
+      reviewData.forEach((review) => {
+        if (review.data().status === "approved") {
+          const userData = GetUserData(review.data().reviewData.uid);
+          console.log("userData:", userData);
+          console.log("User:", userData.displayName);
+          const name = userData.displayName;
+          if (userData.displayName === "") {
+            reviews.push({
+              ...review.data(),
+              displayName: "Anonymous",
+            });
+          } else {
+            reviews.push({
+              ...review.data(),
+              displayName: name,
+            });
+          }
         }
-        console.log("=== Approved Reviews ===");
-        
-        console.log("Approved Reviews Loaded:", reviews);
-        reviews = reviews.filter((rev) => rev.status === "approved");
-        return reviews;
-    } catch (error) {
-        console.error("Error: ", error);
+      });
     }
+    console.log("=== Approved Reviews ===");
 
-    return null;
-};
+    console.log("Approved Reviews Loaded:", reviews);
+    reviews = reviews.filter((rev) => rev.status === "approved");
+    return reviews;
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+
+  return null;
+}
 
 export async function loadPendingReviews() {
   try {
@@ -259,13 +289,12 @@ export async function loadPendingReviews() {
     for (const review of reviewData.docs) {
       if (review.data().status === "pending") {
         pendingReviews.push({
-          ...review.data()
+          ...review.data(),
         });
       }
     }
     console.log("Pending Reviews Loaded:", pendingReviews.length);
     return pendingReviews;
-
   } catch (error) {
     console.error("Error:", error);
   }
@@ -273,87 +302,114 @@ export async function loadPendingReviews() {
   return null;
 }
 
-
 export async function approveReview({ rev }) {
   //console.log("Approving review:", rev.reviewID);
-    try {
-        const reviewRef = doc(database, "reviews", rev.reviewID);
-        await updateDoc(reviewRef, { status: "approved" });
-        alert("Review Approved");
-    } catch (error) {
-        console.error("Error: ", error);
-    }
+  try {
+    const reviewRef = doc(database, "reviews", rev.reviewID);
+    await updateDoc(reviewRef, { status: "approved" });
+    alert("Review Approved");
+  } catch (error) {
+    console.error("Error: ", error);
+  }
 }
 
 export async function denyReview({ rev }) {
-    try {
-        const reviewRef = doc(database, "reviews", rev.reviewID);
-        await deleteDoc(reviewRef);
-        alert("Review Denied");
-    } catch (error) {
-        console.error("Error: ", error);
-    }
+  try {
+    const reviewRef = doc(database, "reviews", rev.reviewID);
+    await deleteDoc(reviewRef);
+    alert("Review Denied");
+  } catch (error) {
+    console.error("Error: ", error);
+  }
 }
 
 export async function ReportUser(usersInfo, { rev }) {
-    const reportData = {
-        reportedUserID: usersInfo.reportedUserID,
-        reporterUserID: usersInfo.reporterUserID,
-        reason: usersInfo.reason,
-        dateReported: serverTimestamp(),
-        status: "unresolved",
-        reviewData: {
-            uid: rev.uid,
-            title: rev.title,
-            message: rev.message,
-            rating: rev.rating,
-            location_name: rev.location_name,
-            displayName: rev.displayName,
-            image: rev.image,
-            status: rev.status
-        }
-    };
-    try {
-        await addDoc(collection(database, "reports"), reportData)
-        alert("Report Submitted");
-    } catch (error) {
-        console.error("Error: ", error);
-    }
-};
+  const reportData = {
+    reportedUserID: usersInfo.reportedUserID,
+    reporterUserID: usersInfo.reporterUserID,
+    reason: usersInfo.reason,
+    dateReported: serverTimestamp(),
+    status: "unresolved",
+    reviewData: {
+      uid: rev.uid || "",
+      title: rev.title || "",
+      message: rev.message || "",
+      rating: rev.rating || 0,
+      location_name: rev.location_name || "",
+      displayName: rev.displayName || "Anonymous",
+      image: rev.image || "",
+      status: rev.status || "approved" // Provide default value
+    },
+  };
+  try {
+    await addDoc(collection(database, "reports"), reportData);
+    alert("Report Submitted");
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
 
 export async function loadReports() {
-    try {
-      const reportData = await getDocs(collection(database, "reports"));
-      const reports = [];
-      reportData.forEach((doc) => {
+  try {
+    const reportData = await getDocs(collection(database, "reports"));
+    const reports = [];
+    reportData.forEach((doc) => {
+      if (doc.data().status === "unresolved") {
         const data = doc.data();
-          reports.push(data);
-      });
-      return reports;
-    } catch (error) {
-      console.error("Error: ", error);
-    }
+        reports.push(data);
+      }
+    });
+    return reports;
+  } catch (error) {
+    console.error("Error: ", error);
+  }
 
-    return null;
-};
+  return null;
+}
 
 export async function resolveReport(report, actions) {
   try {
     console.log("Resolving report for:", report);
-      const reportOriginalRef = query(collection(database, "reports"), where("reportedUserID", "==", report.reportedUserID), where("reporterUserID", "==", report.reporterUserID), where("dateReported", "==", report.dateReported));
-      await updateDoc(reportOriginalRef, { status: "resolved" });
-      const reportCopyRef = getDocs(database, "reports");
-      for (const review of reportCopyRef) {
-          if (review.data().reviewData === report.reviewData && review.data().status === "unresolved") {
-              await deleteDoc(review);
-          }
+
+    const reportQuery = query(
+      collection(database, "reports"),
+      where("reportedUserID", "==", report.reportedUserID),
+      where("reporterUserID", "==", report.reporterUserID),
+      where("dateReported", "==", report.dateReported)
+    );
+    const reportDocs = await getDocs(reportQuery);
+
+    for (const reportDoc of reportDocs.docs) {
+      await updateDoc(doc(database, "reports", reportDoc.id), { status: "resolved" });
+    }
+
+    const allReportsSnapshot = await getDocs(collection(database, "reports"));
+    for (const reportDoc of allReportsSnapshot.docs) {
+      const reportData = reportDoc.data();
+      if (JSON.stringify(reportData.reviewData) === JSON.stringify(report.reviewData) && 
+          reportData.status === "unresolved") {
+        await deleteDoc(doc(database, "reports", reportDoc.id));
       }
-      if (action === "delete") {
-          const reviewRef = query(collection(database, "reviews"), where("uid", "==", report.reviewData.uid), where("title", "==", report.reviewData.title), where("message", "==", report.reviewData.message), where("location_name", "==", report.reviewData.location_name));
-          await deleteDoc(reviewRef);
+    }
+
+    if (actions === "delete") {
+      const reviewQuery = query(
+        collection(database, "reviews"), 
+        where("reviewData.uid", "==", report.reviewData.uid), 
+        where("reviewData.title", "==", report.reviewData.title), 
+        where("reviewData.message", "==", report.reviewData.message), 
+        where("location_name", "==", report.reviewData.location_name)
+      );
+      const reviewDocs = await getDocs(reviewQuery);
+      
+      // Delete each matching review document
+      for (const reviewDoc of reviewDocs.docs) {
+        await deleteDoc(doc(database, "reviews", reviewDoc.id));
       }
-      alert("Report Resolved");
+    }
+    alert("Report Resolved");
+    
   } catch (error) {
-      console.error("Error: ", error);
+    console.error("Error: ", error);
   }
-};
+}
