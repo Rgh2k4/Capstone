@@ -11,14 +11,14 @@ import testUsers from "./components/admin/user_test_data.json";
 import { Button } from "@mantine/core";
 import { auth } from "../backend/databaseIntegration.jsx";
 import ProfileMenu from "./components/profile/profile_menu";
-import { approveReview, denyReview, GetUserData, isAdmin, LoadAdminList, loadPendingReviews, loadReports, LoadUserList, resolveReport } from "../backend/database";
+import { approveReview, denyReview, GetUserData, isAdmin, LoadAdminList, loadPendingReviews, loadReports, LoadUserList, PromoteToAdmin, resolveReport } from "../backend/database";
 
 function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Used to trigger re-fetching data
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
   const [showModalEdit, setShowModalEdit] = useState(false);
   const [showModalAdd, setShowModalAdd] = useState(false);
-  const [role, setRole] = useState("");
   const [account, setAccount] = useState();
   const [pageName, setPageName] = useState("Dashboard"); // Dyanmically change the page based on the button clicked.
   const [db, setDb] = useState(testUsers);
@@ -69,17 +69,19 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
       console.log("Admin List:", adminList);
       setAdmins(adminList)
     });
-  }, [resolveReport, approveReview, denyReview]);
+  }, [refreshTrigger]);
   
+  const triggerRefresh = () => {
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
 
   function handleDeleteAccount(id) {
-    setDb(db => ({...db,
-    accounts: db.accounts.filter(acc => acc.id !== id),
-    reviews: db.reviews.filter(r => r.id !== id),
-    reports: db.reports.filter(r => r.id !== id)}));
+
   }
   function handleReport(report, action) {
     resolveReport(report, action);
+    triggerRefresh();
   }
   function handleReview(rev, action) {
     console.log("Handling review action:", action);
@@ -89,13 +91,13 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
     } else if (action === "delete") {
       denyReview({rev});
     }
+    triggerRefresh();
   }
 
-  function handleAddAccount(account) {
-    account.id = idCounter;
-    setIdCounter(idCounter + 1);
-    setDb(db => ({...db,
-    accounts: [...db.accounts, account]}));
+  function handlePromoteToAdmin(accountUID) {
+    console.log("Promoting account to admin:", accountUID);
+    PromoteToAdmin(accountUID);
+    triggerRefresh();
   }
 
   return (
@@ -145,8 +147,13 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
                 showHeader={false}
                 setShowModal={setShowModal}
                 sendUser={setAccount}
-                reviews={pendingReviews}
+                reviews={pendingReviews.slice(0, 5)}
               />
+              {pendingReviews.length > 5 && (
+                <p className="text-gray-500 text-sm mt-2">
+                  Showing 5 of {pendingReviews.length} pending reviews
+                </p>
+              )}
             </div>
             <div className="bg-white shadow-md rounded-xl p-6">
               <div className=" flex flex-row justify-between">
@@ -157,8 +164,13 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
                 showHeader={false}
                 setShowModal={setShowModal2}
                 sendUser={setAccount}
-                reports={reports}
+                reports={reports.slice(0, 5)}
               />
+              {reports.length > 5 && (
+                <p className="text-gray-500 text-sm mt-2">
+                  Showing 5 of {reports.length} pending reports
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -190,7 +202,6 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
             <AccountList
               setShowModalEdit={setShowModalEdit}
               setShowModalAdd={setShowModalAdd}
-              setRole={setRole}
               sendUser={setAccount}
               users={users}
               admins={admins}
@@ -227,9 +238,8 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
     <Modal isVisible={showModalAdd} onClose={() => setShowModalAdd(false)}>
       <Add
         onClose={() => setShowModalAdd(false)}
-        role={role}
-        onAddAccount={handleAddAccount}
-        setRole={setRole}
+        users={users}
+        onPromoteAccount={handlePromoteToAdmin}
       />
     </Modal>
   </div>
