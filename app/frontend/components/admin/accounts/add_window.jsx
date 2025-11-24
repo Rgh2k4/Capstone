@@ -1,83 +1,53 @@
-import { Button, PasswordInput } from "@mantine/core";
+import { Button, PasswordInput, Select } from "@mantine/core";
 import { Input } from "postcss";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-function Add({ onClose, role, setRole, onAddAccount }) {
+function Add({ onClose, users, onPromoteAccount }) {
+  const [accounts, setAccounts] = useState(null);
   const [submited, setSubmitted] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [visible, setVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
-  function handleAdd() {
-    if (!email.trim() || !password.trim() || !confirm.trim()) {
-      alert("All fields are required!");
-      return;
-    }
-    if (password !== confirm) {
-      alert("Passwords do not match!");
-      return;
-    }
-
-    alert("Account Created!");
-    setRole("");
+  function handlePromoteToAdmin() {
+    //console.log("Selected User to Promote:", selectedUser);
+    setSubmitted(true);
+    onPromoteAccount(selectedUser);
+    setSubmitted(false);
     onClose();
+    alert(`Added user "${selectedUser}" as Admin`);
   }
 
+  useEffect(() => {
+    setAccounts(users.map((user) => ({label: user.email, value: user.user_ID})));
+
+  }, []);
+
+  //console.log("add_window Accounts:", accounts);
+
+
   return (
-    <div className=" p-12 rounded flex flex-col justify-center text-center space-y-24">
+    <div className=" p-24 rounded flex flex-col justify-center text-center space-y-24">
       <div className="flex justify-center text-center text-4xl font-bold">
-        <p>Add {role}</p>
+        <p>Add Admin</p>
       </div>
       <div className="flex flex-col space-y-6">
-        <Input.Wrapper className="w-full" size="md" label="Enter Email">
-          <Input
-            disabled={submited}
-            size="md"
-            name="email"
-            type="email"
-            placeholder="Enter Email..."
-            value={form.email}
-            onChange={onChange}
-            leftSection={<IconAt size={16} />}
-            required
-          />
-        </Input.Wrapper>
-        <Input.Wrapper className="w-full" size="md" label="Enter Password">
-          <PasswordInput
-            disabled={submited}
-            size="md"
-            name="password"
-            type="password"
-            placeholder="Enter Password..."
-            value={form.password}
-            onChange={onChange}
-            visible={visible}
-            onVisibilityChange={toggle}
-            required
-          />
-        </Input.Wrapper>
-        <Input.Wrapper className="w-full" size="md" label="Enter Password">
-          <PasswordInput
-            disabled={submited}
-            size="md"
-            name="confirm"
-            type="password"
-            placeholder="Confirm Password..."
-            value={form.confirm}
-            onChange={onChange}
-            visible={visible}
-            onVisibilityChange={toggle}
-            required
-          />
-        </Input.Wrapper>
+        <Select
+          label="Select User to Promote"
+          placeholder="Pick user"
+          autoSelectOnBlur
+          searchable
+          data={accounts}
+          onChange={(account) => setSelectedUser(account)}
+        />
       </div>
       <div>
         <Button
           className="w-full"
           size="lg"
-          variant="filled"
-          onClick={handleAdd}
+          variant="outline"
+          color="green"
+          loading={submited}
+          onClick={handlePromoteToAdmin}
         >
           Add
         </Button>

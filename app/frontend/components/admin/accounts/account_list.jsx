@@ -1,9 +1,8 @@
 import AdminList from "./admin_list";
 import UserList from "./user_list";
 
-function AccountList({ setShowModalEdit, setShowModalAdd, setRole, sendUser, users, admins }) {
-  const handleAdd = (role) => {
-    setRole(role);
+function AccountList({ setShowModalEdit, setShowModalAdd, sendUser, users, admins }) {
+  const handlePromote = () => {
     setShowModalAdd(true);
   };
 
@@ -29,7 +28,7 @@ function AccountList({ setShowModalEdit, setShowModalAdd, setRole, sendUser, use
         <section className="overflow-y-auto bg-gray-100 drop-shadow-md drop-shadow-gray-400">
           <div className="flex flex-row justify-center text-4xl font-bold bg-gray-300 p-4 space-y-4 drop-shadow-sm drop-shadow-gray-400 space-x-8">
             <p className="mt-6">Admins</p>
-            <button className="plus-button" onClick={() => handleAdd("admin")}>
+            <button className="plus-button" onClick={() => handlePromote(users)}>
               +
             </button>
           </div>
