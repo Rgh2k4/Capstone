@@ -28,6 +28,31 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [travelMode, setTravelMode] = useState("DRIVING");
   const [favorites, setFavorites] = useState([]);
   const [routeSummaries, setRouteSummaries] = useState([]);
+  const [isComputing, setIsComputing] = useState(false);
+  const cancelComputeRef = useRef(false);
+
+  const handleComputeRoute = async (pois) => {
+    setIsComputing(true);
+    cancelComputeRef.current = false;
+
+    try {
+      const result = await computeRouteRef.current(pois, travelMode);
+      if (cancelComputeRef.current) return;  // stop if cancelled
+
+      setRoutePois(pois);
+      addRouteSummary(result);
+      showToast(`Distance: ${result.totalDistance.toFixed(2)} km\nDuration: ${Math.round(result.totalDuration)} mins`);
+    } catch (err) {
+      if (!cancelComputeRef.current) showToast("Could not compute route", "error");
+    } finally {
+      setIsComputing(false);
+    }
+  };
+
+  const handleStopRoute = () => {
+    cancelComputeRef.current = true;
+    setIsComputing(false);
+  };
 
   const onRouteSummary = (newSummary) => {
     setRouteSummaries(prev => {
