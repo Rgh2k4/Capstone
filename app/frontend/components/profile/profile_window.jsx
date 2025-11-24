@@ -1,12 +1,15 @@
 import { auth } from "@/app/backend/databaseIntegration";
-import { Button, Input } from "@mantine/core";
+import { Button, Input, FileInput } from "@mantine/core";
 import { sendEmailVerification } from "firebase/auth";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated }) {
   const [name, setName] = useState(displayName);
   const [submited, setSubmitted] = useState(false);
   const [status, setStatus] = useState("");
+  const [profileImage, setProfileImage] = useState(null)
+  const [fileName, setFileName] = useState('No file chosen');
+  const fileInputRef = useRef(null);
   //console.log(displayName);
   //console.log(email);
   //console.log(dateCreated);
@@ -38,14 +41,33 @@ function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated })
     setStatus("Verification email sent.");
   }
 
+  function fileRefButton() {
+    fileInputRef.current?.click();
+  };
+
+  function submitProfileImage(e) {
+    const file = e.target.files[0];
+    setProfileImage(file);
+  }
+
 
   return (
     <div className=" w-full p-24 rounded flex flex-col justify-center text-center space-y-24">
-      <div className="flex flex-row justify-center text-center space-x-6 align-middle">
+      <div className="flex flex-col items-center">
         <img
           className="w-50 h-50 bg-gray-400 rounded-full"
           alt="profile picture"
         />
+        <input type="file" ref={fileInputRef} onChange={submitProfileImage} className="hidden" accept="image/*"
+        />
+        <Button 
+          onClick={fileRefButton}
+          size="lg"
+          variant="filled"
+          className="mt-8"
+        >
+          Change Profile Picture
+        </Button>
       </div>
       <div className="flex flex-col space-y-6">
         {status && (
