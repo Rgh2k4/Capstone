@@ -40,42 +40,7 @@ function SettingsMenu({
     onDeleteAccount();
   }
 
-  const [promoting, setPromoting] = useState(false);
-  const [promoteError, setPromoteError] = useState("");
-  const [promoteDone, setPromoteDone] = useState(false);
-
-  async function handlePromoteToAdmin() {
-    try {
-      setPromoteError("");
-      setPromoting(true);
-
-      const uid = auth.currentUser?.uid;
-      const email = auth.currentUser?.email;
-
-      if (!uid || !email) {
-        setPromoteError("No signed-in user found.");
-        return;
-      }
-
-      const ok = await AdminEditUser({
-        oldData: { user_ID: uid, email },
-        newData: { role: "Admin", note: "Self-promoted via Settings" },
-      });
-
-      if (!ok) {
-        setPromoteError("Failed to update role.");
-        return;
-      }
-
-      await GetUserData(uid);
-      setPromoteDone(true);
-    } catch (e) {
-      console.error(e);
-      setPromoteError("Something went wrong.");
-    } finally {
-      setPromoting(false);
-    }
-  }
+  
 
   return (
     <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center space-y-6 p-12 bg-white/5 backdrop-blur-md rounded-2xl shadow-lg border border-white/10">
