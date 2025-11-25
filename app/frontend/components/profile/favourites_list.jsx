@@ -7,13 +7,11 @@ function FavouritesList({ userData }) {
 
   useEffect(() => {
     // Load user's favourite parks
-    // This would connect to your database to get saved favourites
     setLoading(false);
   }, [userData]);
 
   return (
     <div className="overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-8">
         <div className="text-center">
           <div className="flex justify-center mb-4">
