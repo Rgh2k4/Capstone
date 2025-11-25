@@ -2,7 +2,7 @@
 import { ref, uploadBytes, listAll, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from './databaseIntegration';
 import { useState, useEffect } from 'react';
-import { updateProfileImageURL } from './database';
+import { updateProfileImageURL, pullProfileImageURL } from './database';
 
 export async function uploadImage(file, location) {
   try {
@@ -32,6 +32,44 @@ export async function removeImage(file, user) {
     } catch (error) {
     console.error('Error:', error);
   }
+}
+
+export function PullProfileImageReview({ user }) {
+    const [image, setImage] = useState(null);
+
+    async function generateImage() {
+        try {
+            const imageName = await pullProfileImageURL(user);
+            let trueImageName = imageName;
+            
+
+            if (imageName && typeof imageName.then === 'function') {
+                    trueImageName = await imageName;
+                }
+
+            if (trueImageName === "" || !trueImageName) {
+                setImage(null)             
+            }
+            else {
+                const imagePath = ref(storage, `Profile/${user.uid}/${imageName}`);
+                const imageURL = await getDownloadURL(imagePath);
+                setImage(imageURL);
+            }          
+        } catch (error) {
+            console.error('Error: ', error);
+        }
+    }
+
+    useEffect(() => {
+        generateImage();
+    }, [])
+
+    if (!image) {
+        return <img className="w-16 h-16 bg-gray-300 rounded-full" alt="profile" />
+    }
+
+    return <img src={image} className="w-16 h-16 bg-gray-300 rounded-full" alt="profile" />
+   
 }
 
 export function PullProfileImage({ user, imageName }) {

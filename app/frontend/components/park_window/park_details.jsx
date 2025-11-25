@@ -5,7 +5,7 @@ import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { database, auth } from "../../../backend/databaseIntegration";
 import { ActionIcon, Button, Select, Divider } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
-import { PullImage } from "@/app/backend/uploadStorage";
+import { PullImage, PullProfileImageReview } from "@/app/backend/uploadStorage";
 import { readReviewData, ReportUser } from "@/app/backend/database";
 
 export default function ParkDetails({
@@ -250,10 +250,7 @@ export default function ParkDetails({
                 {reviews.map((rev, index) => (
                   <li key={index} className="bg-white p-4 rounded-lg shadow">
                     <div className="flex items-start space-x-4">
-                      <img
-                        className="w-16 h-16 bg-gray-300 rounded-full"
-                        alt="profile"
-                      />
+                      <PullProfileImageReview user={rev.reviewData} />
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <p className="font-semibold text-lg text-gray-800">
