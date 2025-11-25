@@ -29,28 +29,10 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [favorites, setFavorites] = useState([]);
   const [routeSummaries, setRouteSummaries] = useState([]);
   const [isComputing, setIsComputing] = useState(false);
-  const cancelComputeRef = useRef(false);
-
-  const handleComputeRoute = async (pois) => {
-    setIsComputing(true);
-    cancelComputeRef.current = false;
-
-    try {
-      const result = await computeRouteRef.current(pois, travelMode);
-      if (cancelComputeRef.current) return;  // stop if cancelled
-
-      setRoutePois(pois);
-      addRouteSummary(result);
-      showToast(`Distance: ${result.totalDistance.toFixed(2)} km\nDuration: ${Math.round(result.totalDuration)} mins`);
-    } catch (err) {
-      if (!cancelComputeRef.current) showToast("Could not compute route", "error");
-    } finally {
-      setIsComputing(false);
-    }
-  };
 
   const handleStopRoute = () => {
-    cancelComputeRef.current = true;
+    setRoutePois([]);
+    setRouteSummaries([]);
     setIsComputing(false);
   };
 
@@ -291,7 +273,16 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
         </header>
         {routePois.length > 0 && routeSummaries.length > 0 && (
           <div className="absolute top-16 left-4 z-40 w-96 shadow-lg bg-white rounded-md p-2">
-            <Accordion multiple defaultValue={routeSummaries.map((_, i) => `route-${i}`)}>
+            <Accordion multiple defaultValue={['stop-route']}>
+              <Accordion.Item value="stop-route">
+                <Accordion.Control>Stop Computing Route</Accordion.Control>
+                <Accordion.Panel>
+                  <Button color="red" size="sm" onClick={handleStopRoute}>
+                    Stop Computing Route
+                  </Button>
+                </Accordion.Panel>
+              </Accordion.Item>
+
               {routeSummaries.map((route, index) => (
                 <Accordion.Item key={index} value={`route-${index}`}>
                   <Accordion.Control>Trip Summary #{index + 1}</Accordion.Control>

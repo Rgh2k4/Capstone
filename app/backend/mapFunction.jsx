@@ -109,7 +109,7 @@ function RouteHandler({computeRouteRef, travelMode, userLocation, onRouteSummary
             }
           );
         });
-      };
+      }
     }
   }, [map, computeRouteRef, travelMode, userLocation]);
 
