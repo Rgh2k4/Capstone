@@ -157,6 +157,7 @@ export async function PromoteToAdmin(uid) {
   }
 }
 
+// Assisted with Claude
 export async function AdminDeleteUser(uid) {
   try {
     // Create a batch for atomic updates
@@ -266,6 +267,7 @@ export async function EditUser(type, value) {
   }
 }
 
+// Assisted with Claude
 export async function DeleteUser() {
   try {
     const user = auth.currentUser;
@@ -489,6 +491,8 @@ export async function loadReports() {
   return null;
 }
 
+
+// Assisted with Claude
 export async function resolveReport(report, actions) {
   try {
     console.log("Resolving report for:", report);
