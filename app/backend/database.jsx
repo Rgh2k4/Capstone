@@ -157,13 +157,74 @@ export async function PromoteToAdmin(uid) {
   }
 }
 
-export async function AdminDeleteUser({ uid }) {
+export async function AdminDeleteUser(uid) {
   try {
+    // Create a batch for atomic updates
+    const batch = writeBatch(database);
+    
+    // Update all reviews by this user
+    const reviewsQuery = query(
+      collection(database, "reviews"),
+      where("reviewData.uid", "==", uid)
+    );
+    const reviewsSnapshot = await getDocs(reviewsQuery);
+    
+    reviewsSnapshot.forEach((reviewDoc) => {
+      const reviewRef = doc(database, "reviews", reviewDoc.id);
+      batch.update(reviewRef, {
+        "reviewData.uid": "deleted-user",
+        "reviewData.displayName": "Deleted User",
+        "reviewData.message": "This message has been deleted",
+        "reviewData.profilePic": null
+      });
+    });
+    
+    // Update all reports where this user was the reporter
+    const reporterQuery = query(
+      collection(database, "reports"),
+      where("reporterUserID", "==", uid)
+    );
+    const reporterSnapshot = await getDocs(reporterQuery);
+    
+    reporterSnapshot.forEach((reportDoc) => {
+      const reportRef = doc(database, "reports", reportDoc.id);
+      batch.update(reportRef, {
+        reporterUserID: "deleted-user"
+      });
+    });
+    
+    // Update all reports where this user was reported
+    const reportedQuery = query(
+      collection(database, "reports"),
+      where("reportedUserID", "==", uid)
+    );
+    const reportedSnapshot = await getDocs(reportedQuery);
+    
+    reportedSnapshot.forEach((reportDoc) => {
+      const reportRef = doc(database, "reports", reportDoc.id);
+      batch.update(reportRef, {
+        reportedUserID: "deleted-user",
+        "reviewData.uid": "deleted-user",
+        "reviewData.displayName": "Deleted User",
+        "reviewData.message": "This message has been deleted",
+        "reviewData.profilePic": null
+      });
+    });
+    
+    // Execute all updates atomically
+    await batch.commit();
+    
+    // Delete the user document from Firestore
     await deleteDoc(doc(database, "users", uid));
-    console.log();
+    
+    // Note: Firebase Auth user deletion from admin requires Firebase Admin SDK
+    // This would typically be done on the server side with admin privileges
+    // For now, we'll handle the Firestore cleanup
+    console.log("User data anonymized and Firestore document deleted for:", uid);
+    
     return true;
   } catch (err) {
-    console.error("AdminEditUser (Firestore-only) error:", err);
+    console.error("AdminDeleteUser error:", err);
     return false;
   }
 }
@@ -208,8 +269,69 @@ export async function EditUser(type, value) {
 export async function DeleteUser() {
   try {
     const user = auth.currentUser;
-    await deleteDoc(doc(database, "users", user.uid));
+    const uid = user.uid;
+    
+    // Create a batch for atomic updates
+    const batch = writeBatch(database);
+    
+    // Update all reviews by this user
+    const reviewsQuery = query(
+      collection(database, "reviews"),
+      where("reviewData.uid", "==", uid)
+    );
+    const reviewsSnapshot = await getDocs(reviewsQuery);
+    
+    reviewsSnapshot.forEach((reviewDoc) => {
+      const reviewRef = doc(database, "reviews", reviewDoc.id);
+      batch.update(reviewRef, {
+        "reviewData.uid": "deleted-user",
+        "reviewData.displayName": "Deleted User",
+        "reviewData.message": "This message has been deleted",
+        "reviewData.profilePic": null
+      });
+    });
+    
+    // Update all reports where this user was the reporter
+    const reporterQuery = query(
+      collection(database, "reports"),
+      where("reporterUserID", "==", uid)
+    );
+    const reporterSnapshot = await getDocs(reporterQuery);
+    
+    reporterSnapshot.forEach((reportDoc) => {
+      const reportRef = doc(database, "reports", reportDoc.id);
+      batch.update(reportRef, {
+        reporterUserID: "deleted-user"
+      });
+    });
+    
+    // Update all reports where this user was reported
+    const reportedQuery = query(
+      collection(database, "reports"),
+      where("reportedUserID", "==", uid)
+    );
+    const reportedSnapshot = await getDocs(reportedQuery);
+    
+    reportedSnapshot.forEach((reportDoc) => {
+      const reportRef = doc(database, "reports", reportDoc.id);
+      batch.update(reportRef, {
+        reportedUserID: "deleted-user",
+        "reviewData.uid": "deleted-user",
+        "reviewData.displayName": "Deleted User",
+        "reviewData.message": "This message has been deleted",
+        "reviewData.profilePic": null
+      });
+    });
+    
+    // Execute all updates atomically
+    await batch.commit();
+    
+    // Delete the user document from Firestore
+    await deleteDoc(doc(database, "users", uid));
+    
+    // Delete the Firebase Auth user
     await user.delete();
+    
     return true;
   } catch (e) {
     console.error("Auth delete error (re-auth may be required):", e);
