@@ -30,8 +30,14 @@ export function PullProfileImage({ user, imageName }) {
 
     async function generateImage() {
         try {
-            if (imageName === "") {
-                setImage(null)
+            let trueImageName = imageName;
+
+            if (imageName && typeof imageName.then === 'function') {
+                    trueImageName = await imageName;
+                }
+
+            if (trueImageName === "" || !trueImageName) {
+                setImage(null)             
             }
             else {
                 const imagePath = ref(storage, `Profile/${user.uid}/${imageName}`);

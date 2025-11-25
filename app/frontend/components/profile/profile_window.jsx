@@ -50,16 +50,15 @@ function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated })
   function submitProfileImage(e) {
     const file = e.target.files[0];
     setProfileImage(file);
-  }
-
-  function updateProfileImage() {
-    const imageURL = pullProfileImageURL(user);
-    setImageName(imageURL);
-    alert(imageName);
-
+    
     if (profileImage != null) {
       uploadProfileImage(profileImage, user);
     }
+  }
+
+  async function updateProfileImage() {
+    const imageURL = await pullProfileImageURL(user);
+    setImageName(imageURL);
   }
 
   useEffect(() => {

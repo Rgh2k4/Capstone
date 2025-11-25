@@ -16,6 +16,7 @@ export async function CreateUserAccount(data) {
       note: "",
       displayName: data.displayName || "",
       lastLogin: serverTimestamp(),
+      profileImage: "",
     });
     return true;
   } catch (error) {
