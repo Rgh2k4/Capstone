@@ -15,12 +15,42 @@ export async function uploadImage(file, location) {
 
 export async function uploadProfileImage(file, user) {
   try {
-    const storagePath = ref(storage, `Profile/${user.id}/${file.name}`);
+    const storagePath = ref(storage, `Profile/${user.uid}/${file.name}`);
     await uploadBytes(storagePath, file);
     alert("Success!");
   } catch (error) {
     console.error('Error:', error);
   }
+}
+
+export function PullProfileImage({ user, imageName }) {
+    const [image, setImage] = useState(null);
+
+    async function generateImage() {
+        try {
+            if (imageName === "") {
+                setImage(null)
+            }
+            else {
+                const imagePath = ref(storage, `Profile/${user.uid}/${imageName}`);
+                const imageURL = await getDownloadURL(imagePath);
+                setImage(imageURL);
+            }          
+        } catch (error) {
+            console.error('Error: ', error);
+        }
+    }
+
+    useEffect(() => {
+        generateImage();
+    }, [imageName])
+
+    if (!image) {
+        return <img className="w-50 h-50 bg-gray-400 rounded-full" alt="profile picture" />
+    }
+
+    return <img src={image} className="w-50 h-50 bg-gray-400 rounded-full" alt="profile picture" />
+   
 }
 
 export function PullImage({ location, url }) {

@@ -357,3 +357,13 @@ export async function resolveReport(report, actions) {
       console.error("Error: ", error);
   }
 };
+
+export async function pullProfileImageURL(user) {
+  try {
+    const docSnapshot = await getDoc(doc(database, 'users', user.uid))
+    const data = docSnapshot.data();
+    return data.profileImage;
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
