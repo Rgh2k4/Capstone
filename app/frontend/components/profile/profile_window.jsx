@@ -2,7 +2,7 @@ import { auth } from "@/app/backend/databaseIntegration";
 import { Button, Input, FileInput } from "@mantine/core";
 import { sendEmailVerification } from "firebase/auth";
 import { useState, useRef, useEffect } from "react";
-import { uploadProfileImage } from "@/app/backend/uploadStorage";
+import { uploadProfileImage, PullProfileImage } from "@/app/backend/uploadStorage";
 import { pullProfileImageURL } from "@/app/backend/database";
 
 function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated }) {
@@ -10,7 +10,7 @@ function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated })
   const [submited, setSubmitted] = useState(false);
   const [status, setStatus] = useState("");
   const [profileImage, setProfileImage] = useState(null);
-  const [displayProfile, setDisplayProfile] = useState(null);
+  const [imageName, setImageName] = useState("");
   const fileInputRef = useRef(null);
   //console.log(displayName);
   //console.log(email);
@@ -54,6 +54,8 @@ function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated })
 
   function updateProfileImage() {
     const imageURL = pullProfileImageURL(user);
+    setImageName(imageURL);
+    alert(imageName);
 
     if (profileImage != null) {
       uploadProfileImage(profileImage, user);
@@ -67,10 +69,7 @@ function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated })
   return (
     <div className=" w-full p-24 rounded flex flex-col justify-center text-center space-y-24">
       <div className="flex flex-col items-center">
-        <img
-          className="w-50 h-50 bg-gray-400 rounded-full"
-          alt="profile picture"
-        />
+        <PullProfileImage user={user} imageName={imageName} />
         <input type="file" ref={fileInputRef} onChange={submitProfileImage} className="hidden" accept="image/*"
         />
         <Button 

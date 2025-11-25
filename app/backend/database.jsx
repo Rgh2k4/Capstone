@@ -367,3 +367,12 @@ export async function pullProfileImageURL(user) {
     console.error("Error: ", error);
   }
 }
+
+export async function updateProfileImageURL(user, file) {
+  try {
+    const docRef = doc(database, 'users', user.uid);
+    await updateDoc(docRef, {profileImage: file.name});
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}

@@ -2,6 +2,7 @@
 import { ref, uploadBytes, listAll, getDownloadURL } from 'firebase/storage';
 import { storage } from './databaseIntegration';
 import { useState, useEffect } from 'react';
+import { updateProfileImageURL } from './database';
 
 export async function uploadImage(file, location) {
   try {
@@ -17,6 +18,7 @@ export async function uploadProfileImage(file, user) {
   try {
     const storagePath = ref(storage, `Profile/${user.uid}/${file.name}`);
     await uploadBytes(storagePath, file);
+    updateProfileImageURL(user, file);
     alert("Success!");
   } catch (error) {
     console.error('Error:', error);
