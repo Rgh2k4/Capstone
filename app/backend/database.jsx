@@ -16,6 +16,7 @@ export async function CreateUserAccount(data) {
       note: "",
       displayName: data.displayName || "",
       lastLogin: serverTimestamp(),
+      profileImage: "",
     });
     return true;
   } catch (error) {
@@ -357,3 +358,22 @@ export async function resolveReport(report, actions) {
       console.error("Error: ", error);
   }
 };
+
+export async function pullProfileImageURL(user) {
+  try {
+    const docSnapshot = await getDoc(doc(database, 'users', user.uid))
+    const data = docSnapshot.data();
+    return data.profileImage;
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
+
+export async function updateProfileImageURL(user, file) {
+  try {
+    const docRef = doc(database, 'users', user.uid);
+    await updateDoc(docRef, {profileImage: file.name});
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
