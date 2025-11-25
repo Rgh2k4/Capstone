@@ -1,5 +1,5 @@
 "use client";
-import { ref, uploadBytes, listAll, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, listAll, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from './databaseIntegration';
 import { useState, useEffect } from 'react';
 import { updateProfileImageURL } from './database';
@@ -21,6 +21,15 @@ export async function uploadProfileImage(file, user) {
     updateProfileImageURL(user, file);
     alert("Success!");
   } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+export async function removeImage(file, user) {
+    try {
+        const storagePath = ref(storage, `Profile/${user.uid}/${file}`);
+        await deleteObject(storagePath);
+    } catch (error) {
     console.error('Error:', error);
   }
 }

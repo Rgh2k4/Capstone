@@ -2,7 +2,7 @@ import { auth } from "@/app/backend/databaseIntegration";
 import { Button, Input, FileInput } from "@mantine/core";
 import { sendEmailVerification } from "firebase/auth";
 import { useState, useRef, useEffect } from "react";
-import { uploadProfileImage, PullProfileImage } from "@/app/backend/uploadStorage";
+import { uploadProfileImage, PullProfileImage, removeImage } from "@/app/backend/uploadStorage";
 import { pullProfileImageURL } from "@/app/backend/database";
 
 function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated }) {
@@ -47,23 +47,27 @@ function ProfileWindow({ onChangeDisplayName, displayName, email, dateCreated })
     fileInputRef.current?.click();
   };
 
-  function submitProfileImage(e) {
+  async function submitProfileImage(e) {
     const file = e.target.files[0];
-    setProfileImage(file);
-    
-    if (profileImage != null) {
-      uploadProfileImage(profileImage, user);
+    const tempURL = await pullProfileImageURL(user);
+    if (file) {
+      await removeImage(tempURL, user);
+      await uploadProfileImage(file, user);
+      const imageURL = await pullProfileImageURL(user);
+      setImageName(imageURL);
     }
   }
 
   async function updateProfileImage() {
-    const imageURL = await pullProfileImageURL(user);
-    setImageName(imageURL);
-  }
+      const imageURL = await pullProfileImageURL(user);
+      setImageName(imageURL);
+    }
 
   useEffect(() => {
-    updateProfileImage();
-  }, [profileImage])
+    if (user) {
+      updateProfileImage();
+    }
+  }, [user]);
 
   return (
     <div className=" w-full p-24 rounded flex flex-col justify-center text-center space-y-24">
