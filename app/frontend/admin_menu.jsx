@@ -11,7 +11,7 @@ import testUsers from "./components/admin/user_test_data.json";
 import { Button } from "@mantine/core";
 import { auth } from "../backend/databaseIntegration.jsx";
 import ProfileMenu from "./components/profile/profile_menu";
-import { approveReview, denyReview, GetUserData, isAdmin, LoadAdminList, loadPendingReviews, loadReports, LoadUserList, PromoteToAdmin, resolveReport } from "../backend/database";
+import { AdminDeleteUser, approveReview, denyReview, GetUserData, isAdmin, LoadAdminList, loadPendingReviews, loadReports, LoadUserList, PromoteToAdmin, resolveReport } from "../backend/database";
 
 function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [refreshTrigger, setRefreshTrigger] = useState(0); // Used to trigger re-fetching data
@@ -77,7 +77,8 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
 
 
   function handleDeleteAccount(id) {
-
+    AdminDeleteUser(id);
+    triggerRefresh();
   }
   function handleReport(report, action) {
     resolveReport(report, action);
@@ -101,20 +102,22 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   }
 
   return (
-  <div className="flex h-screen w-screen">
-    <aside className="w-1/8 bg-white shadow-md shadow-gray-600 text-black flex flex-col p-6">
-      <h1 className="text-2xl font-bold mb-8 text-center">
-        National Parks Info System
-      </h1>
-      <nav className="flex flex-col space-y-3">
+  <div className="flex h-screen w-screen bg-gray-50">
+    <aside className="w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
+      <div className="p-6 border-b border-gray-200">
+        <h1 className="text-xl font-bold text-center text-gray-800 leading-tight">
+          National Parks Info System
+        </h1>
+      </div>
+      <nav className="flex-1 p-4 space-y-2">
         {["Dashboard", "Reviews", "Reports", "Accounts"].map((page) => (
           <button
           key={page}
           onClick={() => setPageName(page)}
-          className={`px-4 py-2 rounded-lg text-left font-medium transition-colors
+          className={`w-full px-4 py-3 rounded-lg text-left font-medium transition-all duration-200
             ${pageName === page
-              ? "bg-blue-500 text-white"
-              : "hover:bg-gray-700 hover:text-blue-400"}
+              ? "bg-blue-600 text-white shadow-md"
+              : "text-gray-700 hover:bg-gray-100 hover:text-blue-600"}
               `}
               >
             {page}
@@ -124,90 +127,106 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
     </aside>
 
     {isAdmin && (
-      <main className="flex-1 p-10 overflow-y-auto">
-        <div className="grid grid-cols-2 mb-20">
-          <h1 className="text-4xl font-bold text-gray-800">{pageName}</h1>
-          <div className=" flex flex-row justify-end space-x-8">
-            {userData && (
-              <>
-                <Button size='lg' onClick={onRouteToMainMenu}>Main Menu</Button>
-                <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
-              </>
-            )}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <div className="bg-white border-b border-gray-200 px-8 py-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold text-gray-800">{pageName}</h1>
+            <div className="flex items-center space-x-4">
+              {userData && (
+                <>
+                  <Button size='md' variant="outline" onClick={onRouteToMainMenu}>Main Menu</Button>
+                  <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
+                </>
+              )}
+            </div>
           </div>
         </div>
-        {pageName === "Dashboard" && (
-          <div className="grid grid-cols-2 gap-6">
-            <div className="bg-white shadow-md rounded-xl p-6">
-              <div className=" flex flex-row justify-between">
-                <h2 className="text-xl font-semibold mb-4">Recent Reviews</h2>
-                <Button onClick={() => setPageName("Reviews")}>View More</Button>
+        
+        <div className="flex-1 p-8 overflow-y-auto">
+          {pageName === "Dashboard" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8  mx-auto">
+              <div className="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
+                <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
+                  <h2 className="text-xl font-semibold text-gray-800">Recent Reviews</h2>
+                  <Button size="sm" variant="subtle" onClick={() => setPageName("Reviews")}>View All</Button>
+                </div>
+                <div className="p-6">
+                  <ReviewList
+                    showHeader={false}
+                    setShowModal={setShowModal}
+                    sendUser={setAccount}
+                    reviews={pendingReviews.slice(0, 5)}
+                  />
+                  {pendingReviews.length > 5 && (
+                    <p className="text-gray-500 text-sm mt-4 text-center">
+                      Showing 5 of {pendingReviews.length} pending reviews
+                    </p>
+                  )}
+                </div>
               </div>
-              <ReviewList
-                showHeader={false}
-                setShowModal={setShowModal}
-                sendUser={setAccount}
-                reviews={pendingReviews.slice(0, 5)}
-              />
-              {pendingReviews.length > 5 && (
-                <p className="text-gray-500 text-sm mt-2">
-                  Showing 5 of {pendingReviews.length} pending reviews
-                </p>
-              )}
-            </div>
-            <div className="bg-white shadow-md rounded-xl p-6">
-              <div className=" flex flex-row justify-between">
-                <h2 className="text-xl font-semibold mb-4">Recent Reports</h2>
-                <Button onClick={() => setPageName("Reports")}>View More</Button>
+              
+              <div className="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
+                <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
+                  <h2 className="text-xl font-semibold text-gray-800">Recent Reports</h2>
+                  <Button size="sm" variant="subtle" onClick={() => setPageName("Reports")}>View All</Button>
+                </div>
+                <div className="p-6">
+                  <ReportList
+                    showHeader={false}
+                    setShowModal={setShowModal2}
+                    sendUser={setAccount}
+                    reports={reports.slice(0, 5)}
+                  />
+                  {reports.length > 5 && (
+                    <p className="text-gray-500 text-sm mt-4 text-center">
+                      Showing 5 of {reports.length} pending reports
+                    </p>
+                  )}
+                </div>
               </div>
-              <ReportList
-                showHeader={false}
-                setShowModal={setShowModal2}
-                sendUser={setAccount}
-                reports={reports.slice(0, 5)}
-              />
-              {reports.length > 5 && (
-                <p className="text-gray-500 text-sm mt-2">
-                  Showing 5 of {reports.length} pending reports
-                </p>
-              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {pageName === "Reviews" && (
-          <div className="bg-white shadow-md rounded-xl p-6">
-            <ReviewList
-              showHeader={true}
-              setShowModal={setShowModal}
-              sendUser={setAccount}
-              reviews={pendingReviews}
-            />
-          </div>
-        )}
+          {pageName === "Reviews" && (
+            <div className="max-w-6xl mx-auto">
+              <div className="bg-white shadow-lg rounded-xl border border-gray-200">
+                <ReviewList
+                  showHeader={true}
+                  setShowModal={setShowModal}
+                  sendUser={setAccount}
+                  reviews={pendingReviews}
+                />
+              </div>
+            </div>
+          )}
 
-        {pageName === "Reports" && (
-          <div className="bg-white shadow-md rounded-xl p-6">
-            <ReportList
-              setShowModal={setShowModal2}
-              sendUser={setAccount}
-              reports={reports}
-              showHeader={true}
-            />
-          </div>
-        )}
+          {pageName === "Reports" && (
+            <div className="max-w-6xl mx-auto">
+              <div className="bg-white shadow-lg rounded-xl border border-gray-200">
+                <ReportList
+                  setShowModal={setShowModal2}
+                  sendUser={setAccount}
+                  reports={reports}
+                  showHeader={true}
+                />
+              </div>
+            </div>
+          )}
 
-        {pageName === "Accounts" && (
-          <div className="bg-white shadow-md rounded-xl p-6">
-            <AccountList
-              setShowModalEdit={setShowModalEdit}
-              setShowModalAdd={setShowModalAdd}
-              sendUser={setAccount}
-              users={users}
-              admins={admins}
-            />
-          </div>
-        )}
+          {pageName === "Accounts" && (
+            <div className=" mx-auto">
+              <div className="bg-white shadow-lg rounded-xl border border-gray-200">
+                <AccountList
+                  setShowModalEdit={setShowModalEdit}
+                  setShowModalAdd={setShowModalAdd}
+                  sendUser={setAccount}
+                  users={users}
+                  admins={admins}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </main>
     )}
 
