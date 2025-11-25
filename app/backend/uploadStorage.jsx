@@ -13,6 +13,16 @@ export async function uploadImage(file, location) {
   }
 }
 
+export async function uploadProfileImage(file, user) {
+  try {
+    const storagePath = ref(storage, `Profile/${user.id}/${file.name}`);
+    await uploadBytes(storagePath, file);
+    alert("Success!");
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
 export function PullImage({ location, url }) {
     const [images, setImages] = useState([]);
 
