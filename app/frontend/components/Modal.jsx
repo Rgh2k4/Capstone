@@ -29,36 +29,44 @@ const Modal = ({ isVisible, onClose, children }) => {
 
   return (
     <div
-      className=" fixed inset-0 backdrop-opacity-35 z-150 backdrop-brightness-0 flex justify-center items-center"
+      className="fixed inset-0 backdrop-opacity-35 z-150 backdrop-brightness-0 flex justify-center items-center p-4"
       id="wrapper"
-      onClick={() => handleClose(event)}
+      onClick={handleClose}
     >
-      <div className=" flex justify-center w-full p-12">
-        <Transition
-          mounted={isVisible}
-          transition="slide-up"
-          duration={400}
-          timingFunction="ease"
-        >
-          {(styles) => (
-            <div
-              style={styles}
-              className="max-w-1/2 max-h-screen overflow-y-scroll"
-            >
-              <div className="bg-white p-2 rounded relative">
-                <div className="absolute left-4/5 z-200">
-                  <button className="modal-close" onClick={onClose}>
-                    X
-                  </button>
-                </div>
-                {content}
-              </div>
+      <Transition
+        mounted={isVisible}
+        transition="slide-up"
+        duration={300}
+        timingFunction="ease-out"
+      >
+        {(styles) => (
+          <div
+            style={styles}
+            className="w-full max-w-4xl max-h-[90vh] rounded-2xl overflow-y-auto"
+          >
+            <div className="bg-white rounded-xl shadow-2xl relative">
+              <button
+                className="absolute top-4 right-4 z-10 m-4 opacity-75 bg-white hover:bg-gray-200 text-black py-6 px-6 rounded-lg text-lg font-bold shadow-md hover:shadow-lg transition-all"
+                onClick={onClose}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              {content}
             </div>
-          )}
-        </Transition>
-      </div>
-
-      </div>
+          </div>
+        )}
+      </Transition>
+    </div>
   );
 };
 

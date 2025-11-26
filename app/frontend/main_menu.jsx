@@ -53,10 +53,17 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     GetUserData(user.uid).then((data) => {
       console.log("User Data:", data);
       console.log("Is Admin:", data.role === "Admin");
+      
+      if (data) {
+      console.log("Is Admin:", data.role === "Admin");
       if (data.role === "Admin") {
         setIsAdmin(true);
       }
       setUserData(data);
+    } else {
+      console.log("No user data found in Firestore");
+      setUserData({ email: email, role: "User", user_ID: user.uid });
+    }
     });
   }
 
