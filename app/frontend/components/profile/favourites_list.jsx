@@ -5,6 +5,11 @@ function FavouritesList({ userData }) {
   const [favourites, setFavourites] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  function handleView(park) {
+    // Logic to view park details
+    console.log("Viewing park:", park);
+  }
+
   useEffect(() => {
     // Load user's favourite parks
     setLoading(false);
@@ -53,7 +58,7 @@ function FavouritesList({ userData }) {
                   </button>
                 </div>
                 <p className="text-gray-600 text-sm mb-4">{park.description}</p>
-                <Button size="sm" variant="outline" fullWidth>
+                <Button size="sm" variant="outline" fullWidth onClick={() => handleView(park)}>
                   Visit Park
                 </Button>
               </div>
