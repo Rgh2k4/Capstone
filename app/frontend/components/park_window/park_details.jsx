@@ -7,6 +7,7 @@ import { ActionIcon, Button, Select, Divider } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
 import { PullImage, PullProfileImageReview } from "@/app/backend/uploadStorage";
 import { readReviewData, ReportUser } from "@/app/backend/database";
+import { DirectionsRenderer } from "@react-google-maps/api";
 
 export default function ParkDetails({
   selectedPark,
@@ -18,7 +19,6 @@ export default function ParkDetails({
   routePois,
   setRoutePois,
   showToast,
-  onRouteSummary
 }) {
   const [submited, setSubmitted] = useState(false);
   const [park, setPark] = useState(selectedPark || null);
@@ -39,10 +39,7 @@ export default function ParkDetails({
         showToast(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
       }
 
-      if (onRouteSummary)
-        onRouteSummary(result);
-
-      if (onClose) onClose(); 
+      if (onClose) onClose();
     } catch (err) {
       console.error(err);
       if (showToast) showToast("Could not compute route. Try again or use a different travel mode.", "error");
@@ -79,8 +76,6 @@ export default function ParkDetails({
     }
   }
 
-
-  
   const FavoriteButton = () => (
     <ActionIcon
       size={42}
@@ -90,9 +85,8 @@ export default function ParkDetails({
     >
       <IconHeart
         size={26}
-        className={`transition-transform ${
-          isFavorite ? "text-red-500 scale-110" : "text-gray-400 hover:text-red-400"
-        }`}
+        className={`transition-transform ${isFavorite ? "text-red-500 scale-110" : "text-gray-400 hover:text-red-400"
+          }`}
       />
     </ActionIcon>
   );
@@ -129,16 +123,13 @@ export default function ParkDetails({
 
     const newRoute = [...routePois, poi];
     setRoutePois(newRoute);
-    
+
     try {
       const result = await computeRouteRef.current(newRoute, travelMode);
-      
+
       if (showToast) {
         showToast(`Distance: ${result.distance.toFixed(2)} km\nDuration: ${Math.round(result.duration)} mins`);
       }
-
-      if (onRouteSummary)
-        onRouteSummary(result);
 
       if (onClose) onClose();
 
@@ -200,15 +191,16 @@ export default function ParkDetails({
             <Button
               variant="gradient"
               gradient={{ from: "green", to: "teal", deg: 60 }}
-              onClick={() => 
-                {if (!routePois || routePois.length === 0) {
+              onClick={() => {
+                if (!routePois || routePois.length === 0) {
                   return notifications.show({
                     color: "red",
                     title: "Alert",
                     message: "You must start a route first before adding another location."
                   })
                 }
-                else addToRoute(park)}
+                else addToRoute(park)
+              }
               }
             >
               Add to Route
@@ -259,8 +251,8 @@ export default function ParkDetails({
                           <p className="text-sm text-gray-500 italic">
                             {rev.dateSubmitted
                               ? rev.dateSubmitted
-                                  .toDate()
-                                  .toLocaleDateString()
+                                .toDate()
+                                .toLocaleDateString()
                               : "Unknown Date"}
                           </p>
                         </div>

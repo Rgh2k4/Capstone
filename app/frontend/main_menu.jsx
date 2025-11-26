@@ -1,25 +1,20 @@
 "use client";
 import { Button } from "@mantine/core";
-import { useState, useRef, useEffect} from "react";
+import { useState, useRef, useEffect } from "react";
 import ParkDetails from "./components/park_window/park_details";
 import ProfileMenu from "./components/profile/profile_menu";
 import dynamic from "next/dynamic";
 import UploadWindow from "./components/park_window/upload_window.jsx";
 import Modal from "./components/Modal";
 import { auth, database } from "../backend/databaseIntegration.jsx";
-import { MultiSelect, Notification } from "@mantine/core";
+import { MultiSelect, Notification, Accordion } from "@mantine/core";
 import { GetUserData, isAdmin } from "../backend/database";
-import {collection, getDocs} from "firebase/firestore";
-import toast, {Toaster} from "react-hot-toast";
+import { collection, getDocs } from "firebase/firestore";
+import toast, { Toaster } from "react-hot-toast";
 
 const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
 });
-
-function onRouteSummary(summary) {
-  setRouteSummary(summary);
-  setIsRouteVisible(true);
-}
 
 export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [overlay, setOverlay] = useState(false);
@@ -32,12 +27,21 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const computeRouteRef = useRef(null);
   const [travelMode, setTravelMode] = useState("DRIVING");
   const [favorites, setFavorites] = useState([]);
-  const [isRouteVisible, setIsRouteVisible] = useState(false);
-  const [routeSummary, setRouteSummary] = useState(null);
-  const onRouteSummary = (summary) => {
-    setRouteSummary(summary);
+  const [routeSummaries, setRouteSummaries] = useState([]);
+  const [isComputing, setIsComputing] = useState(false);
+
+  const handleStopRoute = () => {
+    setRoutePois([]);
+    setRouteSummaries([]);
+    setIsComputing(false);
   };
 
+  const onRouteSummary = (newSummary) => {
+    setRouteSummaries(prev => {
+      const updated = [...prev, newSummary];
+      return updated.slice(-5);
+    });
+  };
 
   const showToast = (message, type = "success") => {
     if (type === "success") toast.success(message);
@@ -57,30 +61,29 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   }
 
   async function refreshFavorites() {
-  const user = auth.currentUser;
-  if (!user) return [];
-
-  const favsRef = collection(database, "users", user.uid, "favorites");
-  const snapshot = await getDocs(favsRef);
-  const favIds = snapshot.docs.map((doc) => doc.id);
-
-  setFavorites(favIds);
-
-  return favIds;
-}
-
-
-  useEffect(() => {
-  const fetchFavorites = async () => {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) return [];
+
     const favsRef = collection(database, "users", user.uid, "favorites");
     const snapshot = await getDocs(favsRef);
-    const favs = snapshot.docs.map(doc => doc.id);
-    setFavorites(favs);
-  };
-  fetchFavorites();
-}, []);
+    const favIds = snapshot.docs.map((doc) => doc.id);
+
+    setFavorites(favIds);
+
+    return favIds;
+  }
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+      const favsRef = collection(database, "users", user.uid, "favorites");
+      const snapshot = await getDocs(favsRef);
+      const favs = snapshot.docs.map(doc => doc.id);
+      setFavorites(favs);
+    };
+    fetchFavorites();
+  }, []);
 
   const [upload, setUpload] = useState(false);
 
@@ -88,7 +91,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     Accommodation_Type: [],
     Principal_type: [],
     CONCISCODE: [],
-    PARKTYPE:[],
+    PARKTYPE: [],
     Facility_Type_Installation: [],
     TrailDistance: [],
   });
@@ -105,7 +108,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
         uniqueTypes.CONCISCODE,
         uniqueTypes.Principal_type,
         uniqueTypes.Facility_Type_Installation,
-        uniqueTypes.TrailDistance, 
+        uniqueTypes.TrailDistance,
       ];
 
       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
@@ -113,9 +116,9 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
         (arr) => Array.isArray(arr) && arr.length > 0
       );
 
-      if (firstType){
+      if (firstType) {
         const defaultFilter = firstType[0];
-      setSelectedFilters([defaultFilter])
+        setSelectedFilters([defaultFilter])
       }
 
     }
@@ -227,100 +230,115 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     ];
   }
 
-    return (
-      <>
-      <Toaster position="top-middle" reverseOrder={false}/>
-        <main className="flex flex-col h-screen w-screen relative">
-            <header className="w-full flex items-center justify-between bg-gradient-to-r from-green-700 to-blue-500 px-8 py-3 shadow-lg shadow-gray-700/40 fixed top-0 z-50">
-                 <h1 className="text-2xl font-extrabold tracking-wide text-white drop-shadow-md">
-                    National Parks GPS
-                </h1>
-                <div className="">
-                  <MultiSelect
-                  size="md"
-                  placeholder="Filter and search..."
-                  searchable
-                  className="w-3xl pl-6 rounded-full text-neutral-950 border-gray-400"
-                  value={selectedFilters}
-                  onChange={(newValue) =>{
-                    if (newValue.length === 0) {
-                      <Notification color="pink" title="Warning">
-                        At least one filter must remain active, this ensures a timely resonse from the site.
-                      </Notification>
-                      console.warn("At least one filter must remain active, this ensures a timely resonse from the site.");
-                      return;
-                    }
-                    setSelectedFilters(newValue);
-                  }}
-                  data={buildMultiSelectData(uniqueTypes)}
-                  />
-                </div>
-                <div className=" flex flex-row mr-24 space-x-8">
-                  {userData ? (
-                    <>
-                      {isAdmin && <Button size='lg' onClick={onRouteToDashboard}>Dashboard</Button>}
-                      <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData}/>
-                    </>
-                    ) : (
-                      <Button size='lg' onClick={onRouteToLogin}>Log in</Button>
-                    )
-                  }
+  return (
+    <>
+      <Toaster position="top-middle" reverseOrder={false} />
+      <main className="flex flex-col h-screen w-screen relative">
+        <header className="w-full flex items-center justify-between bg-gradient-to-r from-green-700 to-blue-500 px-8 py-3 shadow-lg shadow-gray-700/40 fixed top-0 z-50">
+          <h1 className="text-2xl font-extrabold tracking-wide text-white drop-shadow-md">
+            National Parks GPS
+          </h1>
+          <div className="">
+            <MultiSelect
+              size="md"
+              placeholder="Filter and search..."
+              searchable
+              className="w-3xl pl-6 rounded-full text-neutral-950 border-gray-400"
+              value={selectedFilters}
+              onChange={(newValue) => {
+                if (newValue.length === 0) {
+                  <Notification color="pink" title="Warning">
+                    At least one filter must remain active, this ensures a timely resonse from the site.
+                  </Notification>
+                  console.warn("At least one filter must remain active, this ensures a timely resonse from the site.");
+                  return;
+                }
+                setSelectedFilters(newValue);
+              }}
+              data={buildMultiSelectData(uniqueTypes)}
+            />
+          </div>
+          <div className=" flex flex-row mr-24 space-x-8">
+            {userData ? (
+              <>
+                {isAdmin && <Button size='lg' onClick={onRouteToDashboard}>Dashboard</Button>}
+                <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData} />
+              </>
+            ) : (
+              <Button size='lg' onClick={onRouteToLogin}>Log in</Button>
+            )
+            }
 
-                </div>
-            </header>
-            {isRouteVisible && routeSummary && (
-            <div className="route-dropdown">
-              <button onClick={() => setIsRouteVisible(!isRouteVisible)}>
-                Trip Summary
-                </button>
-                <div className="dropdown-content">
-                  {routeSummary.legs.map((leg, i) => (
-                    <div key={i}>
-                      {leg.start} → {leg.end}: {leg.distanceText}, {leg.durationText}
+          </div>
+        </header>
+        {routePois.length > 0 && routeSummaries.length > 0 && (
+          <div className="absolute top-16 left-4 z-40 w-96 shadow-lg bg-white rounded-md p-2">
+            <Accordion multiple defaultValue={['stop-route']}>
+              <Accordion.Item value="stop-route">
+                <Accordion.Control>Stop Computing Route</Accordion.Control>
+                <Accordion.Panel>
+                  <Button color="red" size="sm" onClick={handleStopRoute}>
+                    Stop Computing Route
+                  </Button>
+                </Accordion.Panel>
+              </Accordion.Item>
+
+              {routeSummaries.map((route, index) => (
+                <Accordion.Item key={index} value={`route-${index}`}>
+                  <Accordion.Control>Trip Summary #{index + 1}</Accordion.Control>
+                  <Accordion.Panel>
+                    {(route.legs || []).map((leg, i) => (
+                      <div key={i} className="mb-1 text-sm">
+                        {leg.start} → {leg.end}: {leg.distanceText}, {leg.durationText}
                       </div>
                     ))}
-                    <div className="total">
-                      Total: {(routeSummary.totalDistance / 1000).toFixed(1)} km, 
-                      {Math.floor(routeSummary.totalDuration / 60)} min
+                    <div className="mt-2 font-semibold text-sm">
+                      Total Distance: {route.totalDistance.toFixed(1)} km
+                      <br />
+                      Total Duration: {Math.round(route.totalDuration)} min
                     </div>
-                  </div>
-              </div>
-            )}
-  
-            <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
-              <ParkDetails 
-              selectedPark={selectedPark}
-              openButtonUpload={handleOpenUpload} 
-              computeRouteRef={computeRouteRef} 
-              travelMode={travelMode}
-              setTravelMode={setTravelMode}
-              onClose={() => setOverlay(false)}
-              routePois={routePois}
-              setRoutePois={setRoutePois}
-              showToast={showToast}
-              favorites={favorites}
-              onRouteSummary={onRouteSummary}
-              />
-            </Modal>
-            <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
-              <UploadWindow onClose={swapToParkDetails} parkInfo={selectedPark} />
-            </Modal>
-              
-              <section className="w-full">
-                <MapFunction
-                filters={selectedFilters}
-                favorites={favorites}
-                setUniqueTypes={setUniqueTypes}
-                viewParkDetails={viewParkDetails}
-                computeRouteRef={computeRouteRef}
-                travelMode={travelMode}
-                routePois={routePois}
-                setRoutePois={setRoutePois}
-                normalizeOption={normalizeOption}
-                onRouteSummary={onRouteSummary}
-                />
-              </section>
-        </main>
-        </>
-    ); 
+                  </Accordion.Panel>
+                </Accordion.Item>
+              ))}
+            </Accordion>
+          </div>
+        )}
+
+
+        <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
+          <ParkDetails
+            selectedPark={selectedPark}
+            openButtonUpload={handleOpenUpload}
+            computeRouteRef={computeRouteRef}
+            travelMode={travelMode}
+            setTravelMode={setTravelMode}
+            onClose={() => setOverlay(false)}
+            routePois={routePois}
+            setRoutePois={setRoutePois}
+            showToast={showToast}
+            favorites={favorites}
+            onRouteSummary={onRouteSummary}
+          />
+        </Modal>
+        <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
+          <UploadWindow onClose={swapToParkDetails} parkInfo={selectedPark} />
+        </Modal>
+
+        <section className="w-full">
+          <MapFunction
+            filters={selectedFilters}
+            favorites={favorites}
+            setUniqueTypes={setUniqueTypes}
+            viewParkDetails={viewParkDetails}
+            computeRouteRef={computeRouteRef}
+            travelMode={travelMode}
+            routePois={routePois}
+            setRoutePois={setRoutePois}
+            normalizeOption={normalizeOption}
+            onRouteSummary={onRouteSummary}
+          />
+        </section>
+      </main>
+    </>
+  );
 }
