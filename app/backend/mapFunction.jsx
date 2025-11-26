@@ -39,7 +39,7 @@ function MapContent({filteredPois, setVisiblePois, viewParkDetails}) {
 }
 //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js, https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes
 //https://visgl.github.io/react-google-maps/examples/directions
-function RouteHandler({computeRouteRef, travelMode, userLocation}) {
+function RouteHandler({computeRouteRef, travelMode, userLocation, onRouteSummary}) {
   const map = useMap();
   const directionsRendererRef = useRef(null);
   const [routePois, setRoutePois] = useState([]);
@@ -92,11 +92,11 @@ function RouteHandler({computeRouteRef, travelMode, userLocation}) {
                   durationValue: leg.duration.value
                 }));
 
-                const totalDistance = legs.reduce((sum, leg) => sum + leg.distanceValue, 0);
-                const totalDuration = legs.reduce((sum, leg) => sum + leg.durationValue, 0);
+                const totalDistance = legs.reduce((sum, leg) => sum + leg.distanceValue / 1000, 0);
+                const totalDuration = legs.reduce((sum, leg) => sum + leg.durationValue / 60, 0);
                 
                 if (typeof onRouteSummary === "function") {
-                  onRouteSummary({ legs, totalDistance, totalDuration });
+                  onRouteSummary({legs, totalDistance, totalDuration});
                 }
 
                 resolve({
@@ -109,7 +109,7 @@ function RouteHandler({computeRouteRef, travelMode, userLocation}) {
             }
           );
         });
-      };
+      }
     }
   }, [map, computeRouteRef, travelMode, userLocation]);
 
@@ -402,6 +402,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
               computeRouteRef={computeRouteRef}
               travelMode={travelMode}
               userLocation={userLocation}
+              onRouteSummary={onRouteSummary}
               />
           </GoogleMap>
         </APIProvider>
