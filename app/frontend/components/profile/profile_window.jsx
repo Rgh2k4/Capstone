@@ -1,7 +1,9 @@
 import { auth } from "@/app/backend/databaseIntegration";
-import { Button, Input, Alert, Divider } from "@mantine/core";
+import { Button, Input, Alert, Divider, FileInput  } from "@mantine/core";
 import { sendEmailVerification } from "firebase/auth";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { uploadProfileImage, PullProfileImage, removeImage } from "@/app/backend/uploadStorage";
+import { pullProfileImageURL } from "@/app/backend/database";
 
 function ProfileWindow({
   onChangeDisplayName,
@@ -14,6 +16,13 @@ function ProfileWindow({
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState("success");
 
+  const [profileImage, setProfileImage] = useState(null);
+  const [imageName, setImageName] = useState("");
+  const fileInputRef = useRef(null);
+  //console.log(displayName);
+  //console.log(email);
+  //console.log(dateCreated);
+  
   const user = auth.currentUser;
 
   function handleChangeDisplayName(e) {
@@ -48,24 +57,49 @@ function ProfileWindow({
     }
   }
 
+
+   function fileRefButton() {
+    fileInputRef.current?.click();
+  };
+
+  async function submitProfileImage(e) {
+    const file = e.target.files[0];
+    const tempURL = await pullProfileImageURL(user);
+    if (file) {
+      await removeImage(tempURL, user);
+      await uploadProfileImage(file, user);
+      const imageURL = await pullProfileImageURL(user);
+      setImageName(imageURL);
+    }
+  }
+
+  async function updateProfileImage() {
+      const imageURL = await pullProfileImageURL(user);
+      setImageName(imageURL);
+    }
+
+  useEffect(() => {
+    if (user) {
+      updateProfileImage();
+    }
+  }, [user]);
+
   return (
     <div className="overflow-hidden">
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center">
-              <svg
-                className="w-12 h-12"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
+            <PullProfileImage user={user} imageName={imageName} />
+            <input type="file" ref={fileInputRef} onChange={submitProfileImage} className="hidden" accept="image/*"
+            />
+            <Button 
+              onClick={fileRefButton}
+              size="lg"
+              variant="filled"
+              className="mt-8"
+            >
+              Change Profile Picture
+            </Button>
           </div>
           <h2 className="text-3xl font-bold mb-2">My Profile</h2>
           <p className="text-blue-100">Manage your personal information</p>

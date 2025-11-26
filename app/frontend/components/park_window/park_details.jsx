@@ -5,7 +5,7 @@ import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { database, auth } from "../../../backend/databaseIntegration";
 import { ActionIcon, Button, Select, Divider } from "@mantine/core";
 import { IconHeart } from "@tabler/icons-react";
-import { PullImage } from "@/app/backend/uploadStorage";
+import { PullImage, PullProfileImageReview } from "@/app/backend/uploadStorage";
 import { readReviewData, ReportUser } from "@/app/backend/database";
 
 export default function ParkDetails({
@@ -281,9 +281,7 @@ export default function ParkDetails({
                   <div key={index} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
                     <div className="flex items-start space-x-4">
                       <div className="bg-gray-200 rounded-full p-4 flex-shrink-0">
-                        <svg className="w-8 h-8 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                        </svg>
+                        <PullProfileImageReview user={rev.reviewData} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-2">
