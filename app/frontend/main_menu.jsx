@@ -29,6 +29,8 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [favorites, setFavorites] = useState([]);
   const [routeSummaries, setRouteSummaries] = useState([]);
   const [isComputing, setIsComputing] = useState(false);
+  const [loadingMarkers, setLoadingMarkers] = useState(true);
+  const [defaultFilterApplied, setDefaultFilterApplied] = useState(false);
 
   const handleStopRoute = () => {
     setRoutePois([]);
@@ -118,9 +120,13 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
 
       if (firstType) {
         const defaultFilter = firstType[0];
-        setSelectedFilters([defaultFilter])
-      }
+        setSelectedFilters([defaultFilter]);
 
+        if (!defaultFilterApplied) {
+          setDefaultFilterApplied(true);
+          setLoadingMarkers(false);
+        }
+      }
     }
   }, [uniqueTypes]);
 

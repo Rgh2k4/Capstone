@@ -129,7 +129,7 @@ function normalizeOption(str) {
   return parts.join(" / ");
 }
 
-function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode, favorites, onRouteSummary}) {
+function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode, favorites, onRouteSummary, onMarkersReady}) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   //and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
