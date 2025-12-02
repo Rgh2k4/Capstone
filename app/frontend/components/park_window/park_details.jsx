@@ -8,6 +8,7 @@ import { IconHeart } from "@tabler/icons-react";
 import { PullImage } from "@/app/backend/uploadStorage";
 import { readReviewData, ReportUser } from "@/app/backend/database";
 import { DirectionsRenderer } from "@react-google-maps/api";
+<div><Toaster/></div>
 
 export default function ParkDetails({
   selectedPark,
@@ -59,7 +60,7 @@ export default function ParkDetails({
   }, [park]);
 
   async function toggleFavorite() {
-    if (!user) return alert("You must be logged in to favorite a park.");
+    if (!user) return toast("You must be logged in to favorite a park.");
     const favoriteRef = doc(database, "users", user.uid, "favorites", park.id);
 
     if (isFavorite) {
@@ -114,7 +115,7 @@ export default function ParkDetails({
       },
       { rev }
     );
-    alert(`${rev.displayName || "Anonymous"} has been reported.`);
+    toast.success(`${rev.displayName || "Anonymous"} has been reported.`);
   }
 
   const addToRoute = async (poi) => {
@@ -193,11 +194,9 @@ export default function ParkDetails({
               gradient={{ from: "green", to: "teal", deg: 60 }}
               onClick={() => {
                 if (!routePois || routePois.length === 0) {
-                  return notifications.show({
-                    color: "red",
-                    title: "Alert",
-                    message: "You must start a route first before adding another location."
-                  })
+                  return toast.error(
+                    "You must start a route first before adding another location."
+                  )
                 }
                 else addToRoute(park)
               }

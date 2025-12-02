@@ -1,10 +1,11 @@
 import { Button } from "@mantine/core";
+<div><Toaster/></div>
 
 function ReportWindow({ user: report, onClose, onHandleReport }) {
   function handleDelete() {
     onClose();
     onHandleReport(report, "delete");
-    alert("Report Deleted!");
+    toast.success("Report Deleted!");
   }
 
   function handleApprove() {

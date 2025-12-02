@@ -3,6 +3,7 @@ import { auth } from "@/app/backend/databaseIntegration";
 import { Button, Input, Textarea } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
+<div><Toaster/></div>
 
 function Edit({ account: uid, onClose, onDeleteAccount }) {
   const [account, setAccount] = useState(GetUserData(uid));
@@ -25,7 +26,7 @@ function Edit({ account: uid, onClose, onDeleteAccount }) {
   function handleDelete() {
     setShowError(false);
     onClose();
-    alert("Account Deleted!");
+    toast.success("Account Deleted!");
     onDeleteAccount(account.user_ID);
   }
 

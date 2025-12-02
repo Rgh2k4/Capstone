@@ -1,6 +1,7 @@
 import { Button, PasswordInput } from "@mantine/core";
 import { Input } from "postcss";
 import { useState } from "react";
+<div><Toaster/></div>
 
 function Add({ onClose, role, setRole, onAddAccount }) {
   const [submited, setSubmitted] = useState(false);
@@ -11,15 +12,15 @@ function Add({ onClose, role, setRole, onAddAccount }) {
 
   function handleAdd() {
     if (!email.trim() || !password.trim() || !confirm.trim()) {
-      alert("All fields are required!");
+      toast("All fields are required!");
       return;
     }
     if (password !== confirm) {
-      alert("Passwords do not match!");
+      toast("Passwords do not match!");
       return;
     }
 
-    alert("Account Created!");
+    toast("Account Created!");
     setRole("");
     onClose();
   }

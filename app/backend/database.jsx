@@ -3,7 +3,9 @@
 import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch, query, where } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
 import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
+import { ToastIcon } from "react-hot-toast";
 
+<div><Toaster/></div>
 export async function CreateUserAccount(data) {
   try {
     //console.log("Adding user to Firestore with ID:", data.uid);
@@ -207,7 +209,6 @@ export async function addReview(reviewData) {
           });
         });
 
-        //alert("Reviews Added");
     } catch (error) {
         console.error("Error: ", error);
     }
@@ -279,7 +280,7 @@ export async function approveReview({ rev }) {
     try {
         const reviewRef = doc(database, "reviews", rev.reviewID);
         await updateDoc(reviewRef, { status: "approved" });
-        alert("Review Approved");
+        toast.success("Review Approved");
     } catch (error) {
         console.error("Error: ", error);
     }
@@ -289,7 +290,7 @@ export async function denyReview({ rev }) {
     try {
         const reviewRef = doc(database, "reviews", rev.reviewID);
         await deleteDoc(reviewRef);
-        alert("Review Denied");
+        toast.error("Review Denied");
     } catch (error) {
         console.error("Error: ", error);
     }
@@ -315,7 +316,7 @@ export async function ReportUser(usersInfo, { rev }) {
     };
     try {
         await addDoc(collection(database, "reports"), reportData)
-        alert("Report Submitted");
+        toast.success("Report Submitted");
     } catch (error) {
         console.error("Error: ", error);
     }
@@ -352,7 +353,7 @@ export async function resolveReport(report, actions) {
           const reviewRef = query(collection(database, "reviews"), where("uid", "==", report.reviewData.uid), where("title", "==", report.reviewData.title), where("message", "==", report.reviewData.message), where("location_name", "==", report.reviewData.location_name));
           await deleteDoc(reviewRef);
       }
-      alert("Report Resolved");
+      toast.success("Report Resolved");
   } catch (error) {
       console.error("Error: ", error);
   }

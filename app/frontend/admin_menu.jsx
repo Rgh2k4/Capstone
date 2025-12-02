@@ -12,6 +12,7 @@ import { Button } from "@mantine/core";
 import { auth } from "../backend/databaseIntegration.jsx";
 import ProfileMenu from "./components/profile/profile_menu";
 import { approveReview, denyReview, GetUserData, isAdmin, LoadAdminList, loadPendingReviews, loadReports, LoadUserList, resolveReport } from "../backend/database";
+<div><Toaster/></div>
 
 function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
   const [showModal, setShowModal] = useState(false);
@@ -42,7 +43,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
       if (data.role === "Admin") {
         setIsAdmin(true);
       } else {
-        alert("Access Denied. Redirecting to Main Menu.");
+        toast.error("Access Denied. Redirecting to Main Menu.");
         onRouteToMainMenu();
       }
       setUserData(data);
