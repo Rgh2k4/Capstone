@@ -7,10 +7,11 @@ import dynamic from "next/dynamic";
 import UploadWindow from "./components/park_window/upload_window.jsx";
 import Modal from "./components/Modal";
 import { auth, database } from "../backend/databaseIntegration.jsx";
-import { MultiSelect, Notification, Accordion } from "@mantine/core";
+import { MultiSelect, Notification, Accordion, MantineProvider, createTheme } from "@mantine/core";
 import { GetUserData, isAdmin } from "../backend/database";
 import { collection, getDocs } from "firebase/firestore";
 import toast, { Toaster } from "react-hot-toast";
+import LoadingScreen from "./components/LoadingScreen";
 
 const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
@@ -238,6 +239,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
 
   return (
     <>
+      {loadingMarkers && <LoadingScreen />}
       <Toaster position="top-middle" reverseOrder={false} />
       <main className="flex flex-col h-screen w-screen relative">
         <header className="w-full flex items-center justify-between bg-gradient-to-r from-green-700 to-blue-500 px-8 py-3 shadow-lg shadow-gray-700/40 fixed top-0 z-50">
