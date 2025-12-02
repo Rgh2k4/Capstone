@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { logIn } from "../backend/databaseIntegration.jsx";
-import { Alert, Button, Input, PasswordInput } from "@mantine/core";
+import { Button, Input, PasswordInput } from "@mantine/core";
 import { IconAt, IconInfoCircle } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 <div><Toaster/></div>
@@ -96,16 +96,7 @@ export default function Login({ handleLogin, handleSignUp }) {
         </form>
       </section>
       <div className=" flex justify-end items-center mt-10">
-        {showError && (<Alert
-          variant="filled"
-          color="red"
-          withCloseButton
-          title="Login failed"
-          icon={icon}
-          onClick={() => setShowError(false)}
-        >
-          {errorMessage}
-        </Alert>)}
+        {showError && toast.error("Login failed")}
       </div>
     </main>
   );

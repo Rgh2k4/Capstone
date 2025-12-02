@@ -48,7 +48,7 @@ function Edit({ account: uid, onClose, onDeleteAccount }) {
 
     try {
       AdminEditUser(account, newAccountData);
-      alert("Account Edited!");
+      toast("Account Edited!");
       onClose();
     } catch (error) {
       setErrorMessage("Failed to edit user: " + error.message);
@@ -123,18 +123,7 @@ function Edit({ account: uid, onClose, onDeleteAccount }) {
         </Button>
       </div>
       <div className=" flex justify-end items-center mt-10">
-        {showError && (
-          <Alert
-            variant="filled"
-            color="red"
-            withCloseButton
-            title="Edit failed"
-            icon={icon}
-            onClick={() => setShowError(false)}
-          >
-            {errorMessage}
-          </Alert>
-        )}
+        {showError && toast.error("Edit failed")}
       </div>
     </div>
   );

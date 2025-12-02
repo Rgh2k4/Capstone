@@ -1,10 +1,11 @@
 import users from "../admin/user_test_data.json";
+<div><Toaster/></div>
 
 function Reviews({}) {
   let reviews = users.reviews;
 
   function handleData({ user }) {
-    alert(`${user.username} has been reported.`);
+    toast(`${user.username} has been reported.`);
   }
 
   return (

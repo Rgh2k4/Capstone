@@ -6,6 +6,7 @@ import { Button, Input, Textarea, TextInput } from "@mantine/core";
 import { auth, database } from "@/app/backend/databaseIntegration";
 import { addReview } from "@/app/backend/database";
 import { getDoc, doc } from "firebase/firestore";
+<div><Toaster/></div>
 
 export default function Upload_Window({ onClose, parkInfo }) {
   const [submited, setSubmitted] = useState(false);
@@ -39,7 +40,7 @@ export default function Upload_Window({ onClose, parkInfo }) {
       if (image != null) {
         uploadImage(image, location);
       }
-      alert("Review Submitted!");
+      toast.success("Review Submitted!");
       onClose();
     } catch (error) {
       console.error("Error uploading review:", error);

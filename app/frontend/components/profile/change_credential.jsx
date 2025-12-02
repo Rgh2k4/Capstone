@@ -1,4 +1,4 @@
-import { Alert, Button, Input, PasswordInput } from "@mantine/core";
+import { Button, Input, PasswordInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconAt, IconInfoCircle } from "@tabler/icons-react";
 import React, { useState } from "react";
@@ -124,18 +124,7 @@ export default function ChangeCredential({ type, onSubmit, onClose }) {
         Confirm Change
       </Button>
       <div className=" flex justify-end items-center mt-10">
-        {showError && (
-          <Alert
-            variant="filled"
-            color="red"
-            withCloseButton
-            title="Edit failed"
-            icon={icon}
-            onClick={() => setShowError(false)}
-          >
-            {errorMessage}
-          </Alert>
-        )}
+        {showError && toast.error("Edit failed")}
       </div>
     </form>
   );

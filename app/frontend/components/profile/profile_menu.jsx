@@ -10,6 +10,7 @@ import { auth } from "../../../backend/databaseIntegration.jsx";
 import { DeleteUser, EditUser } from "../../../backend/database.jsx";
 import { SetDisplayName } from "@/app/backend/database";
 import ContactWindow from "./contact_window";
+<div><Toaster/></div>
 
 export default function ProfileMenu({ onRouteToLogin, userData }) {
   const [showModal, setShowModal] = useState(false);
@@ -36,7 +37,7 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
     if (userDeleted) {
       onRouteToLogin();
     } else {
-      alert("Account deletion failed. Please sign in again and retry.");
+      toast.error("Account deletion failed. Please sign in again and retry.");
     }
   }
 

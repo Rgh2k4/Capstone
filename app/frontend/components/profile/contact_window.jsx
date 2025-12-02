@@ -2,6 +2,7 @@
 
 import { Button, Input, Select, Textarea } from "@mantine/core";
 import { useState } from "react";
+<div><Toaster/></div>
 
 export default function ContactWindow({
   companyEmail = "place@holder.com",
@@ -16,7 +17,7 @@ export default function ContactWindow({
 
   function handleEmail(e) {
     e.preventDefault();
-    alert("Message Sent!");
+    toast("Message Sent!");
     onClose();
   }
   return (

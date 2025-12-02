@@ -1,7 +1,8 @@
 import { auth } from "@/app/backend/databaseIntegration";
-import { Button, Alert } from "@mantine/core";
+import { Button } from "@mantine/core";
 import React, { useState } from "react";
 import { AdminEditUser, GetUserData } from "@/app/backend/database";
+<div><Toaster/></div>
 
 function SettingsMenu({
   onRouteToLogin,
@@ -20,7 +21,7 @@ function SettingsMenu({
       setSubmitted1(true);
       onChangeCredential("email");
     } else {
-      alert("Please verify your email before changing credentials.");
+      toast("Please verify your email before changing credentials.");
     }
   }
   function handleChangePassword() {
@@ -28,7 +29,7 @@ function SettingsMenu({
       setSubmitted2(true);
       onChangeCredential("password");
     } else {
-      alert("Please verify your email before changing credentials.");
+      toast("Please verify your email before changing credentials.");
     }
   }
   function handleContact() {
@@ -116,16 +117,10 @@ function SettingsMenu({
           Contact Support
         </Button>
 
-        {promoteError && (
-          <Alert color="red" variant="light">
+        {promoteError && toast.error(
             {promoteError}
-          </Alert>
         )}
-        {promoteDone && (
-          <Alert color="green" variant="light">
-            Role updated. You’re now an Admin.
-          </Alert>
-        )}
+        {promoteDone && toast.success('Role updated. You’re now an Admin.')}
         <Button
           fullWidth
           size="md"

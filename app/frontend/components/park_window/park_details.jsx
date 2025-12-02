@@ -106,7 +106,7 @@ export default function ParkDetails({
   }, [park]);
 
   function handleReport({ rev }) {
-    if (!user) return alert("You must be logged in to report a user.");
+    if (!user) return toast.error("You must be logged in to report a user.");
     ReportUser(
       {
         reportedUserID: rev.reviewData.uid,
