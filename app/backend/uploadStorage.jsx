@@ -2,7 +2,6 @@
 import { ref, uploadBytes, listAll, getDownloadURL } from 'firebase/storage';
 import { storage } from './databaseIntegration';
 import { useState, useEffect } from 'react';
-<div><Toaster/></div>
 
 export async function uploadImage(file, location) {
   try {

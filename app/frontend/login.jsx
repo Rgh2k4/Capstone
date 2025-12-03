@@ -4,7 +4,6 @@ import { logIn } from "../backend/databaseIntegration.jsx";
 import { Button, Input, PasswordInput } from "@mantine/core";
 import { IconAt, IconInfoCircle } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
-<div><Toaster/></div>
 
 export default function Login({ handleLogin, handleSignUp }) {
   const [email, setEmail] = useState("");

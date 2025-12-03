@@ -6,7 +6,6 @@ import { Button, Input, Textarea, TextInput } from "@mantine/core";
 import { auth, database } from "@/app/backend/databaseIntegration";
 import { addReview } from "@/app/backend/database";
 import { getDoc, doc } from "firebase/firestore";
-<div><Toaster/></div>
 
 export default function Upload_Window({ onClose, parkInfo }) {
   const [submited, setSubmitted] = useState(false);

@@ -1,5 +1,4 @@
 import users from "../admin/user_test_data.json";
-<div><Toaster/></div>
 
 function Reviews({}) {
   let reviews = users.reviews;

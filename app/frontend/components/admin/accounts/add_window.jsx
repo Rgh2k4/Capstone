@@ -1,7 +1,6 @@
 import { Button, PasswordInput } from "@mantine/core";
 import { Input } from "postcss";
 import { useState } from "react";
-<div><Toaster/></div>
 
 function Add({ onClose, role, setRole, onAddAccount }) {
   const [submited, setSubmitted] = useState(false);

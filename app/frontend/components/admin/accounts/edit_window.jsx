@@ -3,7 +3,6 @@ import { auth } from "@/app/backend/databaseIntegration";
 import { Button, Input, Textarea } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
-<div><Toaster/></div>
 
 function Edit({ account: uid, onClose, onDeleteAccount }) {
   const [account, setAccount] = useState(GetUserData(uid));

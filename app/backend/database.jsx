@@ -5,7 +5,6 @@ import { database, auth } from "./databaseIntegration";
 import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
 import { ToastIcon } from "react-hot-toast";
 
-<div><Toaster/></div>
 export async function CreateUserAccount(data) {
   try {
     //console.log("Adding user to Firestore with ID:", data.uid);

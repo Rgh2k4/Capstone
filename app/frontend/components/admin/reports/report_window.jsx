@@ -1,5 +1,4 @@
 import { Button } from "@mantine/core";
-<div><Toaster/></div>
 
 function ReportWindow({ user: report, onClose, onHandleReport }) {
   function handleDelete() {

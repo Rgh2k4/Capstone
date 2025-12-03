@@ -8,7 +8,6 @@ import { IconHeart } from "@tabler/icons-react";
 import { PullImage } from "@/app/backend/uploadStorage";
 import { readReviewData, ReportUser } from "@/app/backend/database";
 import { DirectionsRenderer } from "@react-google-maps/api";
-<div><Toaster/></div>
 
 export default function ParkDetails({
   selectedPark,

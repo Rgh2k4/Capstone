@@ -2,7 +2,6 @@ import { auth } from "@/app/backend/databaseIntegration";
 import { Button } from "@mantine/core";
 import React, { useState } from "react";
 import { AdminEditUser, GetUserData } from "@/app/backend/database";
-<div><Toaster/></div>
 
 function SettingsMenu({
   onRouteToLogin,

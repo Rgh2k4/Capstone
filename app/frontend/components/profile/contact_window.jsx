@@ -2,7 +2,6 @@
 
 import { Button, Input, Select, Textarea } from "@mantine/core";
 import { useState } from "react";
-<div><Toaster/></div>
 
 export default function ContactWindow({
   companyEmail = "place@holder.com",

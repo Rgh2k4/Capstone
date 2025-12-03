@@ -1,7 +1,6 @@
 "use client";
 
 import { MantineProvider, Loader, createTheme } from "@mantine/core";
-import { RingLoader } from "./RingLoader";
 
 const loadingTheme = createTheme({
   components: {
