@@ -1,21 +1,10 @@
 "use client";
 
-import { MantineProvider, Loader, createTheme } from "@mantine/core";
-
-const loadingTheme = createTheme({
-  components: {
-    Loader: Loader.extend({
-      defaultProps: {
-        loaders: { ...Loader.defaultLoaders, ring: RingLoader },
-        type: "ring",
-      },
-    }),
-  },
-});
+import { MantineProvider, Loader } from "@mantine/core";
 
 export default function LoadingScreen() {
   return (
-    <MantineProvider theme={loadingTheme}>
+    <MantineProvider>
       <div
         style={{
           position: "fixed",
@@ -28,7 +17,7 @@ export default function LoadingScreen() {
           zIndex: 9999,
         }}
       >
-        <Loader />
+        <Loader color="blue" />
       </div>
     </MantineProvider>
   );
