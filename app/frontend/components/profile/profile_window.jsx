@@ -88,7 +88,7 @@ function ProfileWindow({
     <div className="overflow-hidden">
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8">
         <div className="text-center">
-          <div className="flex justify-center mb-4">
+          <div className="flex flex-col items-center mb-4">
             <PullProfileImage user={user} imageName={imageName} />
             <input type="file" ref={fileInputRef} onChange={submitProfileImage} className="hidden" accept="image/*"
             />
