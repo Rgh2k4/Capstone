@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProfileWindow from "./profile_window";
 import SettingsMenu from "./settings_menu";
 import Modal from "../Modal";
@@ -11,6 +11,8 @@ import { DeleteUser, EditUser } from "../../../backend/database.jsx";
 import { SetDisplayName } from "@/app/backend/database";
 import ContactWindow from "./contact_window";
 import FavouritesList from "./favourites_list";
+import { PullProfileImageIcon } from "@/app/backend/uploadStorage";
+import { pullProfileImageURL } from "../../../backend/database.jsx";
 
 export default function ProfileMenu({ onRouteToLogin, userData }) {
   const [showModal, setShowModal] = useState(false);
@@ -19,6 +21,7 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
   const [showModal4, setShowModal4] = useState(false);
   const [showModal5, setShowModal5] = useState(false);
   const [credentialType, setCredentialType] = useState("");
+  const [imageName, setImageName] = useState("");
 
   const user = auth.currentUser;
 
@@ -62,14 +65,26 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
     return EditUser(credentialType, value);
   }
 
+  async function updateProfileImage() {
+        const imageURL = await pullProfileImageURL(user);
+        setImageName(imageURL);
+      }
+  
+    useEffect(() => {
+      if (user) {
+        updateProfileImage();
+      }
+    }, [user]);
+
   return (
     <details className="relative">
       <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-        <img
+        {/*<img
           src="/window.svg"
           alt="Profile"
           className="h-12 w-12 rounded-full bg-gray-300 object-cover"
-        />
+        />*/}
+        <PullProfileImageIcon user={user} imageName={imageName} />
       </summary>
       <ul className="absolute right-0 z-50 mt-2 w-44 rounded-md bg-white p-1 shadow ring-1 ring-black/5">
         <li

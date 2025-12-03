@@ -108,6 +108,42 @@ export function PullProfileImage({ user, imageName }) {
    
 }
 
+export function PullProfileImageIcon({ user, imageName }) {
+    const [image, setImage] = useState(null);
+
+    async function generateImage() {
+        try {
+            let trueImageName = imageName;
+
+            if (imageName && typeof imageName.then === 'function') {
+                    trueImageName = await imageName;
+                }
+
+            if (trueImageName === "" || !trueImageName) {
+                setImage(null)             
+            }
+            else {
+                const imagePath = ref(storage, `Profile/${user.uid}/${imageName}`);
+                const imageURL = await getDownloadURL(imagePath);
+                setImage(imageURL);
+            }          
+        } catch (error) {
+            console.error('Error: ', error);
+        }
+    }
+
+    useEffect(() => {
+        generateImage();
+    }, [imageName])
+
+    if (!image) {
+        return <img className="h-12 w-12 rounded-full bg-gray-300 object-cover" alt="profile picture" />
+    }
+
+    return <img src={image} className="h-12 w-12 rounded-full bg-gray-300 object-cover" alt="profile picture" />
+   
+}
+
 export function PullImage({ location, url }) {
     const [images, setImages] = useState([]);
 
