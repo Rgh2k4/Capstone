@@ -49,6 +49,11 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
     });
   }
 
+  function handleSetPageName(name) {
+    setPageName(name);
+    triggerRefresh();
+  }
+
 
   useEffect(() => {
     setupUser();
@@ -113,7 +118,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
         {["Dashboard", "Reviews", "Reports", "Accounts"].map((page) => (
           <button
           key={page}
-          onClick={() => setPageName(page)}
+          onClick={() => handleSetPageName(page)}
           className={`w-full px-4 py-3 rounded-lg text-left font-medium transition-all duration-200
             ${pageName === page
               ? "bg-blue-600 text-white shadow-md"
