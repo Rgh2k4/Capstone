@@ -471,7 +471,7 @@ export async function ReportUser(usersInfo, { rev }) {
   };
   try {
     await addDoc(collection(database, "reports"), reportData);
-    alert("Report Submitted");
+    //alert("Report Submitted");
   } catch (error) {
     console.error("Error: ", error);
   }
@@ -535,9 +535,9 @@ export async function resolveReport(report, actions) {
       // Delete each matching review document
       for (const reviewDoc of reviewDocs.docs) {
         await deleteDoc(doc(database, "reviews", reviewDoc.id));
+        alert("Report Resolved");
       }
     }
-    alert("Report Resolved");
     
   } catch (error) {
     console.error("Error: ", error);
