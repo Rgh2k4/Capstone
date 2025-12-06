@@ -357,9 +357,6 @@ export async function addReview(reviewData) {
       });
     });
 
-    // Increment user's review count
-    await incrementUserReviewCount(reviewData.uid);
-
     //alert("Reviews Added");
   } catch (error) {
     console.error("Error: ", error);
@@ -440,6 +437,8 @@ export async function approveReview({ rev }) {
   } catch (error) {
     console.error("Error: ", error);
   }
+  // Increment user's review count
+    await incrementUserReviewCount(rev.reviewData.uid);
 }
 
 export async function denyReview({ rev }) {
@@ -629,4 +628,76 @@ export async function getCurrentUserReviewCount() {
     console.error("Error getting current user review count:", error);
     return 0;
   }
+}
+
+export async function incrementReviewLikes(userID, { rev }) {
+  //console.log("[database.jsx]Incrementing like for review:", rev.reviewID);
+  const reviewRef = doc(database, "reviews", rev.reviewID);
+  if (!(await getDoc(reviewRef)).data().likes) {
+    //console.log("[database.jsx]Likes field missing, initializing to 0 for review:", rev.reviewID);
+    await updateDoc(reviewRef, {
+      likes: 0,
+    });
+    //console.log("[database.jsx]Initialized likes to 0 for review:", rev.reviewID);
+  }
+  
+  try {
+    //console.log("[database.jsx] Update likes for review:", rev.reviewID);
+    let likes = (await getDoc(reviewRef)).data().likes || 0;
+    await updateDoc(reviewRef, {
+      likes: likes + 1,
+    }).then(async () => {
+      //console.log("[database.jsx]Incremented likes for review:", rev.reviewID);
+      const userRef = doc(database, "users", userID, "likes", rev.reviewID);
+      await setDoc(userRef, {
+        reviewID: rev.reviewID,
+      }); 
+    });
+    console.log("[database.jsx]Set liked review for user:", userID, "review:", rev.reviewID);
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
+
+export async function decrementReviewLikes(userID, { rev }) {
+  //console.log("[database.jsx]Decrementing like for review:", rev.reviewID);
+  const reviewRef = doc(database, "reviews", rev.reviewID);
+  try {
+    //console.log("[database.jsx] Update likes for review:", rev.reviewID);
+    let likes = (await getDoc(reviewRef)).data().likes || 0;
+    await updateDoc(reviewRef, {
+      likes: likes - 1,
+    }).then(async () => {
+      //console.log("[database.jsx]Decremented likes for review:", rev.reviewID);
+      const userRef = doc(database, "users", userID, "likes", rev.reviewID);
+      await deleteDoc(userRef); 
+    });
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
+
+export async function checkIfLiked(userID, { rev }) {
+  try {
+    console.log("[database.jsx]Checking if user:", userID, "liked review:", rev.reviewID);
+    const userRef = doc(database, "users", userID, "likes", rev.reviewID);
+    const docSnapshot = await getDoc(userRef);
+    if (docSnapshot.exists()) {
+      console.log("[database.jsx]User has liked the review:", rev.reviewID);
+      return true;
+    } else {
+      console.log("[database.jsx]User has not liked the review:", rev.reviewID);
+    }
+    return false;
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
+
+export async function achievementsUpdater() {
+  // Placeholder for future implementation
+}
+
+export async function rankScoreIncrementer(points) {
+  // Placeholder for future implementation
 }
