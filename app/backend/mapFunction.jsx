@@ -181,7 +181,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
       return [...new Set(values)];
     };
 
-    console.log("MapFunction props:", {filters, setUniqueTypes, viewParkDetails});
+    //console.log("MapFunction props:", {filters, setUniqueTypes, viewParkDetails});
         
         const directionsServiceRef = useRef(null);
         const directionsRendererRef = useRef(null);
@@ -221,7 +221,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
 
       for (const [i, url] of urls.entries()) {
         try {
-          console.log(`Fetching dataset ${i + 1}/${urls.length}...`);
+          //console.log(`Fetching dataset ${i + 1}/${urls.length}...`);
           const response = await fetch(url, { signal: AbortSignal.timeout(25000) }); //This will cause any pull longer than 25 seconds to abort
           if (!response.ok) throw new Error(`Failed to load ${url}: ${response.status}`);
 
@@ -275,7 +275,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         }
       }
 
-      console.log(`All datasets loaded: ${allPois.length} POIs`);
+      //console.log(`All datasets loaded: ${allPois.length} POIs`);
 
       //The following code extracts the unique sub-types for use in the front-end filter and was made with the help of https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set,
       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter, and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
@@ -352,9 +352,9 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   );
 }
 
-  console.log("Filters active:", filters);
-  console.log("Number of POIs loaded:", pois.length);
-  console.log("Number of POIs shown after filtering:", filteredPois.length);  
+  //console.log("Filters active:", filters);
+  //console.log("Number of POIs loaded:", pois.length);
+  //console.log("Number of POIs shown after filtering:", filteredPois.length);  
 
     const [routedPOI, setRoutedPOI] = useState(null);
 
@@ -366,7 +366,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
     }
   }, [filteredPois, routedPOI]);
 
-        console.log("=== Rendering POIs ===");
+        //console.log("=== Rendering POIs ===");
         filteredPois.forEach(poi => {
         });
 
