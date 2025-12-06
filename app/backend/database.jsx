@@ -38,6 +38,7 @@ export async function CreateUserAccount(data) {
       displayName: data.displayName || "",
       lastLogin: serverTimestamp(),
       profileImage: "",
+      review_count: 0,
     });
     return true;
   } catch (error) {
@@ -356,6 +357,9 @@ export async function addReview(reviewData) {
       });
     });
 
+    // Increment user's review count
+    await incrementUserReviewCount(reviewData.uid);
+
     //alert("Reviews Added");
   } catch (error) {
     console.error("Error: ", error);
@@ -557,5 +561,72 @@ export async function updateProfileImageURL(user, file) {
     await updateDoc(docRef, {profileImage: file.name});
   } catch (error) {
     console.error("Error: ", error);
+  }
+}
+
+// Function to increment user's review count
+export async function incrementUserReviewCount(uid) {
+  try {
+    const userRef = doc(database, "users", uid);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      const currentCount = userData.review_count || 0; // Fallback for existing accounts
+      
+      await updateDoc(userRef, {
+        review_count: currentCount + 1,
+      });
+      
+      console.log(`Review count incremented for user ${uid}: ${currentCount + 1}`);
+    } else {
+      console.error("User not found:", uid);
+    }
+  } catch (error) {
+    console.error("Error incrementing review count:", error);
+  }
+}
+
+// Function to get user's review count with fallback initialization
+export async function getUserReviewCount(uid) {
+  try {
+    const userRef = doc(database, "users", uid);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      
+      // If review_count doesn't exist, initialize it and return 0
+      if (userData.review_count === undefined) {
+        await updateDoc(userRef, {
+          review_count: 0,
+        });
+        return 0;
+      }
+      
+      return userData.review_count;
+    } else {
+      console.error("User not found:", uid);
+      return 0;
+    }
+  } catch (error) {
+    console.error("Error getting review count:", error);
+    return 0;
+  }
+}
+
+// Function to quickly get the current user's review count
+export async function getCurrentUserReviewCount() {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      console.error("No authenticated user");
+      return 0;
+    }
+    
+    return await getUserReviewCount(user.uid);
+  } catch (error) {
+    console.error("Error getting current user review count:", error);
+    return 0;
   }
 }
