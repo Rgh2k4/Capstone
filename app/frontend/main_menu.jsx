@@ -26,6 +26,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const computeRouteRef = useRef(null);
+  const clearRouteRef = useRef(null);
   const [travelMode, setTravelMode] = useState("DRIVING");
   const [favorites, setFavorites] = useState([]);
   const [routeSummaries, setRouteSummaries] = useState([]);
@@ -34,6 +35,11 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [defaultFilterApplied, setDefaultFilterApplied] = useState(false);
 
   const handleStopRoute = () => {
+    if (clearRouteRef.current && typeof clearRouteRef.current === "function"){
+      clearRouteRef.current();
+    } else {
+      console.error("clearRouteRef not ready");
+    }
     setRoutePois([]);
     setRouteSummaries([]);
     setIsComputing(false);
@@ -339,6 +345,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
             setUniqueTypes={setUniqueTypes}
             viewParkDetails={viewParkDetails}
             computeRouteRef={computeRouteRef}
+            clearRouteRef={clearRouteRef}
             travelMode={travelMode}
             routePois={routePois}
             setRoutePois={setRoutePois}
