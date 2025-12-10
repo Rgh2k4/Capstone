@@ -177,44 +177,16 @@ export default function ParkDetails({
           </p>
         </div>
 
-        <section className="space-y-6">
-          <h2 className="text-2xl font-semibold text-gray-800">Directions</h2>
-          <Select
-            label="Travel Mode"
-            value={travelMode}
-            onChange={(value) => setTravelMode(value)}
-            data={[
-              { value: "DRIVING", label: "Driving" },
-              { value: "WALKING", label: "Walking" },
-              { value: "BICYCLING", label: "Bicycling" },
-              { value: "TRANSIT", label: "Transit" },
-            ]}
-          />
-          <div className="flex gap-4">
-            <Button
-              variant="gradient"
-              gradient={{ from: "blue", to: "cyan", deg: 60 }}
-              onClick={handleRouteClick}
-            >
-              Compute New Route
-            </Button>
-            <Button
-              variant="gradient"
-              gradient={{ from: "green", to: "teal", deg: 60 }}
-              onClick={() => {
-                if (!routePois || routePois.length === 0) {
-                  return toast.error(
-                    "You must start a route first before adding another location."
-                  )
-                }
-                else addToRoute(park)
-              }
-              }
-            >
-              Add to Route
-            </Button>
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="bg-blue-100 rounded-full p-2">
+              <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Plan Your Visit</h2>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Select
