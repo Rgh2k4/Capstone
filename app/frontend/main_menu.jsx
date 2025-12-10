@@ -47,7 +47,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   };
 
   const onRouteSummary = (newSummary) => {
-    setRouteSummaries(prev => {
+    setRouteSummaries((prev) => {
       const updated = [...prev, newSummary];
       return updated.slice(-5);
     });
@@ -63,10 +63,17 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
     GetUserData(user.uid).then((data) => {
       console.log("User Data:", data);
       console.log("Is Admin:", data.role === "Admin");
-      if (data.role === "Admin") {
-        setIsAdmin(true);
+
+      if (data) {
+        console.log("Is Admin:", data.role === "Admin");
+        if (data.role === "Admin") {
+          setIsAdmin(true);
+        }
+        setUserData(data);
+      } else {
+        console.log("No user data found in Firestore");
+        setUserData({ email: email, role: "User", user_ID: user.uid });
       }
-      setUserData(data);
     });
   }
 
@@ -89,7 +96,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
       if (!user) return;
       const favsRef = collection(database, "users", user.uid, "favorites");
       const snapshot = await getDocs(favsRef);
-      const favs = snapshot.docs.map(doc => doc.id);
+      const favs = snapshot.docs.map((doc) => doc.id);
       setFavorites(favs);
     };
     fetchFavorites();
@@ -108,10 +115,8 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
 
   const [routePois, setRoutePois] = useState([]);
 
-
   //This code was changed to add the default filter right after the first data was pulled to avoid crashing the site trying to render 16000+ markers at once
   useEffect(() => {
-
     if (selectedFilters.length === 0) {
       const catagories = [
         uniqueTypes.Accommodation_Type,
@@ -210,32 +215,38 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
       {
         group: "Accommodations",
         items: uniqueTypes.Accommodation_Type.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)),
+          (v) => v && !allValues.has(v) && allValues.add(v)
+        ),
       },
       {
         group: "Principal Types",
         items: uniqueTypes.Principal_type.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)),
+          (v) => v && !allValues.has(v) && allValues.add(v)
+        ),
       },
       {
         group: "Facilities",
-        items: uniqueTypes.Facility_Type_Installation.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)),
+        items: uniqueTypes.Facility_Type_Installation.map(
+          normalizeOption
+        ).filter((v) => v && !allValues.has(v) && allValues.add(v)),
       },
       {
         group: "CONSICODE",
         items: uniqueTypes.CONCISCODE.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)),
+          (v) => v && !allValues.has(v) && allValues.add(v)
+        ),
       },
       {
         group: "Trail Distance",
         items: uniqueTypes.TrailDistance.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)),
+          (v) => v && !allValues.has(v) && allValues.add(v)
+        ),
       },
       {
         group: "Provincial Parks",
         items: uniqueTypes.PARKTYPE.map(normalizeOption).filter(
-          (v) => v && !allValues.has(v) && allValues.add(v)),
+          (v) => v && !allValues.has(v) && allValues.add(v)
+        ),
       },
       {
         group: "Favorites",
@@ -250,9 +261,26 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
       <Toaster position="top-middle" reverseOrder={false} />
       <main className="flex flex-col h-screen w-screen relative">
         <header className="w-full flex items-center justify-between bg-gradient-to-r from-green-700 to-blue-500 px-8 py-3 shadow-lg shadow-gray-700/40 fixed top-0 z-50">
-          <h1 className="text-2xl font-extrabold tracking-wide text-white drop-shadow-md">
-            National Parks GPS
-          </h1>
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-2 shadow-lg">
+              <svg
+                className="w-8 h-8 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white drop-shadow-lg">
+              <span className="bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
+                National Parks GPS
+              </span>
+            </h1>
+          </div>
           <div className="">
             <MultiSelect
               size="md"
@@ -263,9 +291,12 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
               onChange={(newValue) => {
                 if (newValue.length === 0) {
                   <Notification color="pink" title="Warning">
-                    At least one filter must remain active, this ensures a timely resonse from the site.
-                  </Notification>
-                  console.warn("At least one filter must remain active, this ensures a timely resonse from the site.");
+                    At least one filter must remain active, this ensures a
+                    timely resonse from the site.
+                  </Notification>;
+                  console.warn(
+                    "At least one filter must remain active, this ensures a timely resonse from the site."
+                  );
                   return;
                 }
                 setSelectedFilters(newValue);
@@ -276,14 +307,40 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
           <div className=" flex flex-row mr-24 space-x-8">
             {userData ? (
               <>
-                {isAdmin && <Button size='lg' onClick={onRouteToDashboard}>Dashboard</Button>}
-                <ProfileMenu onRouteToLogin={onRouteToLogin} userData={userData} />
+                {isAdmin && (
+                  <Button size="lg" onClick={onRouteToDashboard}>
+                    Dashboard
+                  </Button>
+                )}
+                <ProfileMenu
+                  onRouteToLogin={onRouteToLogin}
+                  userData={userData}
+                  viewParkDetails={viewParkDetails}
+                />
               </>
             ) : (
-              <Button size='lg' onClick={onRouteToLogin}>Log in</Button>
-            )
-            }
-
+              <Button
+                size="md"
+                variant="white"
+                className="bg-white text-green-700 hover:bg-green-50 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
+                onClick={onRouteToLogin}
+                leftSection={
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                }
+              >
+                Log in
+              </Button>
+            )}
           </div>
         </header>
 
@@ -320,7 +377,6 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
         </div>
 
 
-
         <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
           <ParkDetails
             selectedPark={selectedPark}
@@ -336,7 +392,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
             onRouteSummary={onRouteSummary}
           />
         </Modal>
-        <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)} >
+        <Modal isVisible={uploadOpened} onClose={() => setUploadOpened(false)}>
           <UploadWindow onClose={swapToParkDetails} parkInfo={selectedPark} />
         </Modal>
 

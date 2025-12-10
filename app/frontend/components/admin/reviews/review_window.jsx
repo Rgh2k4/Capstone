@@ -1,5 +1,5 @@
 import { PullImage } from "@/app/backend/uploadStorage";
-import { Button, Divider } from "@mantine/core";
+import { Button, Badge, Divider } from "@mantine/core";
 
 function ReviewWindow({ user: rev, onClose, onHandleReview }) {
   function handleDelete() {
@@ -13,74 +13,195 @@ function ReviewWindow({ user: rev, onClose, onHandleReview }) {
   }
 
   return (
-    <div className="w-full mx-auto bg-white shadow-2xl rounded-2xl p-24 flex flex-col items-center space-y-8 border border-gray-200">
-      
-      <div className="w-full text-center">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">
-          Review Approval
-        </h2>
-        <p className="text-gray-500 text-sm">
-          Approve or remove this review submission.
-        </p>
-      </div>
-
-      <Divider className="w-full" />
-
-      <div className="flex flex-col items-center space-y-4">
-        <img
-          className="w-24 h-24 bg-gray-200 rounded-full object-cover shadow-md"
-          src={rev.reviewData.profilePic || "/defaultUser.png"}
-          alt="User profile"
-        />
-        <p className="text-xl font-semibold text-gray-800">
-          {rev.reviewData.displayName || "Anonymous"}
-        </p>
-        <p className="text-sm text-gray-500 italic">
-          UID: {rev.reviewData.uid || "N/A"}
-        </p>
-      </div>
-
-      <Divider className="w-full" />
-
-      <div className="w-full text-left space-y-4">
-        <h3 className="text-2xl font-semibold text-blue-800">
-          {rev.reviewData.title}
-        </h3>
-        <p className="text-gray-700 leading-relaxed text-lg">
-          {rev.reviewData.message}
-        </p>
-      </div>
-
-      {rev.reviewData.image && (
-        <div className="w-full mt-4 bg-gray-50 border rounded-xl shadow-inner p-3 overflow-x-auto flex justify-center">
-          <PullImage
-            location={rev.reviewData.location_name.split(" ").join("")}
-            url={rev.reviewData.image}
-          />
+    <div className="shadow-2xl rounded-2xl overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold mb-2">Review Approval</h2>
+          <p className="text-blue-100">
+            Review and approve or deny this submission
+          </p>
         </div>
-      )}
+      </div>
 
-      <div className="flex justify-center space-x-6 mt-6">
-        <Button
-          color="red"
-          size="md"
-          variant="filled"
-          radius="md"
-          className="shadow-sm hover:shadow-md transition-all"
-          onClick={handleDelete}
-        >
-          Delete
-        </Button>
-        <Button
-          color="green"
-          size="md"
-          variant="filled"
-          radius="md"
-          className="shadow-sm hover:shadow-md transition-all"
-          onClick={handleApprove}
-        >
-          Approve
-        </Button>
+      <div className="p-8 space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-blue-50 rounded-xl p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-blue-100 rounded-full p-2">
+                <svg
+                  className="w-6 h-6 text-blue-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Review Author
+              </h3>
+            </div>
+            <div className="space-y-2">
+              <p className="text-gray-700 font-medium">
+                {rev.reviewData.displayName || "Anonymous User"}
+              </p>
+              <p className="text-sm text-gray-500">
+                UID:{" "}
+                {rev.reviewData.uid
+                  ? rev.reviewData.uid.slice(0, 8) + "..."
+                  : "N/A"}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-green-50 rounded-xl p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-green-100 rounded-full p-2">
+                <svg
+                  className="w-6 h-6 text-green-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Submission Date
+              </h3>
+            </div>
+            <div className="space-y-2">
+              <p className="text-gray-700 font-medium">
+                {rev.dateSubmitted
+                  ? new Date(rev.dateSubmitted.seconds * 1000).toLocaleDateString()
+                  : "Unknown"}
+              </p>
+              <p className="text-sm text-gray-500">
+                Submitted:{" "}
+                {rev.dateSubmitted
+                  ? new Date(rev.dateSubmitted.seconds * 1000).toLocaleTimeString()
+                  : "N/A"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <Divider label="Review Content" labelPosition="center" />
+
+          <div className="border-l-4 border-blue-500 pl-6 bg-blue-50 rounded-r-xl p-4">
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              {rev.reviewData.title || "Untitled Review"}
+            </h3>
+            <p className="text-gray-700 leading-relaxed text-lg">
+              {rev.reviewData.message || "No content provided"}
+            </p>
+          </div>
+
+          {rev.reviewData.location_name && (
+            <div className="flex items-center space-x-2 text-gray-600">
+              <svg
+                className="w-5 h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="font-medium">{rev.reviewData.location_name}</span>
+            </div>
+          )}
+
+          {rev.reviewData.image && (
+            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-6">
+              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Review Image
+              </h4>
+              <div className="flex justify-center">
+                <PullImage
+                  location={
+                    rev.reviewData.location_name?.split(" ").join("") || "default"
+                  }
+                  url={rev.reviewData.image}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-center space-x-4 pt-6 border-t border-gray-200">
+          <Button
+            color="red"
+            size="lg"
+            variant="filled"
+            radius="md"
+            className="px-8 shadow-sm hover:shadow-md transition-all duration-200"
+            onClick={handleDelete}
+            leftSection={
+              <svg
+                className="w-5 h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"
+                  clipRule="evenodd"
+                />
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 012 0v4a1 1 0 11-2 0V7zM12 7a1 1 0 012 0v4a1 1 0 11-2 0V7z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            }
+          >
+            Deny Review
+          </Button>
+          <Button
+            color="green"
+            size="lg"
+            variant="filled"
+            radius="md"
+            className="px-8 shadow-sm hover:shadow-md transition-all duration-200"
+            onClick={handleApprove}
+            leftSection={
+              <svg
+                className="w-5 h-5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            }
+          >
+            Approve Review
+          </Button>
+        </div>
       </div>
     </div>
   );

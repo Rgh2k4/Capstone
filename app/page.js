@@ -29,7 +29,10 @@ export default function Home() {
   function handleNewAccount() {
     setPageScreen(null);
     setPageScreen(
-      <Login handleLogin={handleLogin} handleSignUp={handleSignUp} />
+      <MainMenu
+        onRouteToLogin={handleRouteToLogin}
+        onRouteToDashboard={handleRouteToDashboard}
+      />
     );
   }
   function handleRouteToDashboard() {
@@ -50,11 +53,9 @@ export default function Home() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        if (user.emailVerified) {
+          setTimeout(() => {
           handleLogin();
-        } else {
-          handleRouteToLogin();
-        }
+        }, 100);
       } else {
         handleRouteToLogin();
       }

@@ -30,7 +30,7 @@ export default function SignupPage({ handleNewAccount }) {
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
     setShowError(false);
@@ -41,7 +41,8 @@ export default function SignupPage({ handleNewAccount }) {
         setShowError(true);
         throw new Error("Passwords do not match");
       }
-      if (signUp(form.email, form.password)) {
+      const success = await signUp(form.email, form.password);
+      if (success) {
         handleNewAccount();
       } else {
         throw new Error("Sign up failed. Please try again.");

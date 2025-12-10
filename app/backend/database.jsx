@@ -1,6 +1,19 @@
 "use client";
 
-import { collection, addDoc, setDoc, doc, serverTimestamp, updateDoc, getDoc, deleteDoc, getDocs, writeBatch, query, where } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  setDoc,
+  doc,
+  serverTimestamp,
+  updateDoc,
+  getDoc,
+  deleteDoc,
+  getDocs,
+  writeBatch,
+  query,
+  where,
+} from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
 import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
 import { ToastIcon } from "react-hot-toast";
@@ -17,12 +30,14 @@ export async function CreateUserAccount(data) {
       note: "",
       displayName: data.displayName || "",
       lastLogin: serverTimestamp(),
+      profileImage: "",
+      review_count: 0,
     });
     return true;
   } catch (error) {
     console.log(error);
   }
-};
+}
 
 export async function LoadUserList() {
   try {
@@ -41,8 +56,7 @@ export async function LoadUserList() {
     console.error("Error getting user list:", error);
     return [];
   }
-
-};
+}
 
 export async function LoadAdminList() {
   try {
@@ -61,8 +75,7 @@ export async function LoadAdminList() {
     console.error("Error getting admin list:", error);
     return [];
   }
-
-};
+}
 
 export async function UpdateLastLogin(user) {
   try {
@@ -88,7 +101,7 @@ export async function GetUserData(uid) {
     console.error("Error getting user data:", error);
     return null;
   }
-};
+}
 
 export async function SetDisplayName(displayName) {
   const user = auth.currentUser;
@@ -110,7 +123,6 @@ export function isAdmin(data) {
   }
 }
 
-
 export async function AdminEditUser({ oldData, newData }) {
   try {
     await updateDoc(doc(database, "users", oldData.user_ID), {
@@ -126,18 +138,92 @@ export async function AdminEditUser({ oldData, newData }) {
   }
 }
 
-
-export async function AdminDeleteUser({ uid }) {
+export async function PromoteToAdmin(uid) {
   try {
-    await deleteDoc(doc(database, "users", uid))
-    console.log();
+    console.log("database from add_window: Promoting user to Admin:", uid);
+    await updateDoc(doc(database, "users", uid), {
+      role: "Admin",
+    });
+    console.log("Promoted user to Admin:", uid);
     return true;
   } catch (err) {
-    console.error("AdminEditUser (Firestore-only) error:", err);
+    console.error("PromoteToAdmin error:", err);
     return false;
   }
 }
 
+// Assisted with Claude
+export async function AdminDeleteUser(uid) {
+  try {
+    // Create a batch for atomic updates
+    const batch = writeBatch(database);
+    
+    // Update all reviews by this user
+    const reviewsQuery = query(
+      collection(database, "reviews"),
+      where("reviewData.uid", "==", uid)
+    );
+    const reviewsSnapshot = await getDocs(reviewsQuery);
+    
+    reviewsSnapshot.forEach((reviewDoc) => {
+      const reviewRef = doc(database, "reviews", reviewDoc.id);
+      batch.update(reviewRef, {
+        "reviewData.uid": "deleted-user",
+        "reviewData.displayName": "Deleted User",
+        "reviewData.message": "This message has been deleted",
+        "reviewData.profilePic": null
+      });
+    });
+    
+    // Update all reports where this user was the reporter
+    const reporterQuery = query(
+      collection(database, "reports"),
+      where("reporterUserID", "==", uid)
+    );
+    const reporterSnapshot = await getDocs(reporterQuery);
+    
+    reporterSnapshot.forEach((reportDoc) => {
+      const reportRef = doc(database, "reports", reportDoc.id);
+      batch.update(reportRef, {
+        reporterUserID: "deleted-user"
+      });
+    });
+    
+    // Update all reports where this user was reported
+    const reportedQuery = query(
+      collection(database, "reports"),
+      where("reportedUserID", "==", uid)
+    );
+    const reportedSnapshot = await getDocs(reportedQuery);
+    
+    reportedSnapshot.forEach((reportDoc) => {
+      const reportRef = doc(database, "reports", reportDoc.id);
+      batch.update(reportRef, {
+        reportedUserID: "deleted-user",
+        "reviewData.uid": "deleted-user",
+        "reviewData.displayName": "Deleted User",
+        "reviewData.message": "This message has been deleted",
+        "reviewData.profilePic": null
+      });
+    });
+    
+    // Execute all updates atomically
+    await batch.commit();
+    
+    // Delete the user document from Firestore
+    await deleteDoc(doc(database, "users", uid));
+    
+    // Note: Firebase Auth user deletion from admin requires Firebase Admin SDK
+    // This would typically be done on the server side with admin privileges
+    // For now, we'll handle the Firestore cleanup
+    console.log("User data anonymized and Firestore document deleted for:", uid);
+    
+    return true;
+  } catch (err) {
+    console.error("AdminDeleteUser error:", err);
+    return false;
+  }
+}
 
 export async function EditUser(type, value) {
   try {
@@ -146,8 +232,6 @@ export async function EditUser(type, value) {
     const currentPassword = value?.currentPassword?.trim();
     console.log("Current Password:", currentPassword);
     const currentEmail = user.email;
-
-
 
     if (type === "email") {
       const newEmail = value?.newValue?.trim();
@@ -162,8 +246,6 @@ export async function EditUser(type, value) {
       await updateDoc(ref, { email: newEmail });
       await updateEmail(user, newEmail);
       return true;
-
-
     } else if (type === "password") {
       const newPassword = value?.newValue?.trim();
 
@@ -174,19 +256,79 @@ export async function EditUser(type, value) {
     } else {
       return false;
     }
-
   } catch (err) {
     console.error("EditUser error:", err);
     return err.message || false;
   }
-};
+}
 
-
+// Assisted with Claude
 export async function DeleteUser() {
   try {
     const user = auth.currentUser;
-    await deleteDoc(doc(database, "users", user.uid))
-    await user.delete()
+    const uid = user.uid;
+    
+    // Create a batch for atomic updates
+    const batch = writeBatch(database);
+    
+    // Update all reviews by this user
+    const reviewsQuery = query(
+      collection(database, "reviews"),
+      where("reviewData.uid", "==", uid)
+    );
+    const reviewsSnapshot = await getDocs(reviewsQuery);
+    
+    reviewsSnapshot.forEach((reviewDoc) => {
+      const reviewRef = doc(database, "reviews", reviewDoc.id);
+      batch.update(reviewRef, {
+        "reviewData.uid": "deleted-user",
+        "reviewData.displayName": "Deleted User",
+        "reviewData.message": "This message has been deleted",
+        "reviewData.profilePic": null
+      });
+    });
+    
+    // Update all reports where this user was the reporter
+    const reporterQuery = query(
+      collection(database, "reports"),
+      where("reporterUserID", "==", uid)
+    );
+    const reporterSnapshot = await getDocs(reporterQuery);
+    
+    reporterSnapshot.forEach((reportDoc) => {
+      const reportRef = doc(database, "reports", reportDoc.id);
+      batch.update(reportRef, {
+        reporterUserID: "deleted-user"
+      });
+    });
+    
+    // Update all reports where this user was reported
+    const reportedQuery = query(
+      collection(database, "reports"),
+      where("reportedUserID", "==", uid)
+    );
+    const reportedSnapshot = await getDocs(reportedQuery);
+    
+    reportedSnapshot.forEach((reportDoc) => {
+      const reportRef = doc(database, "reports", reportDoc.id);
+      batch.update(reportRef, {
+        reportedUserID: "deleted-user",
+        "reviewData.uid": "deleted-user",
+        "reviewData.displayName": "Deleted User",
+        "reviewData.message": "This message has been deleted",
+        "reviewData.profilePic": null
+      });
+    });
+    
+    // Execute all updates atomically
+    await batch.commit();
+    
+    // Delete the user document from Firestore
+    await deleteDoc(doc(database, "users", uid));
+    
+    // Delete the Firebase Auth user
+    await user.delete();
+    
     return true;
   } catch (e) {
     console.error("Auth delete error (re-auth may be required):", e);
@@ -201,23 +343,28 @@ export async function addReview(reviewData) {
       dateSubmitted: serverTimestamp(),
       status: "pending",
       reviewID: "",
-      location_name: reviewData.location_name
+      location_name: reviewData.location_name,
     }).then(async (docRef) => {
       await updateDoc(doc(database, "reviews", docRef.id), {
-        reviewID: docRef.id
+        reviewID: docRef.id,
       });
     });
 
+    //alert("Reviews Added");
   } catch (error) {
     console.error("Error: ", error);
   }
-};
+}
 
 export async function readReviewData(location) {
-
   try {
-    let reviews = []
-    const reviewData = await getDocs(query(collection(database, "reviews"), where("location_name", "==", location)));
+    let reviews = [];
+    const reviewData = await getDocs(
+      query(
+        collection(database, "reviews"),
+        where("location_name", "==", location)
+      )
+    );
     console.log("Total Reviews Fetched:", reviewData.size);
     if (!reviewData.empty) {
       reviewData.forEach((review) => {
@@ -228,11 +375,13 @@ export async function readReviewData(location) {
           const name = userData.displayName;
           if (userData.displayName === "") {
             reviews.push({
-              ...review.data(), displayName: "Anonymous"
+              ...review.data(),
+              displayName: "Anonymous",
             });
           } else {
             reviews.push({
-              ...review.data(), displayName: name
+              ...review.data(),
+              displayName: name,
             });
           }
         }
@@ -259,13 +408,12 @@ export async function loadPendingReviews() {
     for (const review of reviewData.docs) {
       if (review.data().status === "pending") {
         pendingReviews.push({
-          ...review.data()
+          ...review.data(),
         });
       }
     }
     console.log("Pending Reviews Loaded:", pendingReviews.length);
     return pendingReviews;
-
   } catch (error) {
     console.error("Error:", error);
   }
@@ -273,16 +421,17 @@ export async function loadPendingReviews() {
   return null;
 }
 
-
 export async function approveReview({ rev }) {
   //console.log("Approving review:", rev.reviewID);
   try {
     const reviewRef = doc(database, "reviews", rev.reviewID);
     await updateDoc(reviewRef, { status: "approved" });
-    toast.success("Review Approved");
+    alert("Review Approved");
   } catch (error) {
     console.error("Error: ", error);
   }
+  // Increment user's review count
+    await incrementUserReviewCount(rev.reviewData.uid);
 }
 
 export async function denyReview({ rev }) {
@@ -303,31 +452,33 @@ export async function ReportUser(usersInfo, { rev }) {
     dateReported: serverTimestamp(),
     status: "unresolved",
     reviewData: {
-      uid: rev.uid,
-      title: rev.title,
-      message: rev.message,
-      rating: rev.rating,
-      location_name: rev.location_name,
-      displayName: rev.displayName,
-      image: rev.image,
-      status: rev.status
-    }
+      uid: rev.uid || "",
+      title: rev.title || "",
+      message: rev.message || "",
+      rating: rev.rating || 0,
+      location_name: rev.location_name || "",
+      displayName: rev.displayName || "Anonymous",
+      image: rev.image || "",
+      status: rev.status || "approved" // Provide default value
+    },
   };
   try {
-    await addDoc(collection(database, "reports"), reportData)
-    toast.success("Report Submitted");
+    await addDoc(collection(database, "reports"), reportData);
+    //alert("Report Submitted");
   } catch (error) {
     console.error("Error: ", error);
   }
-};
+}
 
 export async function loadReports() {
   try {
     const reportData = await getDocs(collection(database, "reports"));
     const reports = [];
     reportData.forEach((doc) => {
-      const data = doc.data();
-      reports.push(data);
+      if (doc.data().status === "unresolved") {
+        const data = doc.data();
+        reports.push(data);
+      }
     });
     return reports;
   } catch (error) {
@@ -337,23 +488,241 @@ export async function loadReports() {
   return null;
 };
 
+// Assisted with Claude
 export async function resolveReport(report, actions) {
   try {
     console.log("Resolving report for:", report);
-    const reportOriginalRef = query(collection(database, "reports"), where("reportedUserID", "==", report.reportedUserID), where("reporterUserID", "==", report.reporterUserID), where("dateReported", "==", report.dateReported));
-    await updateDoc(reportOriginalRef, { status: "resolved" });
-    const reportCopyRef = getDocs(database, "reports");
-    for (const review of reportCopyRef) {
-      if (review.data().reviewData === report.reviewData && review.data().status === "unresolved") {
-        await deleteDoc(review);
+
+    const reportQuery = query(
+      collection(database, "reports"),
+      where("reportedUserID", "==", report.reportedUserID),
+      where("reporterUserID", "==", report.reporterUserID),
+      where("dateReported", "==", report.dateReported)
+    );
+    const reportDocs = await getDocs(reportQuery);
+
+    for (const reportDoc of reportDocs.docs) {
+      await updateDoc(doc(database, "reports", reportDoc.id), { status: "resolved" });
+    }
+
+    const allReportsSnapshot = await getDocs(collection(database, "reports"));
+    for (const reportDoc of allReportsSnapshot.docs) {
+      const reportData = reportDoc.data();
+      if (JSON.stringify(reportData.reviewData) === JSON.stringify(report.reviewData) && 
+          reportData.status === "unresolved") {
+        await deleteDoc(doc(database, "reports", reportDoc.id));
       }
     }
-    if (action === "delete") {
-      const reviewRef = query(collection(database, "reviews"), where("uid", "==", report.reviewData.uid), where("title", "==", report.reviewData.title), where("message", "==", report.reviewData.message), where("location_name", "==", report.reviewData.location_name));
-      await deleteDoc(reviewRef);
+
+    if (actions === "delete") {
+      const reviewQuery = query(
+        collection(database, "reviews"), 
+        where("reviewData.uid", "==", report.reviewData.uid), 
+        where("reviewData.title", "==", report.reviewData.title), 
+        where("reviewData.message", "==", report.reviewData.message), 
+        where("location_name", "==", report.reviewData.location_name)
+      );
+      const reviewDocs = await getDocs(reviewQuery);
+      
+      // Delete each matching review document
+      for (const reviewDoc of reviewDocs.docs) {
+        await deleteDoc(doc(database, "reviews", reviewDoc.id));
+        alert("Report Resolved");
+      }
     }
-    toast.success("Report Resolved");
+    
   } catch (error) {
     console.error("Error: ", error);
   }
 };
+
+export async function pullProfileImageURL(user) {
+  try {
+    const docSnapshot = await getDoc(doc(database, 'users', user.uid))
+    const data = docSnapshot.data();
+    return data.profileImage;
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
+
+export async function updateProfileImageURL(user, file) {
+  try {
+    const docRef = doc(database, 'users', user.uid);
+    await updateDoc(docRef, {profileImage: file.name});
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
+
+// Function to increment user's review count
+export async function incrementUserReviewCount(uid) {
+  try {
+    const userRef = doc(database, "users", uid);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      const currentCount = userData.review_count || 0; // Fallback for existing accounts
+      
+      await updateDoc(userRef, {
+        review_count: currentCount + 1,
+      });
+      
+      console.log(`Review count incremented for user ${uid}: ${currentCount + 1}`);
+    } else {
+      console.error("User not found:", uid);
+    }
+  } catch (error) {
+    console.error("Error incrementing review count:", error);
+  }
+}
+
+// Function to get user's review count with fallback initialization
+export async function getUserReviewCount(uid) {
+  try {
+    const userRef = doc(database, "users", uid);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      
+      // If review_count doesn't exist, initialize it and return 0
+      if (userData.review_count === undefined) {
+        await updateDoc(userRef, {
+          review_count: 0,
+        });
+        return 0;
+      }
+      
+      return userData.review_count;
+    } else {
+      console.error("User not found:", uid);
+      return 0;
+    }
+  } catch (error) {
+    console.error("Error getting review count:", error);
+    return 0;
+  }
+}
+
+// Function to quickly get the current user's review count
+export async function getCurrentUserReviewCount() {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      console.error("No authenticated user");
+      return 0;
+    }
+    
+    return await getUserReviewCount(user.uid);
+  } catch (error) {
+    console.error("Error getting current user review count:", error);
+    return 0;
+  }
+}
+
+export async function incrementReviewLikes(userID, { rev }) {
+  //console.log("[database.jsx]Incrementing like for review:", rev.reviewID);
+  const reviewRef = doc(database, "reviews", rev.reviewID);
+  if (!(await getDoc(reviewRef)).data().likes) {
+    //console.log("[database.jsx]Likes field missing, initializing to 0 for review:", rev.reviewID);
+    await updateDoc(reviewRef, {
+      likes: 0,
+    });
+    //console.log("[database.jsx]Initialized likes to 0 for review:", rev.reviewID);
+  }
+  
+  try {
+    //console.log("[database.jsx] Update likes for review:", rev.reviewID);
+    let likes = (await getDoc(reviewRef)).data().likes || 0;
+    await updateDoc(reviewRef, {
+      likes: likes + 1,
+    }).then(async () => {
+      //console.log("[database.jsx]Incremented likes for review:", rev.reviewID);
+      const userRef = doc(database, "users", userID, "likes", rev.reviewID);
+      await setDoc(userRef, {
+        reviewID: rev.reviewID,
+      }); 
+    });
+    console.log("[database.jsx]Set liked review for user:", userID, "review:", rev.reviewID);
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
+
+export async function decrementReviewLikes(userID, { rev }) {
+  //console.log("[database.jsx]Decrementing like for review:", rev.reviewID);
+  const reviewRef = doc(database, "reviews", rev.reviewID);
+  try {
+    //console.log("[database.jsx] Update likes for review:", rev.reviewID);
+    let likes = (await getDoc(reviewRef)).data().likes || 0;
+    await updateDoc(reviewRef, {
+      likes: likes - 1,
+    }).then(async () => {
+      //console.log("[database.jsx]Decremented likes for review:", rev.reviewID);
+      const userRef = doc(database, "users", userID, "likes", rev.reviewID);
+      await deleteDoc(userRef); 
+    });
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
+
+export async function checkIfLiked(userID, { rev }) {
+  try {
+    console.log("[database.jsx]Checking if user:", userID, "liked review:", rev.reviewID);
+    const userRef = doc(database, "users", userID, "likes", rev.reviewID);
+    const docSnapshot = await getDoc(userRef);
+    if (docSnapshot.exists()) {
+      console.log("[database.jsx]User has liked the review:", rev.reviewID);
+      return true;
+    } else {
+      console.log("[database.jsx]User has not liked the review:", rev.reviewID);
+    }
+    return false;
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
+
+export async function achievementsUpdater() {
+  // Placeholder for future implementation
+}
+
+export async function rankScoreIncrementer(points) {
+  // Placeholder for future implementation
+}
+
+// Function to load user's favorite parks
+export async function loadUserFavorites(uid) {
+  try {
+    const favoritesRef = collection(database, "users", uid, "favorites");
+    const favoritesSnapshot = await getDocs(favoritesRef);
+    const favorites = [];
+    
+    favoritesSnapshot.forEach((doc) => {
+      favorites.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    return favorites;
+  } catch (error) {
+    console.error("Error loading favorites:", error);
+    return [];
+  }
+}
+
+// Function to remove a favorite park
+export async function removeFavoritePark(uid, parkId) {
+  try {
+    const favoriteRef = doc(database, "users", uid, "favorites", parkId);
+    await deleteDoc(favoriteRef);
+    return true;
+  } catch (error) {
+    console.error("Error removing favorite:", error);
+    return false;
+  }
+}

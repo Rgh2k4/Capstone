@@ -213,7 +213,7 @@ function MapFunction({ filters = [], setUniqueTypes, viewParkDetails, computeRou
 
       for (const [i, url] of urls.entries()) {
         try {
-          console.log(`Fetching dataset ${i + 1}/${urls.length}...`);
+          //console.log(`Fetching dataset ${i + 1}/${urls.length}...`);
           const response = await fetch(url, { signal: AbortSignal.timeout(25000) }); //This will cause any pull longer than 25 seconds to abort
           if (!response.ok) throw new Error(`Failed to load ${url}: ${response.status}`);
 
@@ -267,7 +267,7 @@ function MapFunction({ filters = [], setUniqueTypes, viewParkDetails, computeRou
         }
       }
 
-      console.log(`All datasets loaded: ${allPois.length} POIs`);
+      //console.log(`All datasets loaded: ${allPois.length} POIs`);
 
       //The following code extracts the unique sub-types for use in the front-end filter and was made with the help of https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set,
       //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter, and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
