@@ -1,4 +1,4 @@
-import { Alert, Button, Input, PasswordInput } from "@mantine/core";
+import { Button, Input, PasswordInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconAt, IconInfoCircle } from "@tabler/icons-react";
 import React, { useState } from "react";

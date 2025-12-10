@@ -1,5 +1,5 @@
 import { auth } from "@/app/backend/databaseIntegration";
-import { Button, Alert } from "@mantine/core";
+import { Button } from "@mantine/core";
 import React, { useState } from "react";
 import { AdminEditUser, GetUserData } from "@/app/backend/database";
 
@@ -20,7 +20,7 @@ function SettingsMenu({
       setSubmitted1(true);
       onChangeCredential("email");
     } else {
-      alert("Please verify your email before changing credentials.");
+      toast("Please verify your email before changing credentials.");
     }
   }
   function handleChangePassword() {
@@ -28,7 +28,7 @@ function SettingsMenu({
       setSubmitted2(true);
       onChangeCredential("password");
     } else {
-      alert("Please verify your email before changing credentials.");
+      toast("Please verify your email before changing credentials.");
     }
   }
   function handleContact() {

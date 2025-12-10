@@ -41,7 +41,7 @@ export default function ProfileMenu({ onRouteToLogin, userData, viewParkDetails 
     if (userDeleted) {
       onRouteToLogin();
     } else {
-      alert("Account deletion failed. Please sign in again and retry.");
+      toast.error("Account deletion failed. Please sign in again and retry.");
     }
   }
 

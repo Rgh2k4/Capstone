@@ -42,7 +42,7 @@ function AdminMenu( { onRouteToLogin, onRouteToMainMenu } ) {
       if (data.role === "Admin") {
         setIsAdmin(true);
       } else {
-        alert("Access Denied. Redirecting to Main Menu.");
+        toast.error("Access Denied. Redirecting to Main Menu.");
         onRouteToMainMenu();
       }
       setUserData(data);

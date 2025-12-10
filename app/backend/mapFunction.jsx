@@ -1,13 +1,13 @@
 //This file contains code that pulls the google maps api
 //This was made with help from this site: https://developers.google.com/codelabs/maps-platform/maps-platform-101-react-js#1 and asking Chatgpt to simplify and breakdown its contents for me
-import React, {useState, useEffect, useRef} from 'react';
-import {APIProvider, Map as GoogleMap, AdvancedMarker, useMap} from '@vis.gl/react-google-maps';
+import React, { useState, useEffect, useRef } from 'react';
+import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 const uniqueArray = (arr) => [...new Set(arr)];
 
 //This code was made with help from https://developers.google.com/maps/documentation/javascript/events#map_events
 //https://developers-dot-devsite-v2-prod.appspot.com/maps/documentation/javascript/reference/coordinates#LatLngBounds
 //and asking GPT to help me debug my code
-function MapContent({filteredPois, setVisiblePois, viewParkDetails}) {
+function MapContent({ filteredPois, setVisiblePois, viewParkDetails }) {
   const map = useMap();
   const [visiblePoisLocal, setVisiblePoisLocal] = useState([]);
 
@@ -30,19 +30,17 @@ function MapContent({filteredPois, setVisiblePois, viewParkDetails}) {
     <>
       {visiblePoisLocal.map(poi => (
         <AdvancedMarker
-        key={poi.id}
-        position={poi.location}
-        onClick={() => viewParkDetails?.(poi)} />
+          key={poi.id}
+          position={poi.location}
+          onClick={() => viewParkDetails?.(poi)} />
       ))}
     </>
   );
 }
 //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js, https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes
 //https://visgl.github.io/react-google-maps/examples/directions
-function RouteHandler({computeRouteRef, travelMode, userLocation, onRouteSummary}) {
+function RouteHandler({ computeRouteRef, clearRouteRef, directionsRendererRef, travelMode, userLocation, onRouteSummary }) {
   const map = useMap();
-  const directionsRendererRef = useRef(null);
-  const [routePois, setRoutePois] = useState([]);
 
   useEffect(() => {
     if (!map) return;
@@ -55,16 +53,14 @@ function RouteHandler({computeRouteRef, travelMode, userLocation, onRouteSummary
       directionsRendererRef.current.setMap(map);
     }
 
-    const directionsService = new google.maps.DirectionsService();
-
     if (computeRouteRef) {
       computeRouteRef.current = (poiInput, mode = travelMode) => {
         const poiArray = Array.isArray(poiInput) ? poiInput : [poiInput];
 
         //This was written with help from gpt after I asked it to help me
         //make my code capable of routing both single and multi leg routes
-        const origin = {lat: userLocation.lat, lng: userLocation.lng};
-        const destination = poiArray[poiArray.length -1].location;
+        const origin = { lat: userLocation.lat, lng: userLocation.lng };
+        const destination = poiArray[poiArray.length - 1].location;
         const waypoints = poiArray.slice(0, -1).map(poi => ({
           location: poi.location,
           stopover: true
@@ -78,11 +74,11 @@ function RouteHandler({computeRouteRef, travelMode, userLocation, onRouteSummary
             //https://developers.google.com/maps/documentation/javascript/legacy/directions#Waypoints
             waypoints,
             travelMode: google.maps.TravelMode[mode?.toUpperCase()],
-            },
+          },
             (result, status) => {
               if (status === "OK") {
                 directionsRendererRef.current.setDirections(result);
-                
+
                 const legs = result.routes[0].legs.map((leg) => ({
                   start: leg.start_address,
                   end: leg.end_address,
@@ -94,9 +90,9 @@ function RouteHandler({computeRouteRef, travelMode, userLocation, onRouteSummary
 
                 const totalDistance = legs.reduce((sum, leg) => sum + leg.distanceValue / 1000, 0);
                 const totalDuration = legs.reduce((sum, leg) => sum + leg.durationValue / 60, 0);
-                
+
                 if (typeof onRouteSummary === "function") {
-                  onRouteSummary({legs, totalDistance, totalDuration});
+                  onRouteSummary({ legs, totalDistance, totalDuration });
                 }
 
                 resolve({
@@ -129,13 +125,13 @@ function normalizeOption(str) {
   return parts.join(" / ");
 }
 
-function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteRef, travelMode, favorites, onRouteSummary}) {
+function MapFunction({ filters = [], setUniqueTypes, viewParkDetails, computeRouteRef, clearRouteRef, travelMode, favorites, onRouteSummary, onMarkersReady }) {
   //The info panel code was made with help from https://developers.google.com/maps/documentation/javascript/infowindows#maps_infowindow_simple-javascript
   //and asking Chatgpt "how can I make the sidepanel pull the info of the selected POI?"
   const [pois, setPois] = useState([]);
   const [selectedPOI, setSelectedPOI] = useState(null);
   //This code gets the users location to start the map at, and if the location is not found, it will start the map at the useState location
-  const [userLocation, setUserLocation] = useState({lat: 52.8866, lng:-118.10222});
+  const [userLocation, setUserLocation] = useState({ lat: 52.8866, lng: -118.10222 });
   const [routeData, setRouteData] = useState(null);
   const favoriteFilterSelected = filters.includes("Favorites");
   const nonFavoriteFilters = filters.filter(f => f !== "Favorites");
@@ -144,15 +140,15 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
   const mapRef = useRef(null);
   const polylineRef = useRef(null);
 
-      //This code ensures each location grabbed has a unique name to help avaiod overcrowding of markers
-    const getUniquePOINames = (pois) => {
-      const seen = new Set();
-      return pois.filter(poi => {
-        if (seen.has(poi.name)) return false;
-        seen.add(poi.name);                   
-        return true;
-      });
-    };
+  //This code ensures each location grabbed has a unique name to help avaiod overcrowding of markers
+  const getUniquePOINames = (pois) => {
+    const seen = new Set();
+    return pois.filter(poi => {
+      if (seen.has(poi.name)) return false;
+      seen.add(poi.name);
+      return true;
+    });
+  };
 
   //This code gets the users location with permission on load and was made with help from https://developers.google.com/maps/documentation/javascript/geolocation, https://developers.google.com/maps/documentation/geolocation/overview
   //and the code snippets provided by VS code"
@@ -173,31 +169,27 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
     //The empty [] at the end means that this code will only run once when the use first renders the map
   }, []);
 
-    //This code grabs each non-null unique sub-type of location from each of the API's, this was made with help by asking GPT "For a filter, how do I ensure I only get one of every non-null subtype
-    //from Accommodation_Type, Principal_type, Facility_Type_Installation, and the Label_e_5k_less, Label_e_20k_5k, Label_e_100k_20k, Label_e_100k_plus"
-    //The Boolean removes any null/undefined/empty values, and new set() ensures only 1 of each subtype appears
-    const getUniqueSubTypes = (data, property) => {
-      const values = data.map(f => f.properties?.[property]).filter(Boolean);
-      return [...new Set(values)];
-    };
+  //This code grabs each non-null unique sub-type of location from each of the API's, this was made with help by asking GPT "For a filter, how do I ensure I only get one of every non-null subtype
+  //from Accommodation_Type, Principal_type, Facility_Type_Installation, and the Label_e_5k_less, Label_e_20k_5k, Label_e_100k_20k, Label_e_100k_plus"
+  //The Boolean removes any null/undefined/empty values, and new set() ensures only 1 of each subtype appears
+  const getUniqueSubTypes = (data, property) => {
+    const values = data.map(f => f.properties?.[property]).filter(Boolean);
+    return [...new Set(values)];
+  };
 
-    //console.log("MapFunction props:", {filters, setUniqueTypes, viewParkDetails});
-        
-        const directionsServiceRef = useRef(null);
-        const directionsRendererRef = useRef(null);
-        
-        useEffect(() => {
-          if (!mapRef.current?.map) return;
-          const map = mapRef.current.map;
-          
-          directionsServiceRef.current = new google.maps.DirectionsService();
-          directionsRendererRef.current = new google.maps.DirectionsRenderer();
-          directionsRendererRef.current.setMap(map);
+  console.log("MapFunction props:", { filters, setUniqueTypes, viewParkDetails });
 
-          //if (computeRouteRef){
-          //  computeRouteRef.current = computeRoute;
-          //}
-        }, [mapRef.current?.map]);
+  const directionsServiceRef = useRef(null);
+  const directionsRendererRef = useRef(null);
+
+  useEffect(() => {
+    if (clearRouteRef) {
+      clearRouteRef.current = () => {
+        directionsRendererRef.current?.setDirections({ routes: [] });
+      };
+    }
+  }, [clearRouteRef]);
+
 
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
   //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
@@ -242,7 +234,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           //The final result is an array of clean, usable POI objects for display or mapping.
           let filteredPois = nonFavoriteFilters.length
           const pois = (data.features || [])
-            .filter(f => 
+            .filter(f =>
               (f.geometry?.type === "Point" && f.geometry?.coordinates?.length === 2) ||
               (f.geometry?.type === "Polygon" && f.geometry?.coordinates?.[0]?.[0]?.length === 2) &&
               (f.properties?.Name_e || f.properties?.Nom_f || f.properties?.Label_e_5k_less || f.properties?.Lable_e_20k_5k || f.properties?.Label_e_100k_20k || f.properties?.Label_e_100k_plus || f.properties?.PARKNM))
@@ -252,18 +244,18 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
               description: f.properties?.Description || f.properties?.description || f.properties?.URL_e || "No description",
               location: {
                 lat: f.geometry.type === "Polygon"
-                ? parseFloat(f.geometry.coordinates[0][0][1])
-                : parseFloat(f.geometry.coordinates[1]),
+                  ? parseFloat(f.geometry.coordinates[0][0][1])
+                  : parseFloat(f.geometry.coordinates[1]),
                 lng: f.geometry.type === "Polygon"
-                ? parseFloat(f.geometry.coordinates[0][0][0])
-                : parseFloat(f.geometry.coordinates[0])
+                  ? parseFloat(f.geometry.coordinates[0][0][0])
+                  : parseFloat(f.geometry.coordinates[0])
               },
               properties: f.properties,
               reviews: []
             }));
 
           allPois.push(...pois);
-          
+
           const uniquePois = getUniquePOINames(allPois);
 
           setPois(uniquePois);
@@ -290,7 +282,7 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
         trailDistanceFields.flatMap(field => getUniqueSubTypes(allPois, field))
       );
 
-      if (typeof setUniqueTypes === "function"){
+      if (typeof setUniqueTypes === "function") {
         setUniqueTypes({
           CONCISCODE: uniqueArray(conciscodeTypes),
           Accommodation_Type: uniqueArray(accommodationTypes),
@@ -299,7 +291,8 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
           PARKTYPE: uniqueArray(PARKTYPE),
           TrailDistance: trailDistance
         });
-      }}
+      }
+    }
 
     loadData();
   }, []);
@@ -312,51 +305,51 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
     filteredPois = pois.filter(poi => favorites?.includes(poi.id));
   } else {
     filteredPois = nonFavoriteFilters.length
-    ? pois.filter(poi =>{
-      const poiValues = [
-        poi.properties?.Accommodation_Type,
-        poi.properties?.Principal_type,
-        poi.properties?.Facility_Type_Installation,
-        poi.properties?.CONCISCODE,
-        poi.properties?.PARKTYPE,
-        poi.properties?.Label_e_5k_less,
-        poi.properties?.Label_e_20k_5k,
-        poi.properties?.Label_e_100k_20k,
-        poi.properties?.Label_e_100k_plus
-      ].filter(Boolean)
-      .flatMap(val => Array.isArray(val) ? val : [val])
-      .map(val => normalizeOption(String(val)));
+      ? pois.filter(poi => {
+        const poiValues = [
+          poi.properties?.Accommodation_Type,
+          poi.properties?.Principal_type,
+          poi.properties?.Facility_Type_Installation,
+          poi.properties?.CONCISCODE,
+          poi.properties?.PARKTYPE,
+          poi.properties?.Label_e_5k_less,
+          poi.properties?.Label_e_20k_5k,
+          poi.properties?.Label_e_100k_20k,
+          poi.properties?.Label_e_100k_plus
+        ].filter(Boolean)
+          .flatMap(val => Array.isArray(val) ? val : [val])
+          .map(val => normalizeOption(String(val)));
 
-      return nonFavoriteFilters.some(filter => poiValues.includes(filter));
-  })
-  
-  :pois;
+        return nonFavoriteFilters.some(filter => poiValues.includes(filter));
+      })
 
-   if (favoriteFilterSelected && favorites?.length) {
-    const favoritePois = pois.filter(poi => favorites.includes(poi.id));
-    const seen = new Set(filteredPois.map(poi => poi.id));
-    filteredPois = [
-      ...filteredPois,
-      ...favoritePois.filter(poi => !seen.has(poi.id))
-    ];
+      : pois;
+
+    if (favoriteFilterSelected && favorites?.length) {
+      const favoritePois = pois.filter(poi => favorites.includes(poi.id));
+      const seen = new Set(filteredPois.map(poi => poi.id));
+      filteredPois = [
+        ...filteredPois,
+        ...favoritePois.filter(poi => !seen.has(poi.id))
+      ];
+    }
   }
-}
 
   //This code de-duplicates markers by id, ensuring that even if a marker is in both Favorites and another filter,
   //the marker will only render once
   if (favoriteFilterSelected && favorites?.length) {
-  const favoritePois = pois.filter(poi => favorites.includes(poi.id));
-  const combined = [...filteredPois, ...favoritePois];
-  filteredPois = Array.from(
-    combined.reduce((map, poi) => map.set(poi.id, poi), new Map()).values()
-  );
-}
+    const favoritePois = pois.filter(poi => favorites.includes(poi.id));
+    const combined = [...filteredPois, ...favoritePois];
+    filteredPois = Array.from(
+      combined.reduce((map, poi) => map.set(poi.id, poi), new Map()).values()
+    );
+  }
 
-  //console.log("Filters active:", filters);
-  //console.log("Number of POIs loaded:", pois.length);
-  //console.log("Number of POIs shown after filtering:", filteredPois.length);  
+  console.log("Filters active:", filters);
+  console.log("Number of POIs loaded:", pois.length);
+  console.log("Number of POIs shown after filtering:", filteredPois.length);
 
-    const [routedPOI, setRoutedPOI] = useState(null);
+  const [routedPOI, setRoutedPOI] = useState(null);
 
   //This code drops the current route if it is to a location that gets filtered out
   useEffect(() => {
@@ -366,49 +359,50 @@ function MapFunction({filters=[], setUniqueTypes, viewParkDetails, computeRouteR
     }
   }, [filteredPois, routedPOI]);
 
-        //console.log("=== Rendering POIs ===");
-        filteredPois.forEach(poi => {
-        });
+  console.log("=== Rendering POIs ===");
+  filteredPois.forEach(poi => {
+  });
 
-        return (
-        <div>
-          <div className='h-screen w-full'>
-            <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
-              <GoogleMap
-              ref={mapRef}
-              defaultCenter={userLocation}
-              defaultZoom={10}
-              mapId='456dc2bedf64a06c67cc63ea'>
+  return (
+    <div>
+      <div className='h-screen w-full'>
+        <APIProvider apiKey="AIzaSyDDrM5Er5z9ZF0qWdP4QLDEcgpfqGdgwBI">
+          <GoogleMap
+            ref={mapRef}
+            defaultCenter={userLocation}
+            defaultZoom={10}
+            mapId='456dc2bedf64a06c67cc63ea'>
 
-              <MapContent
-                filteredPois={filteredPois}
-                viewParkDetails={viewParkDetails}
-              />
-              
-              {/*https://visgl.github.io/react-google-maps/docs/api-reference/components/advanced-marker, https://developers.google.com/maps/documentation/javascript/geolocation#maps_map_geolocation-javascript*/}
-              <AdvancedMarker
+            <MapContent
+              filteredPois={filteredPois}
+              viewParkDetails={viewParkDetails}
+            />
+
+            {/*https://visgl.github.io/react-google-maps/docs/api-reference/components/advanced-marker, https://developers.google.com/maps/documentation/javascript/geolocation#maps_map_geolocation-javascript*/}
+            <AdvancedMarker
               position={userLocation}
               title="Your Location">
-                <div
+              <div
                 style={{
                   width: '12px',
                   height: '12px',
                   borderRadius: '50%',
                   backgroundColor: 'blue',
                   border: '2px solid white',
-                }}/>
-              </AdvancedMarker>
-              <RouteHandler
+                }} />
+            </AdvancedMarker>
+            <RouteHandler
               computeRouteRef={computeRouteRef}
               travelMode={travelMode}
               userLocation={userLocation}
               onRouteSummary={onRouteSummary}
-              />
+              directionsRendererRef={directionsRendererRef}
+            />
           </GoogleMap>
         </APIProvider>
       </div>
-      
-      </div>
+
+    </div>
   );
 }
 

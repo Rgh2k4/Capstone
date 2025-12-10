@@ -12,6 +12,9 @@ import { Review } from "./review";
 
 function ReviewSection({ handleReport, park, reviews }) {
 
+  function handleData({ user }) {
+    toast(`${user.username} has been reported.`);
+  }
 
   return (
     <div className="space-y-6">

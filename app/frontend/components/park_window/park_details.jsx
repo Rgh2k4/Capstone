@@ -60,7 +60,7 @@ export default function ParkDetails({
   }, [park]);
 
   async function toggleFavorite() {
-    if (!user) return alert("You must be logged in to favorite a park.");
+    if (!user) return toast("You must be logged in to favorite a park.");
     const favoriteRef = doc(database, "users", user.uid, "favorites", park.id);
 
     if (isFavorite) {
@@ -106,7 +106,7 @@ export default function ParkDetails({
   }, [park]);
 
   function handleReport({ rev }) {
-    if (!user) return alert("You must be logged in to report a user.");
+    if (!user) return toast.error("You must be logged in to report a user.");
     ReportUser(
       {
         reportedUserID: rev.reviewData.uid,
@@ -115,7 +115,7 @@ export default function ParkDetails({
       },
       { rev }
     );
-    alert(`${rev.displayName || "Anonymous"} has been reported.`);
+    toast.success(`${rev.displayName || "Anonymous"} has been reported.`);
   }
 
   const addToRoute = async (poi) => {
@@ -186,7 +186,7 @@ export default function ParkDetails({
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Plan Your Visit</h2>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Select

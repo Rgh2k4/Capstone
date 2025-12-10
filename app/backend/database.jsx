@@ -15,15 +15,8 @@ import {
   where,
 } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
-import {
-  EmailAuthProvider,
-  fetchSignInMethodsForEmail,
-  reauthenticateWithCredential,
-  signInWithCredential,
-  updateEmail,
-  updatePassword,
-  verifyBeforeUpdateEmail,
-} from "firebase/auth";
+import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
+import { ToastIcon } from "react-hot-toast";
 
 export async function CreateUserAccount(data) {
   try {
@@ -135,7 +128,7 @@ export async function AdminEditUser({ oldData, newData }) {
     await updateDoc(doc(database, "users", oldData.user_ID), {
       displayName: newData.displayName,
       email: newData.email,
-      note: newData.note,
+      note: newData.note
     });
     console.log();
     return true;
@@ -404,7 +397,7 @@ export async function readReviewData(location) {
   }
 
   return null;
-}
+};
 
 export async function loadPendingReviews() {
   try {
@@ -445,7 +438,7 @@ export async function denyReview({ rev }) {
   try {
     const reviewRef = doc(database, "reviews", rev.reviewID);
     await deleteDoc(reviewRef);
-    alert("Review Denied");
+    toast.error("Review Denied");
   } catch (error) {
     console.error("Error: ", error);
   }
@@ -493,8 +486,7 @@ export async function loadReports() {
   }
 
   return null;
-}
-
+};
 
 // Assisted with Claude
 export async function resolveReport(report, actions) {

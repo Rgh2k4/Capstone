@@ -53,7 +53,6 @@ export function logIn(email, password) {
       return true;
     })
     .catch((error) => {
-      //alert("User does not exist or password is incorrect");
       const errorCode = error.code;
       const errorMessage = error.message;
       console.error('Error logging in:', errorCode, errorMessage);

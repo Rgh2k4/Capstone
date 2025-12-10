@@ -7,10 +7,11 @@ import dynamic from "next/dynamic";
 import UploadWindow from "./components/park_window/upload_window.jsx";
 import Modal from "./components/Modal";
 import { auth, database } from "../backend/databaseIntegration.jsx";
-import { MultiSelect, Notification, Accordion } from "@mantine/core";
+import { MultiSelect, Notification, Accordion, MantineProvider, createTheme } from "@mantine/core";
 import { GetUserData, isAdmin } from "../backend/database";
 import { collection, getDocs } from "firebase/firestore";
 import toast, { Toaster } from "react-hot-toast";
+import LoadingScreen from "./components/LoadingScreen";
 
 const MapFunction = dynamic(() => import("../backend/mapFunction"), {
   ssr: false,
@@ -25,12 +26,21 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const computeRouteRef = useRef(null);
+  const clearRouteRef = useRef(null);
   const [travelMode, setTravelMode] = useState("DRIVING");
   const [favorites, setFavorites] = useState([]);
   const [routeSummaries, setRouteSummaries] = useState([]);
   const [isComputing, setIsComputing] = useState(false);
+  const [loadingMarkers, setLoadingMarkers] = useState(true);
+  const [defaultFilterApplied, setDefaultFilterApplied] = useState(false);
 
   const handleStopRoute = () => {
+    if (clearRouteRef.current) {
+      clearRouteRef.current();
+    } else {
+      toast.error("Route not ready yet, please wait a moment");
+      console.warn("clearRouteRef not ready");
+    }
     setRoutePois([]);
     setRouteSummaries([]);
     setIsComputing(false);
@@ -124,6 +134,11 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
       if (firstType) {
         const defaultFilter = firstType[0];
         setSelectedFilters([defaultFilter]);
+
+        if (!defaultFilterApplied) {
+          setDefaultFilterApplied(true);
+          setLoadingMarkers(false);
+        }
       }
     }
   }, [uniqueTypes]);
@@ -242,6 +257,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
 
   return (
     <>
+      {loadingMarkers && <LoadingScreen />}
       <Toaster position="top-middle" reverseOrder={false} />
       <main className="flex flex-col h-screen w-screen relative">
         <header className="w-full flex items-center justify-between bg-gradient-to-r from-green-700 to-blue-500 px-8 py-3 shadow-lg shadow-gray-700/40 fixed top-0 z-50">
@@ -327,41 +343,39 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
             )}
           </div>
         </header>
-        {routePois.length > 0 && routeSummaries.length > 0 && (
-          <div className="absolute top-16 left-4 z-40 w-96 shadow-lg bg-white rounded-md p-2">
-            <Accordion multiple defaultValue={["stop-route"]}>
-              <Accordion.Item value="stop-route">
-                <Accordion.Control>Stop Computing Route</Accordion.Control>
+
+        <div className="absolute top-16 left-4 z-40 w-96 shadow-lg bg-white rounded-md p-2"
+          style={{ display: routePois.length > 0 && routeSummaries.length > 0 ? "block" : "none" }}>
+          <Accordion multiple defaultValue={['stop-route']}>
+            <Accordion.Item value="stop-route">
+              <Accordion.Control>Stop Computing Route</Accordion.Control>
+              <Accordion.Panel>
+                <Button color="red" size="sm" onClick={handleStopRoute}>
+                  Stop Computing Route
+                </Button>
+              </Accordion.Panel>
+            </Accordion.Item>
+
+            {routeSummaries.map((route, index) => (
+              <Accordion.Item key={index} value={`route-${index}`}>
+                <Accordion.Control>Trip Summary #{index + 1}</Accordion.Control>
                 <Accordion.Panel>
-                  <Button color="red" size="sm" onClick={handleStopRoute}>
-                    Stop Computing Route
-                  </Button>
+                  {(route.legs || []).map((leg, i) => (
+                    <div key={i} className="mb-1 text-sm">
+                      {leg.start} → {leg.end}: {leg.distanceText}, {leg.durationText}
+                    </div>
+                  ))}
+                  <div className="mt-2 font-semibold text-sm">
+                    Total Distance: {route.totalDistance.toFixed(1)} km
+                    <br />
+                    Total Duration: {Math.round(route.totalDuration)} min
+                  </div>
                 </Accordion.Panel>
               </Accordion.Item>
+            ))}
+          </Accordion>
+        </div>
 
-              {routeSummaries.map((route, index) => (
-                <Accordion.Item key={index} value={`route-${index}`}>
-                  <Accordion.Control>
-                    Trip Summary #{index + 1}
-                  </Accordion.Control>
-                  <Accordion.Panel>
-                    {(route.legs || []).map((leg, i) => (
-                      <div key={i} className="mb-1 text-sm">
-                        {leg.start} → {leg.end}: {leg.distanceText},{" "}
-                        {leg.durationText}
-                      </div>
-                    ))}
-                    <div className="mt-2 font-semibold text-sm">
-                      Total Distance: {route.totalDistance.toFixed(1)} km
-                      <br />
-                      Total Duration: {Math.round(route.totalDuration)} min
-                    </div>
-                  </Accordion.Panel>
-                </Accordion.Item>
-              ))}
-            </Accordion>
-          </div>
-        )}
 
         <Modal isVisible={overlay} onClose={() => setOverlay(false)}>
           <ParkDetails
@@ -389,6 +403,7 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
             setUniqueTypes={setUniqueTypes}
             viewParkDetails={viewParkDetails}
             computeRouteRef={computeRouteRef}
+            clearRouteRef={clearRouteRef}
             travelMode={travelMode}
             routePois={routePois}
             setRoutePois={setRoutePois}
