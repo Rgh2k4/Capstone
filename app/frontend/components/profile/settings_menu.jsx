@@ -42,7 +42,7 @@ function SettingsMenu({
 
   return (
     <div className="">
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-8">
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <div className="bg-white/20 rounded-full p-3">
