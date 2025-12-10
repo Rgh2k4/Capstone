@@ -324,29 +324,7 @@ export default function ParkDetails({
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-emerald-100 rounded-full p-2">
-              <svg className="w-6 h-6 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zM3 15a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-1zm6-11a2 2 0 012-2h1a2 2 0 012 2v4a2 2 0 01-2 2h-1a2 2 0 01-2-2V4zm6 0a2 2 0 012-2h1a2 2 0 012 2v4a2 2 0 01-2 2h-1a2 2 0 01-2-2V4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Wildlife & Nature</h2>
-          </div>
-          <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-8">
-            <div className="text-center">
-              <div className="bg-emerald-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <svg className="w-8 h-8 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <p className="text-gray-600 font-medium">Wildlife gallery coming soon</p>
-              <p className="text-sm text-gray-500 mt-1">
-                We're working on adding beautiful wildlife photos from this park
-              </p>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   );
