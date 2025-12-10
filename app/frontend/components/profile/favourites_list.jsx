@@ -1,18 +1,47 @@
 import { useState, useEffect } from "react";
 import { Button } from "@mantine/core";
+import { auth } from "@/app/backend/databaseIntegration";
+import { loadUserFavorites, removeFavoritePark } from "@/app/backend/database";
 
-function FavouritesList({ userData }) {
+function FavouritesList({ userData, viewParkDetails }) {
   const [favourites, setFavourites] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  function handleView(park) {
-    // Logic to view park details
-    console.log("Viewing park:", park);
+  function onViewPark(park) {
+    viewParkDetails(park);
+  }
+
+  async function handleRemoveFavorite(park) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const success = await removeFavoritePark(user.uid, park.id);
+    if (success) {
+      setFavourites(prev => prev.filter(fav => fav.id !== park.id));
+    } else {
+      alert("Failed to remove favorite. Please try again.");
+    }
+  }
+
+  async function loadFavorites() {
+    const user = auth.currentUser;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const userFavorites = await loadUserFavorites(user.uid);
+      setFavourites(userFavorites);
+    } catch (error) {
+      console.error("Error loading favorites:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    // Load user's favourite parks
-    setLoading(false);
+    loadFavorites();
   }, [userData]);
 
   return (
@@ -50,17 +79,46 @@ function FavouritesList({ userData }) {
             {favourites.map((park, index) => (
               <div key={index} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">{park.name}</h3>
-                  <button className="text-red-500 hover:text-red-700">
+                  <h3 className="text-lg font-semibold text-gray-900">{park.Name_e}</h3>
+                  <button 
+                    className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                    onClick={() => handleRemoveFavorite(park)}
+                    title="Remove from favorites"
+                  >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                     </svg>
                   </button>
                 </div>
-                <p className="text-gray-600 text-sm mb-4">{park.description}</p>
-                <Button size="sm" variant="outline" fullWidth onClick={() => handleView(park)}>
-                  Visit Park
-                </Button>
+                
+                <div className="mb-4">
+                  <div className="flex items-center text-sm text-gray-500 mb-2">
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Coordinates: {park.lat?.toFixed(4)}, {park.lng?.toFixed(4)}</span>
+                  </div>
+                </div>
+                
+                <div className="flex space-x-2">
+                  {/* <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="flex-1" 
+                    onClick={() => onViewPark(park)}
+                  >
+                    View Details
+                  </Button>
+                  */}
+                  <Button 
+                    size="sm" 
+                    variant="light" 
+                    color="red"
+                    onClick={() => handleRemoveFavorite(park)}
+                  >
+                    Remove
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

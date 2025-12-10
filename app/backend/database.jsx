@@ -15,15 +15,8 @@ import {
   where,
 } from "firebase/firestore";
 import { database, auth } from "./databaseIntegration";
-import {
-  EmailAuthProvider,
-  fetchSignInMethodsForEmail,
-  reauthenticateWithCredential,
-  signInWithCredential,
-  updateEmail,
-  updatePassword,
-  verifyBeforeUpdateEmail,
-} from "firebase/auth";
+import { EmailAuthProvider, fetchSignInMethodsForEmail, reauthenticateWithCredential, signInWithCredential, updateEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
+import { ToastIcon } from "react-hot-toast";
 
 export async function CreateUserAccount(data) {
   try {
@@ -135,7 +128,7 @@ export async function AdminEditUser({ oldData, newData }) {
     await updateDoc(doc(database, "users", oldData.user_ID), {
       displayName: newData.displayName,
       email: newData.email,
-      note: newData.note,
+      note: newData.note
     });
     console.log();
     return true;
@@ -357,9 +350,6 @@ export async function addReview(reviewData) {
       });
     });
 
-    // Increment user's review count
-    await incrementUserReviewCount(reviewData.uid);
-
     //alert("Reviews Added");
   } catch (error) {
     console.error("Error: ", error);
@@ -407,7 +397,7 @@ export async function readReviewData(location) {
   }
 
   return null;
-}
+};
 
 export async function loadPendingReviews() {
   try {
@@ -440,13 +430,15 @@ export async function approveReview({ rev }) {
   } catch (error) {
     console.error("Error: ", error);
   }
+  // Increment user's review count
+    await incrementUserReviewCount(rev.reviewData.uid);
 }
 
 export async function denyReview({ rev }) {
   try {
     const reviewRef = doc(database, "reviews", rev.reviewID);
     await deleteDoc(reviewRef);
-    alert("Review Denied");
+    toast.error("Review Denied");
   } catch (error) {
     console.error("Error: ", error);
   }
@@ -472,7 +464,7 @@ export async function ReportUser(usersInfo, { rev }) {
   };
   try {
     await addDoc(collection(database, "reports"), reportData);
-    alert("Report Submitted");
+    //alert("Report Submitted");
   } catch (error) {
     console.error("Error: ", error);
   }
@@ -494,8 +486,7 @@ export async function loadReports() {
   }
 
   return null;
-}
-
+};
 
 // Assisted with Claude
 export async function resolveReport(report, actions) {
@@ -536,9 +527,9 @@ export async function resolveReport(report, actions) {
       // Delete each matching review document
       for (const reviewDoc of reviewDocs.docs) {
         await deleteDoc(doc(database, "reviews", reviewDoc.id));
+        alert("Report Resolved");
       }
     }
-    alert("Report Resolved");
     
   } catch (error) {
     console.error("Error: ", error);
@@ -631,192 +622,107 @@ export async function getCurrentUserReviewCount() {
   }
 }
 
-
 export async function incrementReviewLikes(userID, { rev }) {
-
-
-
   //console.log("[database.jsx]Incrementing like for review:", rev.reviewID);
-
-
   const reviewRef = doc(database, "reviews", rev.reviewID);
-
-
   if (!(await getDoc(reviewRef)).data().likes) {
-
-
     //console.log("[database.jsx]Likes field missing, initializing to 0 for review:", rev.reviewID);
-
-
     await updateDoc(reviewRef, {
-
-
       likes: 0,
-
-
     });
-
-
     //console.log("[database.jsx]Initialized likes to 0 for review:", rev.reviewID);
-
-
   }
-
-
   
-
-
   try {
-
-
     //console.log("[database.jsx] Update likes for review:", rev.reviewID);
-
-
     let likes = (await getDoc(reviewRef)).data().likes || 0;
-
-
     await updateDoc(reviewRef, {
-
-
       likes: likes + 1,
-
-
     }).then(async () => {
-
-
       //console.log("[database.jsx]Incremented likes for review:", rev.reviewID);
-
-
       const userRef = doc(database, "users", userID, "likes", rev.reviewID);
-
-
       await setDoc(userRef, {
-
-
         reviewID: rev.reviewID,
-
-
       }); 
-
-
     });
-
-
     console.log("[database.jsx]Set liked review for user:", userID, "review:", rev.reviewID);
-
-
   } catch (error) {
-
-
     console.error("Error: ", error);
-
-
   }
-
-
 }
-
-
-
-
 
 export async function decrementReviewLikes(userID, { rev }) {
-
-
   //console.log("[database.jsx]Decrementing like for review:", rev.reviewID);
-
-
   const reviewRef = doc(database, "reviews", rev.reviewID);
-
-
   try {
-
-
     //console.log("[database.jsx] Update likes for review:", rev.reviewID);
-
-
     let likes = (await getDoc(reviewRef)).data().likes || 0;
-
-
     await updateDoc(reviewRef, {
-
-
       likes: likes - 1,
-
-
     }).then(async () => {
-
-
       //console.log("[database.jsx]Decremented likes for review:", rev.reviewID);
-
-
       const userRef = doc(database, "users", userID, "likes", rev.reviewID);
-
-
       await deleteDoc(userRef); 
-
-
     });
-
-
   } catch (error) {
-
-
     console.error("Error: ", error);
-
-
   }
-
-
 }
 
-
-
-
-
 export async function checkIfLiked(userID, { rev }) {
-
-
   try {
-
-
     console.log("[database.jsx]Checking if user:", userID, "liked review:", rev.reviewID);
-
-
     const userRef = doc(database, "users", userID, "likes", rev.reviewID);
-
-
     const docSnapshot = await getDoc(userRef);
-
-
     if (docSnapshot.exists()) {
-
-
       console.log("[database.jsx]User has liked the review:", rev.reviewID);
-
-
       return true;
-
-
     } else {
-
-
       console.log("[database.jsx]User has not liked the review:", rev.reviewID);
-
-
     }
-
-
     return false;
-
-
   } catch (error) {
-
-
     console.error("Error: ", error);
-
-
   }
+}
 
+export async function achievementsUpdater() {
+  // Placeholder for future implementation
+}
 
+export async function rankScoreIncrementer(points) {
+  // Placeholder for future implementation
+}
+
+// Function to load user's favorite parks
+export async function loadUserFavorites(uid) {
+  try {
+    const favoritesRef = collection(database, "users", uid, "favorites");
+    const favoritesSnapshot = await getDocs(favoritesRef);
+    const favorites = [];
+    
+    favoritesSnapshot.forEach((doc) => {
+      favorites.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    return favorites;
+  } catch (error) {
+    console.error("Error loading favorites:", error);
+    return [];
+  }
+}
+
+// Function to remove a favorite park
+export async function removeFavoritePark(uid, parkId) {
+  try {
+    const favoriteRef = doc(database, "users", uid, "favorites", parkId);
+    await deleteDoc(favoriteRef);
+    return true;
+  } catch (error) {
+    console.error("Error removing favorite:", error);
+    return false;
+  }
 }

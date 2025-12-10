@@ -14,7 +14,7 @@ import FavouritesList from "./favourites_list";
 import { PullProfileImageIcon } from "@/app/backend/uploadStorage";
 import { pullProfileImageURL } from "../../../backend/database.jsx";
 
-export default function ProfileMenu({ onRouteToLogin, userData }) {
+export default function ProfileMenu({ onRouteToLogin, userData, viewParkDetails }) {
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
   const [showModal3, setShowModal3] = useState(false);
@@ -41,7 +41,7 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
     if (userDeleted) {
       onRouteToLogin();
     } else {
-      alert("Account deletion failed. Please sign in again and retry.");
+      toast.error("Account deletion failed. Please sign in again and retry.");
     }
   }
 
@@ -79,11 +79,6 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
   return (
     <details className="relative">
       <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-        {/*<img
-          src="/window.svg"
-          alt="Profile"
-          className="h-12 w-12 rounded-full bg-gray-300 object-cover"
-        />*/}
         <PullProfileImageIcon user={user} imageName={imageName} />
       </summary>
       <ul className="absolute right-0 z-50 mt-2 w-44 rounded-md bg-white p-1 shadow ring-1 ring-black/5">
@@ -152,7 +147,7 @@ export default function ProfileMenu({ onRouteToLogin, userData }) {
       </Modal>
 
       <Modal isVisible={showModal5} onClose={() => setShowModal5(false)}>
-        <FavouritesList userData={userData} />
+        <FavouritesList userData={userData} viewParkDetails={viewParkDetails} />
       </Modal>
     </details>
   );

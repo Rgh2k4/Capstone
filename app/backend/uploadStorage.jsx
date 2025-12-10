@@ -4,11 +4,23 @@ import { storage } from './databaseIntegration';
 import { useState, useEffect } from 'react';
 import { updateProfileImageURL, pullProfileImageURL } from './database';
 
+// Utility function to get initials from email
+function getEmailInitials(email) {
+  if (!email) return '?';
+  return email.charAt(0).toUpperCase();
+}
+
+// Utility function to get initials from UID when email is not available
+function getUidInitials(uid) {
+  if (!uid) return '?';
+  return uid.charAt(0).toUpperCase();
+}
+
 export async function uploadImage(file, location) {
   try {
     const storagePath = ref(storage, `National/${location}/${file.name}`);
     await uploadBytes(storagePath, file);
-    alert("Success!");
+    toast.success("Success!");
   } catch (error) {
     console.error('Error:', error);
   }
@@ -19,7 +31,7 @@ export async function uploadProfileImage(file, user) {
     const storagePath = ref(storage, `Profile/${user.uid}/${file.name}`);
     await uploadBytes(storagePath, file);
     updateProfileImageURL(user, file);
-    alert("Success!");
+    //alert("Success!");
   } catch (error) {
     console.error('Error:', error);
   }
@@ -65,7 +77,13 @@ export function PullProfileImageReview({ user }) {
     }, [])
 
     if (!image) {
-        return <img className="w-16 h-16 bg-gray-300 rounded-full" alt="profile" />
+        // Try to use email first, fallback to uid if email not available
+        const initial = user.email ? getEmailInitials(user.email) : getUidInitials(user.uid);
+        return (
+            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xl font-semibold">{initial}</span>
+            </div>
+        );
     }
 
     return <img src={image} className="w-16 h-16 bg-gray-300 rounded-full" alt="profile" />
@@ -101,7 +119,13 @@ export function PullProfileImage({ user, imageName }) {
     }, [imageName])
 
     if (!image) {
-        return <img className="w-50 h-50 bg-gray-400 rounded-full" alt="profile picture" />
+        // Try to use email first, fallback to uid if email not available
+        const initial = user.email ? getEmailInitials(user.email) : getUidInitials(user.uid);
+        return (
+            <div className="w-50 h-50 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-4xl font-semibold">{initial}</span>
+            </div>
+        );
     }
 
     return <img src={image} className="w-50 h-50 bg-gray-400 rounded-full" alt="profile picture" />
@@ -137,7 +161,13 @@ export function PullProfileImageIcon({ user, imageName }) {
     }, [imageName])
 
     if (!image) {
-        return <img className="h-12 w-12 rounded-full bg-gray-300 object-cover" alt="profile picture" />
+        // Try to use email first, fallback to uid if email not available
+        const initial = user.email ? getEmailInitials(user.email) : getUidInitials(user.uid);
+        return (
+            <div className="h-12 w-12 rounded-full bg-blue-500 flex items-center justify-center">
+                <span className="text-white text-lg font-semibold">{initial}</span>
+            </div>
+        );
     }
 
     return <img src={image} className="h-12 w-12 rounded-full bg-gray-300 object-cover" alt="profile picture" />

@@ -7,9 +7,10 @@
 */
 import { useState } from "react";
 import { auth, signUp } from "../backend/databaseIntegration.jsx";
-import { Alert, Button, Input, PasswordInput, Checkbox } from "@mantine/core";
+import { Button, Input, PasswordInput, Checkbox } from "@mantine/core";
 import { IconAt, IconInfoCircle } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
+import toast from "react-hot-toast";
 
 export default function SignupPage({ handleNewAccount }) {
   const [form, setForm] = useState({
@@ -33,7 +34,7 @@ export default function SignupPage({ handleNewAccount }) {
     e.preventDefault();
     setSubmitted(true);
     setShowError(false);
-    
+
     try {
       if (form.password !== form.confirm) {
         setSubmitted(false);
@@ -131,18 +132,7 @@ export default function SignupPage({ handleNewAccount }) {
         </form>
       </section>
       <div className=" flex justify-end items-center mt-10">
-        {showError && (
-          <Alert
-            variant="filled"
-            color="red"
-            withCloseButton
-            title="Sign up failed"
-            icon={icon}
-            onClick={() => setShowError(false)}
-          >
-            {errorMessage}
-          </Alert>
-        )}
+        {showError && toast.error("Sign up failed")}
       </div>
     </main>
   );

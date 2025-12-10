@@ -141,4 +141,4 @@ export function Review({ rev, handleReport, park }) {
       </ActionIcon>
     </>
   );
-}   export default Review;
+}   

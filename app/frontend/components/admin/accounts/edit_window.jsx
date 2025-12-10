@@ -28,7 +28,7 @@ function Edit({ account: uid, onClose, onDeleteAccount }) {
   function handleDelete() {
     setShowError(false);
     onClose();
-    alert("Account Deleted!");
+    toast.success("Account Deleted!");
     onDeleteAccount(account.user_ID);
   }
 
@@ -50,7 +50,7 @@ function Edit({ account: uid, onClose, onDeleteAccount }) {
 
     try {
       AdminEditUser(account, newAccountData);
-      alert("Account Edited!");
+      toast("Account Edited!");
       onClose();
     } catch (error) {
       setErrorMessage("Failed to edit user: " + error.message);

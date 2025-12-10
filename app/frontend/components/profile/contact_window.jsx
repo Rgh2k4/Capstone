@@ -18,7 +18,7 @@ export default function ContactWindow({
   function handleEmail(e) {
     e.preventDefault();
     if (!name.trim() || !reason || !message.trim()) {
-      alert("Please fill in all required fields.");
+      toast("Please fill in all required fields.");
       return;
     }
     setSubmitted(true);
