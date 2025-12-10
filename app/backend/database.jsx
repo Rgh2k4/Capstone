@@ -701,3 +701,36 @@ export async function achievementsUpdater() {
 export async function rankScoreIncrementer(points) {
   // Placeholder for future implementation
 }
+
+// Function to load user's favorite parks
+export async function loadUserFavorites(uid) {
+  try {
+    const favoritesRef = collection(database, "users", uid, "favorites");
+    const favoritesSnapshot = await getDocs(favoritesRef);
+    const favorites = [];
+    
+    favoritesSnapshot.forEach((doc) => {
+      favorites.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    return favorites;
+  } catch (error) {
+    console.error("Error loading favorites:", error);
+    return [];
+  }
+}
+
+// Function to remove a favorite park
+export async function removeFavoritePark(uid, parkId) {
+  try {
+    const favoriteRef = doc(database, "users", uid, "favorites", parkId);
+    await deleteDoc(favoriteRef);
+    return true;
+  } catch (error) {
+    console.error("Error removing favorite:", error);
+    return false;
+  }
+}
