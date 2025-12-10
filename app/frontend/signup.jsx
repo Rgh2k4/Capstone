@@ -34,7 +34,7 @@ export default function SignupPage({ handleNewAccount }) {
     e.preventDefault();
     setSubmitted(true);
     setShowError(false);
-    
+
     try {
       if (form.password !== form.confirm) {
         setSubmitted(false);

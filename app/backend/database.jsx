@@ -8,7 +8,7 @@ import { ToastIcon } from "react-hot-toast";
 export async function CreateUserAccount(data) {
   try {
     //console.log("Adding user to Firestore with ID:", data.uid);
-    
+
     await setDoc(doc(database, "users", data.uid), {
       user_ID: data.uid,
       email: data.email,
@@ -78,7 +78,7 @@ export async function UpdateLastLogin(user) {
 export async function GetUserData(uid) {
   try {
     const userDoc = await getDoc(doc(database, "users", uid));
-    if (userDoc.exists()) {     
+    if (userDoc.exists()) {
       return userDoc.data();
     } else {
       console.log("No such document!");
@@ -90,7 +90,7 @@ export async function GetUserData(uid) {
   }
 };
 
-export async function SetDisplayName( displayName) {
+export async function SetDisplayName(displayName) {
   const user = auth.currentUser;
   try {
     await updateDoc(doc(database, "users", user.uid), {
@@ -112,14 +112,14 @@ export function isAdmin(data) {
 
 
 export async function AdminEditUser({ oldData, newData }) {
-    try {
-      await updateDoc(doc(database, "users", oldData.user_ID), {
-        displayName: newData.displayName,
-        email: newData.email,
-        note: newData.note
-      });
-      console.log();
-      return true;
+  try {
+    await updateDoc(doc(database, "users", oldData.user_ID), {
+      displayName: newData.displayName,
+      email: newData.email,
+      note: newData.note
+    });
+    console.log();
+    return true;
   } catch (err) {
     console.error("AdminEditUser (Firestore-only) error:", err);
     return false;
@@ -128,10 +128,10 @@ export async function AdminEditUser({ oldData, newData }) {
 
 
 export async function AdminDeleteUser({ uid }) {
-    try {
-      await deleteDoc(doc(database, "users", uid))
-      console.log();
-      return true;
+  try {
+    await deleteDoc(doc(database, "users", uid))
+    console.log();
+    return true;
   } catch (err) {
     console.error("AdminEditUser (Firestore-only) error:", err);
     return false;
@@ -148,16 +148,16 @@ export async function EditUser(type, value) {
     const currentEmail = user.email;
 
 
-    
-    if (type === "email"){
+
+    if (type === "email") {
       const newEmail = value?.newValue?.trim();
       console.log("New Email:", newEmail);
-      
+
       const methods = await fetchSignInMethodsForEmail(auth, newEmail);
       if (methods.length > 0) {
         throw new Error("Email already in use");
       }
-      
+
       const ref = doc(database, "users", user.uid);
       await updateDoc(ref, { email: newEmail });
       await updateEmail(user, newEmail);
@@ -169,9 +169,9 @@ export async function EditUser(type, value) {
 
       if (newPassword) {
         await updatePassword(user, newPassword);
-    }
+      }
       return true;
-  } else {
+    } else {
       return false;
     }
 
@@ -184,70 +184,70 @@ export async function EditUser(type, value) {
 
 export async function DeleteUser() {
   try {
-    const user = auth.currentUser; 
+    const user = auth.currentUser;
     await deleteDoc(doc(database, "users", user.uid))
-    await user.delete()   
+    await user.delete()
     return true;
   } catch (e) {
-        console.error("Auth delete error (re-auth may be required):", e);
-        return false;
-      }
+    console.error("Auth delete error (re-auth may be required):", e);
+    return false;
   }
+}
 
 export async function addReview(reviewData) {
-    try {
-        const docRef = await addDoc(collection(database, "reviews"), {
-          reviewData,
-          dateSubmitted: serverTimestamp(),
-          status: "pending",
-          reviewID: "",
-          location_name: reviewData.location_name
-        }).then(async (docRef) => {
-          await updateDoc(doc(database, "reviews", docRef.id), {
-            reviewID: docRef.id
-          });
-        });
+  try {
+    const docRef = await addDoc(collection(database, "reviews"), {
+      reviewData,
+      dateSubmitted: serverTimestamp(),
+      status: "pending",
+      reviewID: "",
+      location_name: reviewData.location_name
+    }).then(async (docRef) => {
+      await updateDoc(doc(database, "reviews", docRef.id), {
+        reviewID: docRef.id
+      });
+    });
 
-    } catch (error) {
-        console.error("Error: ", error);
-    }
+  } catch (error) {
+    console.error("Error: ", error);
+  }
 };
 
 export async function readReviewData(location) {
-    
-    try {
-        let reviews = []
-        const reviewData = await getDocs(query(collection(database, "reviews"), where("location_name", "==", location)));
-        console.log("Total Reviews Fetched:", reviewData.size);
-        if (!reviewData.empty) {
-          reviewData.forEach((review) => {
-            if (review.data().status === "approved") {
-              const userData = GetUserData(review.data().reviewData.uid);
-              console.log("userData:", userData);
-              console.log("User:", userData.displayName);
-              const name = userData.displayName;
-              if (userData.displayName === "") {
-                reviews.push({
-                  ...review.data(), displayName: "Anonymous"
-                });
-              } else {
-                reviews.push({
-                  ...review.data(), displayName: name
-                });
-              }
-            }
-          });
-        }
-        console.log("=== Approved Reviews ===");
-        
-        console.log("Approved Reviews Loaded:", reviews);
-        reviews = reviews.filter((rev) => rev.status === "approved");
-        return reviews;
-    } catch (error) {
-        console.error("Error: ", error);
-    }
 
-    return null;
+  try {
+    let reviews = []
+    const reviewData = await getDocs(query(collection(database, "reviews"), where("location_name", "==", location)));
+    console.log("Total Reviews Fetched:", reviewData.size);
+    if (!reviewData.empty) {
+      reviewData.forEach((review) => {
+        if (review.data().status === "approved") {
+          const userData = GetUserData(review.data().reviewData.uid);
+          console.log("userData:", userData);
+          console.log("User:", userData.displayName);
+          const name = userData.displayName;
+          if (userData.displayName === "") {
+            reviews.push({
+              ...review.data(), displayName: "Anonymous"
+            });
+          } else {
+            reviews.push({
+              ...review.data(), displayName: name
+            });
+          }
+        }
+      });
+    }
+    console.log("=== Approved Reviews ===");
+
+    console.log("Approved Reviews Loaded:", reviews);
+    reviews = reviews.filter((rev) => rev.status === "approved");
+    return reviews;
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+
+  return null;
 };
 
 export async function loadPendingReviews() {
@@ -276,84 +276,84 @@ export async function loadPendingReviews() {
 
 export async function approveReview({ rev }) {
   //console.log("Approving review:", rev.reviewID);
-    try {
-        const reviewRef = doc(database, "reviews", rev.reviewID);
-        await updateDoc(reviewRef, { status: "approved" });
-        toast.success("Review Approved");
-    } catch (error) {
-        console.error("Error: ", error);
-    }
+  try {
+    const reviewRef = doc(database, "reviews", rev.reviewID);
+    await updateDoc(reviewRef, { status: "approved" });
+    toast.success("Review Approved");
+  } catch (error) {
+    console.error("Error: ", error);
+  }
 }
 
 export async function denyReview({ rev }) {
-    try {
-        const reviewRef = doc(database, "reviews", rev.reviewID);
-        await deleteDoc(reviewRef);
-        toast.error("Review Denied");
-    } catch (error) {
-        console.error("Error: ", error);
-    }
+  try {
+    const reviewRef = doc(database, "reviews", rev.reviewID);
+    await deleteDoc(reviewRef);
+    toast.error("Review Denied");
+  } catch (error) {
+    console.error("Error: ", error);
+  }
 }
 
 export async function ReportUser(usersInfo, { rev }) {
-    const reportData = {
-        reportedUserID: usersInfo.reportedUserID,
-        reporterUserID: usersInfo.reporterUserID,
-        reason: usersInfo.reason,
-        dateReported: serverTimestamp(),
-        status: "unresolved",
-        reviewData: {
-            uid: rev.uid,
-            title: rev.title,
-            message: rev.message,
-            rating: rev.rating,
-            location_name: rev.location_name,
-            displayName: rev.displayName,
-            image: rev.image,
-            status: rev.status
-        }
-    };
-    try {
-        await addDoc(collection(database, "reports"), reportData)
-        toast.success("Report Submitted");
-    } catch (error) {
-        console.error("Error: ", error);
+  const reportData = {
+    reportedUserID: usersInfo.reportedUserID,
+    reporterUserID: usersInfo.reporterUserID,
+    reason: usersInfo.reason,
+    dateReported: serverTimestamp(),
+    status: "unresolved",
+    reviewData: {
+      uid: rev.uid,
+      title: rev.title,
+      message: rev.message,
+      rating: rev.rating,
+      location_name: rev.location_name,
+      displayName: rev.displayName,
+      image: rev.image,
+      status: rev.status
     }
+  };
+  try {
+    await addDoc(collection(database, "reports"), reportData)
+    toast.success("Report Submitted");
+  } catch (error) {
+    console.error("Error: ", error);
+  }
 };
 
 export async function loadReports() {
-    try {
-      const reportData = await getDocs(collection(database, "reports"));
-      const reports = [];
-      reportData.forEach((doc) => {
-        const data = doc.data();
-          reports.push(data);
-      });
-      return reports;
-    } catch (error) {
-      console.error("Error: ", error);
-    }
+  try {
+    const reportData = await getDocs(collection(database, "reports"));
+    const reports = [];
+    reportData.forEach((doc) => {
+      const data = doc.data();
+      reports.push(data);
+    });
+    return reports;
+  } catch (error) {
+    console.error("Error: ", error);
+  }
 
-    return null;
+  return null;
 };
 
 export async function resolveReport(report, actions) {
   try {
     console.log("Resolving report for:", report);
-      const reportOriginalRef = query(collection(database, "reports"), where("reportedUserID", "==", report.reportedUserID), where("reporterUserID", "==", report.reporterUserID), where("dateReported", "==", report.dateReported));
-      await updateDoc(reportOriginalRef, { status: "resolved" });
-      const reportCopyRef = getDocs(database, "reports");
-      for (const review of reportCopyRef) {
-          if (review.data().reviewData === report.reviewData && review.data().status === "unresolved") {
-              await deleteDoc(review);
-          }
+    const reportOriginalRef = query(collection(database, "reports"), where("reportedUserID", "==", report.reportedUserID), where("reporterUserID", "==", report.reporterUserID), where("dateReported", "==", report.dateReported));
+    await updateDoc(reportOriginalRef, { status: "resolved" });
+    const reportCopyRef = getDocs(database, "reports");
+    for (const review of reportCopyRef) {
+      if (review.data().reviewData === report.reviewData && review.data().status === "unresolved") {
+        await deleteDoc(review);
       }
-      if (action === "delete") {
-          const reviewRef = query(collection(database, "reviews"), where("uid", "==", report.reviewData.uid), where("title", "==", report.reviewData.title), where("message", "==", report.reviewData.message), where("location_name", "==", report.reviewData.location_name));
-          await deleteDoc(reviewRef);
-      }
-      toast.success("Report Resolved");
+    }
+    if (action === "delete") {
+      const reviewRef = query(collection(database, "reviews"), where("uid", "==", report.reviewData.uid), where("title", "==", report.reviewData.title), where("message", "==", report.reviewData.message), where("location_name", "==", report.reviewData.location_name));
+      await deleteDoc(reviewRef);
+    }
+    toast.success("Report Resolved");
   } catch (error) {
-      console.error("Error: ", error);
+    console.error("Error: ", error);
   }
 };

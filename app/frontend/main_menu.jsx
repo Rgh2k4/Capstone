@@ -35,10 +35,11 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
   const [defaultFilterApplied, setDefaultFilterApplied] = useState(false);
 
   const handleStopRoute = () => {
-    if (clearRouteRef.current && typeof clearRouteRef.current === "function"){
+    if (clearRouteRef.current) {
       clearRouteRef.current();
     } else {
-      console.error("clearRouteRef not ready");
+      toast.error("Route not ready yet, please wait a moment");
+      console.warn("clearRouteRef not ready");
     }
     setRoutePois([]);
     setRouteSummaries([]);
@@ -285,38 +286,39 @@ export default function MainMenu({ onRouteToLogin, onRouteToDashboard }) {
 
           </div>
         </header>
-        {routePois.length > 0 && routeSummaries.length > 0 && (
-          <div className="absolute top-16 left-4 z-40 w-96 shadow-lg bg-white rounded-md p-2">
-            <Accordion multiple defaultValue={['stop-route']}>
-              <Accordion.Item value="stop-route">
-                <Accordion.Control>Stop Computing Route</Accordion.Control>
+
+        <div className="absolute top-16 left-4 z-40 w-96 shadow-lg bg-white rounded-md p-2"
+          style={{ display: routePois.length > 0 && routeSummaries.length > 0 ? "block" : "none" }}>
+          <Accordion multiple defaultValue={['stop-route']}>
+            <Accordion.Item value="stop-route">
+              <Accordion.Control>Stop Computing Route</Accordion.Control>
+              <Accordion.Panel>
+                <Button color="red" size="sm" onClick={handleStopRoute}>
+                  Stop Computing Route
+                </Button>
+              </Accordion.Panel>
+            </Accordion.Item>
+
+            {routeSummaries.map((route, index) => (
+              <Accordion.Item key={index} value={`route-${index}`}>
+                <Accordion.Control>Trip Summary #{index + 1}</Accordion.Control>
                 <Accordion.Panel>
-                  <Button color="red" size="sm" onClick={handleStopRoute}>
-                    Stop Computing Route
-                  </Button>
+                  {(route.legs || []).map((leg, i) => (
+                    <div key={i} className="mb-1 text-sm">
+                      {leg.start} → {leg.end}: {leg.distanceText}, {leg.durationText}
+                    </div>
+                  ))}
+                  <div className="mt-2 font-semibold text-sm">
+                    Total Distance: {route.totalDistance.toFixed(1)} km
+                    <br />
+                    Total Duration: {Math.round(route.totalDuration)} min
+                  </div>
                 </Accordion.Panel>
               </Accordion.Item>
+            ))}
+          </Accordion>
+        </div>
 
-              {routeSummaries.map((route, index) => (
-                <Accordion.Item key={index} value={`route-${index}`}>
-                  <Accordion.Control>Trip Summary #{index + 1}</Accordion.Control>
-                  <Accordion.Panel>
-                    {(route.legs || []).map((leg, i) => (
-                      <div key={i} className="mb-1 text-sm">
-                        {leg.start} → {leg.end}: {leg.distanceText}, {leg.durationText}
-                      </div>
-                    ))}
-                    <div className="mt-2 font-semibold text-sm">
-                      Total Distance: {route.totalDistance.toFixed(1)} km
-                      <br />
-                      Total Duration: {Math.round(route.totalDuration)} min
-                    </div>
-                  </Accordion.Panel>
-                </Accordion.Item>
-              ))}
-            </Accordion>
-          </div>
-        )}
 
 
         <Modal isVisible={overlay} onClose={() => setOverlay(false)}>

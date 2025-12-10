@@ -39,9 +39,8 @@ function MapContent({ filteredPois, setVisiblePois, viewParkDetails }) {
 }
 //https://developers.google.com/maps/documentation/routes/compute_route_directions#node.js, https://developers.google.com/maps/documentation/javascript/examples/directions-travel-modes
 //https://visgl.github.io/react-google-maps/examples/directions
-function RouteHandler({ computeRouteRef, clearRouteRef, travelMode, userLocation, onRouteSummary }) {
+function RouteHandler({ computeRouteRef, clearRouteRef, directionsRendererRef, travelMode, userLocation, onRouteSummary }) {
   const map = useMap();
-  const directionsRendererRef = useRef(null);
 
   useEffect(() => {
     if (!map) return;
@@ -52,19 +51,6 @@ function RouteHandler({ computeRouteRef, clearRouteRef, travelMode, userLocation
         preserveViewport: true,
       });
       directionsRendererRef.current.setMap(map);
-    }
-
-    if (clearRouteRef) {
-      clearRouteRef.current = () => {
-        try {
-          if (directionsRendererRef.current) {
-            directionsRendererRef.current.setDirections({ routes: [] });
-            console.debug("DirectionsRenderer cleared");
-          }
-        } catch (err) {
-          console.error("Error clearing directions renderer:", err);
-        }
-      };
     }
 
     if (computeRouteRef) {
@@ -116,21 +102,12 @@ function RouteHandler({ computeRouteRef, clearRouteRef, travelMode, userLocation
               } else {
                 reject(status);
               }
-            });
+            }
+          );
         });
-      };
-    }
-
-    return () => {
-      if (clearRouteRef) clearRouteRef.current = null;
-      if (directionsRendererRef.current) {
-        try {
-          directionsRendererRef.current.setMap(null);
-        } catch (e) {}
-        directionsRendererRef.current = null;
       }
-    };
-  }, [map, computeRouteRef, clearRouteRef, travelMode, userLocation, onRouteSummary]);
+    }
+  }, [map, computeRouteRef, travelMode, userLocation]);
 
   return null;
 }
@@ -206,17 +183,13 @@ function MapFunction({ filters = [], setUniqueTypes, viewParkDetails, computeRou
   const directionsRendererRef = useRef(null);
 
   useEffect(() => {
-    if (!mapRef.current?.map) return;
-    const map = mapRef.current.map;
+    if (clearRouteRef) {
+      clearRouteRef.current = () => {
+        directionsRendererRef.current?.setDirections({ routes: [] });
+      };
+    }
+  }, [clearRouteRef]);
 
-    directionsServiceRef.current = new google.maps.DirectionsService();
-    directionsRendererRef.current = new google.maps.DirectionsRenderer();
-    directionsRendererRef.current.setMap(map);
-
-    //if (computeRouteRef){
-    //  computeRouteRef.current = computeRoute;
-    //}
-  }, [mapRef.current?.map]);
 
   //Pulling the API's urls rather than hardcoding the files into the system allows for cleaner integration and ensures the latest versions of the API's are pulled, as some are updated weekly
   //This was written with help from ChatGPT when asked "How do I integrate these GEOJson api's into the google map api?"
@@ -420,10 +393,10 @@ function MapFunction({ filters = [], setUniqueTypes, viewParkDetails, computeRou
             </AdvancedMarker>
             <RouteHandler
               computeRouteRef={computeRouteRef}
-              clearRouteRef={clearRouteRef}
               travelMode={travelMode}
               userLocation={userLocation}
               onRouteSummary={onRouteSummary}
+              directionsRendererRef={directionsRendererRef}
             />
           </GoogleMap>
         </APIProvider>

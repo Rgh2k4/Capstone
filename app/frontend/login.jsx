@@ -22,9 +22,9 @@ export default function Login({ handleLogin, handleSignUp }) {
         handleLogin();
       }
       else {
-      setErrorMessage("User does not exist or password is incorrect.");
-      setSubmitted(false);
-      setShowError(true);
+        setErrorMessage("User does not exist or password is incorrect.");
+        setSubmitted(false);
+        setShowError(true);
       }
     });
   }
