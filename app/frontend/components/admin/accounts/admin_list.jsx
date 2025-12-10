@@ -17,7 +17,7 @@ export default function AdminList({ handleEdit, data }) {
       note: admin.note ? admin.note : "",
     };
 
-    handleEdit(selectedUser);
+    handleEdit(selectedUser.user_ID);
   }
 
   return (
