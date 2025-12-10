@@ -39,9 +39,10 @@ export default function Upload_Window({ onClose, parkInfo }) {
       if (image != null) {
         uploadImage(image, location);
       }
-      alert("Review Submitted!");
+      //alert("Review Submitted!");
       onClose();
     } catch (error) {
+      alert("Failed to submit review. Please try again.");
       console.error("Error uploading review:", error);
       setSubmitted(false);
       return;
