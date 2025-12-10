@@ -8,6 +8,7 @@ import { IconHeart } from "@tabler/icons-react";
 import { PullImage, PullProfileImageReview } from "@/app/backend/uploadStorage";
 import { readReviewData, ReportUser } from "@/app/backend/database";
 import { DirectionsRenderer } from "@react-google-maps/api";
+import ReviewSection from "./review_section";
 
 export default function ParkDetails({
   selectedPark,
@@ -267,49 +268,7 @@ export default function ParkDetails({
 
           <div className="p-6 max-h-96 overflow-y-auto">
             {reviews?.length > 0 ? (
-              <div className="space-y-6">
-                {reviews.map((rev, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
-                    <div className="flex items-start space-x-4">
-                      <div className="bg-gray-200 rounded-full p-4 flex-shrink-0">
-                        <PullProfileImageReview user={rev.reviewData} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-bold text-lg text-gray-900">
-                            {rev.displayName || "Anonymous"}
-                          </h4>
-                          <span className="text-sm text-gray-500">
-                            {rev.dateSubmitted
-                              ? rev.dateSubmitted
-                                .toDate()
-                                .toLocaleDateString()
-                              : "Unknown Date"}
-                          </span>
-                        </div>
-                        <h5 className="font-semibold text-gray-800 mb-2">{rev.title}</h5>
-                        <p className="text-gray-700 leading-relaxed mb-4">
-                          {rev.reviewData.message}
-                        </p>
-                        {rev.reviewData.image && (
-                          <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                            <PullImage
-                              location={park.name.split(" ").join("")}
-                              url={rev.reviewData.image}
-                            />
-                          </div>
-                        )}
-                        <button
-                          className="text-sm text-red-500 hover:text-red-700 hover:underline transition-colors duration-200"
-                          onClick={() => handleReport({ rev })}
-                        >
-                          Report User
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <ReviewSection handleReport={handleReport} park={park} reviews={reviews} />
             ) : (
               <div className="text-center py-12 text-gray-500">
                 <div className="bg-gray-50 rounded-full p-4 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
