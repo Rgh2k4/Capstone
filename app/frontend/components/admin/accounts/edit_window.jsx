@@ -50,7 +50,7 @@ function Edit({ account: uid, onClose, onDeleteAccount }) {
 
     try {
       AdminEditUser(account, newAccountData);
-      toast("Account Edited!");
+      alert("Account Edited!");
       onClose();
     } catch (error) {
       setErrorMessage("Failed to edit user: " + error.message);

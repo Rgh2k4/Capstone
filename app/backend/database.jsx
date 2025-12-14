@@ -123,7 +123,7 @@ export function isAdmin(data) {
   }
 }
 
-export async function AdminEditUser({ oldData, newData }) {
+export async function AdminEditUser (oldData, newData) {
   try {
     await updateDoc(doc(database, "users", oldData.user_ID), {
       displayName: newData.displayName,
